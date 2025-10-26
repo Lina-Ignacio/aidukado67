@@ -1,11 +1,16 @@
 import { useState } from "react";
-import { MdEdit, MdDelete, MdRemoveRedEye, MdVisibilityOff } from "react-icons/md";
+import { MdEdit, MdDelete, MdRemoveRedEye, MdVisibilityOff, MdArchive } from "react-icons/md";
 import FileView from "../pages/Lesson/FileView";
 import {useNavigate } from 'react-router-dom';
 import userRole from '../store/useUserStore'
 import { useParams } from "react-router-dom";
+import Modal from "./Modal";
 
 export default function LessonViewer({fileExtension, fileUrl, title, description, setIsVisible, isVisible, lessonId, classId}) {
+    const [editLessonOpen, setEditLessonOpen] = useState(false)
+    const [archiveLessonOpen, setArchiveLessonOpen] = useState(false)
+
+    const panelStyleEdit = "w-full h-2/5 max-w-lg rounded-xl shadow-xl"
 
     const navigate = useNavigate();
     const usersRole = userRole((state) => state.userRole);
@@ -55,13 +60,17 @@ export default function LessonViewer({fileExtension, fileUrl, title, description
                                     <MdEdit size={24} />
                                 </button>
                                 <button className="sm:h-[50px] rounded-lg flex items-center justify-center bg-[#BE3D2A]">
-                                    <MdDelete size={24} />
+                                    <MdArchive size={24} />
                                 </button>
                             </div>
                         </div>
                     </div>   
                 </div> 
             )}
+            
+            {/* <Modal isOpen={isEditLessonOpen} onClose={() => setEditLessonOpen(false)} title="Edit Lesson" panelStyle={panelStyleEdit}>
+
+            </Modal> */}
         </>
     )
 }

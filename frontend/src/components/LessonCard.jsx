@@ -18,6 +18,7 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
     
     const handleClick = () => {
         navigate(`/selectedLesson/${materialId}/${classId}`)
+        navigate(`/selectedLesson/${materialId}/${materialType}`)
     }
 
     const iconStyle = "text-[#102E50] m-auto"
@@ -32,7 +33,7 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
             case "project":
                 return <MdWorkOutline size={24} className={iconStyle}/>;
             default:
-                return <MdMenuBook size={24} className={iconStyle}/>; // fallback icon
+                return <MdMenuBook size={24} className={iconStyle}/>; 
         }
     };
     

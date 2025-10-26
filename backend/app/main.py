@@ -11,7 +11,8 @@ from .routers import (
     classes,
     class_enrollment,
     quiz,
-    student_quiz_progress
+    student_quiz_progress,
+    student_submission
 )
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -52,4 +53,5 @@ app.include_router(logout.router)
 app.include_router(quiz.router)
 app.include_router(student_quiz_progress.router)
 
+app.include_router(student_submission.router)
 
