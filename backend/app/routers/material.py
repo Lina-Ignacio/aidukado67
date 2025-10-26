@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, HTTPException, Depends, File, Form, UploadFile, Query
+from fastapi import APIRouter, HTTPException, Depends, File, Form, UploadFile, Query, Body
 from typing import List
 from sqlalchemy.orm import Session, load_only
 from app.database import SessionLocal
@@ -137,70 +137,10 @@ async def upload(lesson: str = Form(...), items: int = Form(...), type: str = Fo
     questions = generate_pretest(lesson, items, type)    
     return {"pretest": questions}
 
-"""
-@router.post("/getQuiz/{lesson_id}")
-async def generate_quiz(lesson_id: int, items: int = Query(...), type: str = Query(...), db: Session = Depends(get_db)):
-    lesson = db.query(ClassMaterial).filter(ClassMaterial.id == lesson_id).first()
 
-    if not lesson:
-        raise HTTPException(status_code=404, detail="Lesson not found")
-
-    filename = lesson.file_url
-
-    if not (filename.lower().endswith(".pdf") or filename.lower().endswith(".docx") or filename.lower().endswith(".doc")):
-        raise HTTPException(status_code=400, detail="Only .pdf, .docx, and .doc files are allowed")
-
-    # ✅ Generate a presigned URL to access the actual file
-    file_url = generate_presigned_url(filename)
-    response = requests.get(file_url)
-
-    if response.status_code != 200:
-        raise HTTPException(status_code=500, detail="Failed to download lesson file")
-
-    contents = response.content
-
-    if filename.lower().endswith(".pdf"):
-        text = extract_pdf_text(contents)
-    else:
-        text = extract_document_text(contents)
-
-    # ✅ Generate pretest questions
-    questions = generate_pretest(text, items, type)
-
-    return {"pretest": questions}
-"""
-
-
-
-@router.post("/getSummary/{lesson_id}")
-async def generate_quiz(lesson_id: int, db: Session = Depends(get_db)):
-    lesson = db.query(ClassMaterial).filter(ClassMaterial.id == lesson_id).first()
-
-    if not lesson:
-        raise HTTPException(status_code=404, detail="Lesson not found")
-
-    filename = lesson.file_url
-
-    if not (filename.lower().endswith(".pdf") or filename.lower().endswith(".docx") or filename.lower().endswith(".doc")):
-        raise HTTPException(status_code=400, detail="Only .pdf, .docx, and .doc files are allowed")
-
-    # ✅ Generate a presigned URL to access the actual file
-    file_url = generate_presigned_url(filename)
-    response = requests.get(file_url)
-
-    if response.status_code != 200:
-        raise HTTPException(status_code=500, detail="Failed to download lesson file")
-
-    contents = response.content
-
-    if filename.lower().endswith(".pdf"):
-        text = extract_pdf_text(contents)
-    else:
-        text = extract_document_text(contents)
-
-    # ✅ Generate pretest questions
-    summary = generate_summary(text)
-
+@router.post("/getSummary")
+async def summary(lesson: str = Form(...), db: Session = Depends(get_db)):
+    summary = generate_summary(lesson)
     return {"summary": summary}
 
 # @router.patch("/editLesson")

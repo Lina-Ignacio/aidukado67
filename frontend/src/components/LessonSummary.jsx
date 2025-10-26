@@ -6,14 +6,25 @@ import { useNavigate } from 'react-router-dom';
 export default function Summary() {
   const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(true);
-  const {lessonId} = useParams(); 
+  const {materialId} = useParams(); 
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchSummary = async () => {
       try {
 
-        const response = await axios.post(`http://localhost:8000/class_material/getSummary/${lessonId}`);
+        const res = await axios.get(`http://localhost:8000/getLesson/${materialId}`);
+        console.log(res.data)
+        const formData = new FormData();
+        formData.append('lesson', res.data.extracted_content);
+
+
+        const response = await axios.post("http://localhost:8000/class_material/getSummary", formData, {
+          headers: {
+          "Content-Type": "multipart/form-data",
+          }
+        }
+         );
         setSummary(response.data.summary);
 
       } catch (error) {
@@ -25,10 +36,10 @@ export default function Summary() {
     };
 
     fetchSummary();
-  }, [lessonId]);
+  }, [materialId]);
 
   const handleClick = () => {
-    navigate(`/selectedLesson/${lessonId}`)
+    navigate(-1)
   }
 
   return (

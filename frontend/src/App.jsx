@@ -94,7 +94,7 @@ function AppContent() {
 
           <Route path='/createQuiz/:classId/:materialId' element={<CreateQuiz />} />
           <Route path='/studentQuizPage/:quizId' element={<StudentQuizPage />} />
-          <Route path='/lessonSummary/:lessonId' element={<LessonSummary />} />
+          <Route path='/lessonSummary/:materialId' element={<LessonSummary />} />
           
           
           <Route path='/userManagement' element={<UserManagement/>}/>
