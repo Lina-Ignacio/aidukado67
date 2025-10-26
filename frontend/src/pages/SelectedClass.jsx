@@ -123,7 +123,7 @@ export default function SelectedSubject() {
         </div>
         
         <div className="flex flex-wrap justify-between w-3/4 sm:w-[80%]">
-            <p className="text-red-800">{classId}</p>
+          
           {filteredMaterials.length > 0 ? (
             filteredMaterials.map((lesson) => (
               <LessonCard 

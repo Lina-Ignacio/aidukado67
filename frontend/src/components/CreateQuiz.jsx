@@ -2,7 +2,7 @@ import { MdDriveFolderUpload } from "react-icons/md";
 import axios from "axios";
 import React, {useEffect, useState} from "react";
 import { useParams} from "react-router-dom";
-import Quiz from '../components/TeacherQuizPage';
+import TeacherQuizPage from '../components/TeacherQuizPage';
 //import storePostTestLesson from "../store/storePostTestLesson";
 
 
@@ -132,7 +132,7 @@ export default function AIQuiz() {
 
       {!loading && questions.length > 0 && (
         <div>
-          <Quiz questions={questions} title={quizTitle} total_points={quizItems} lesson_id={lessonId} description={description} instruction={instruction} duration={duration} start_time={startTime} class_id={classId} />
+          <TeacherQuizPage questions={questions} title={quizTitle} total_points={quizItems} lesson_id={lessonId} description={description} instruction={instruction} duration={duration} start_time={startTime} class_id={classId} />
         </div>
       )}
 
