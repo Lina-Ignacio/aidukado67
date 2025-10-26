@@ -9,26 +9,40 @@ import TeacherQuizPage from '../components/TeacherQuizPage';
 
 export default function AIQuiz() {
 
-  const {lessonId, classId} = useParams();
+  const {materialId, classId} = useParams();
+  const [lesson, setLesson] = useState();
 
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const [quizTitle, setQuizTitle] = useState("");
-  const [quizItems, setQuizItems] = useState("");
+  const [quizItems, setQuizItems] = useState();
   const [quizType, setQuizType] = useState("");
   const [description, setDescription] = useState("");
   const [instruction, setInstruction] = useState("");
   const [startTime, setStartTime] = useState();
   const [duration, setDuration] = useState();
+  const [lessonId, setLessonId] = useState();
 
   const handleUpload = async () => {
-
     setLoading(true);
 
     try {
+      const res = await axios.get(`http://localhost:8000/getLesson/${materialId}`);
+      setLesson(res.data)
+      setLessonId(res.data.id)
 
-      const response = await axios.post(`http://localhost:8000/class_material/getQuiz/${lessonId}?items=${quizItems}&type=${quizType}`);
+      const formData = new FormData();
+      formData.append('lesson', res.data.extracted_content);
+      formData.append("items", quizItems);
+      formData.append("type", quizType);
+      
+
+      const response = await axios.post("http://localhost:8000/class_material/getQuiz", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      });
 
       console.log(response.data);
       setQuestions(response.data.pretest);
@@ -132,7 +146,7 @@ export default function AIQuiz() {
 
       {!loading && questions.length > 0 && (
         <div>
-          <TeacherQuizPage questions={questions} title={quizTitle} total_points={quizItems} lesson_id={lessonId} description={description} instruction={instruction} duration={duration} start_time={startTime} class_id={classId} />
+          <TeacherQuizPage questions={questions} title={quizTitle} total_points={quizItems} lesson_id={lessonId} description={description} instructions={instruction} duration={duration} start_time={startTime} class_id={classId} />
         </div>
       )}
 

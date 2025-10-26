@@ -26,6 +26,7 @@ import FileView from './pages/Lesson/FileView';
 
 import CreateQuiz from './components/CreateQuiz';
 import StudentQuizPage from './components/StudentQuizPage';
+import TeacherQuizPage from './components/TeacherQuizPage';
 import LessonSummary from './components/LessonSummary';
 
 function AppContent() {
@@ -86,12 +87,12 @@ function AppContent() {
 
 
           <Route path='/selectedClass/:classId/:term' element={<SelectedClass />}/>
-          <Route path='/selectedLesson/:lessonId/:classId' element={<SelectedLesson />} />
-          <Route path='/selectedLesson/:materialId/:materialType' element={<SelectedLesson />} />
+          {/*<Route path='/selectedLesson/:lessonId/:classId' element={<SelectedLesson />} />*/}
+          <Route path='/selectedLesson/:materialId/:materialType/:classId' element={<SelectedLesson />} />
           <Route path='/termPage' element={<TermPage />} />
           <Route path='/fileView' element={<FileView />} />
 
-          <Route path='/createQuiz/:classId/:lessonId' element={<CreateQuiz />} />
+          <Route path='/createQuiz/:classId/:materialId' element={<CreateQuiz />} />
           <Route path='/studentQuizPage/:quizId' element={<StudentQuizPage />} />
           <Route path='/lessonSummary/:lessonId' element={<LessonSummary />} />
           
