@@ -1,12 +1,22 @@
 import { useNavigate} from "react-router-dom"
 import { MdTaskAlt} from "react-icons/md";
+import userRole from "../store/useUserStore"
 
 export default function QuizCard ({quizId, lessonTitle, quizTitle, createdAt}) {
 
     const navigate = useNavigate();
+    const usersRole = userRole((state) => state.userRole);
     
     const handleClick = () => {
-        navigate(`/studentQuizPage/${quizId}`)
+        if (usersRole.toLowerCase() === "teacher"){
+            navigate(`/studentQuizPage/${quizId}`)
+        }
+        else if (usersRole.toLowerCase() === "student"){
+            navigate(`/studentQuizPage/${quizId}`)
+        }
+        else{
+            navigate("/login")
+        }
     }
 
     const date = new Date(createdAt);

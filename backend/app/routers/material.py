@@ -131,8 +131,14 @@ def get_lesson_by_id(material_id: int, db: Session = Depends(get_db)):
         "total_score": material.total_score
     }
 
-@router.post("/getQuiz/{lesson_id}")
 
+@router.post("/getQuiz")
+async def upload(lesson: str = Form(...), items: int = Form(...), type: str = Form(...)):
+    questions = generate_pretest(lesson, items, type)    
+    return {"pretest": questions}
+
+"""
+@router.post("/getQuiz/{lesson_id}")
 async def generate_quiz(lesson_id: int, items: int = Query(...), type: str = Query(...), db: Session = Depends(get_db)):
     lesson = db.query(ClassMaterial).filter(ClassMaterial.id == lesson_id).first()
 
@@ -162,6 +168,9 @@ async def generate_quiz(lesson_id: int, items: int = Query(...), type: str = Que
     questions = generate_pretest(text, items, type)
 
     return {"pretest": questions}
+"""
+
+
 
 @router.post("/getSummary/{lesson_id}")
 async def generate_quiz(lesson_id: int, db: Session = Depends(get_db)):

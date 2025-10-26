@@ -6,7 +6,7 @@ import userRole from '../store/useUserStore'
 import { useParams } from "react-router-dom";
 import Modal from "./Modal";
 
-export default function LessonViewer({fileExtension, fileUrl, title, description, setIsVisible, isVisible, lessonId, classId}) {
+export default function LessonViewer({fileExtension, fileUrl, title, description, setIsVisible, isVisible, materialId, classId}) {
     const [editLessonOpen, setEditLessonOpen] = useState(false)
     const [archiveLessonOpen, setArchiveLessonOpen] = useState(false)
 
@@ -20,10 +20,10 @@ export default function LessonViewer({fileExtension, fileUrl, title, description
 
     const handleClick = () => {
         if(usersRole.toLowerCase() === "teacher"){
-            navigate(`/createQuiz/${classId}/${lessonId}`);
+            navigate(`/createQuiz/${classId}/${materialId}`);
         }
         else if(usersRole.toLowerCase() === "student"){
-            navigate(`/lessonSummary/${lessonId}`)
+            navigate(`/lessonSummary/${materialId}`)
         }
         else{
             navigate("/login")
