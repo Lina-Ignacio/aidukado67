@@ -122,7 +122,7 @@ export default function SelectedSubject() {
           <h2 className="text-[#F5C45E] font-bold text-2xl">{termName}'s Materials</h2>
         </div>
         
-        <div className="flex flex-wrap justify-between w-3/4 sm:w-[80%]">
+        <div className="flex flex-wrap justify-between gap-6 w-3/4 sm:w-[80%]">
           
           {filteredMaterials.length > 0 ? (
             filteredMaterials.map((lesson) => (
@@ -146,8 +146,8 @@ export default function SelectedSubject() {
           <h2 className="text-[#F5C45E] font-bold text-2xl">{termName}'s Quizzes</h2>
         </div>
 
-        <div className="flex flex-wrap justify-between w-3/4 sm:w-[80%]">
-            <p className="text-red-800">{classId}</p>
+        <div className="flex flex-wrap justify-between gap-6 w-3/4 sm:w-[80%]">
+            
           {materials.length > 0 && quiz.length > 0 ? (
             quiz.map((quiz) => {
               const lesson = materials.find((m) => m.id === quiz.lesson_id);

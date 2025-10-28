@@ -24,10 +24,9 @@ import SelectedLesson from './pages/Lesson/SelectedLesson';
 import TermPage from './pages/TermPage';
 import FileView from './pages/Lesson/FileView';
 
-import CreateQuiz from './components/CreateQuiz';
-import StudentQuizPage from './components/StudentQuizPage';
-import TeacherQuizPage from './components/TeacherQuizPage';
-import LessonSummary from './components/LessonSummary';
+import CreateQuiz from './pages/Quiz/CreateQuiz';
+import StudentQuizPage from './pages/Quiz/StudentQuizPage';
+import LessonSummary from './pages/Lesson/LessonSummary';
 
 function AppContent() {
   const location = useLocation();

@@ -30,7 +30,7 @@ export default function QuizCard ({quizId, lessonTitle, quizTitle, createdAt}) {
     
     return (
         <div 
-            className="flex flex-col w-full max-w-sm p-5 gap-4
+            className="flex flex-col w-full max-w-sm p-5 gap-2
                     rounded-md cursor-pointer shadow-sm hover:shadow-md
                     transition-all duration-300 ease-in-out
                     hover:scale-[1.01]
@@ -38,8 +38,11 @@ export default function QuizCard ({quizId, lessonTitle, quizTitle, createdAt}) {
             style={{ backgroundColor: 'rgba(158, 198, 243, 0.2)' }}
             onClick={handleClick}
         > 
-            <h1 className="text-md font-semibold text-gray-800 h-2/3">{quizTitle}</h1>
-            <h2 className="text-md font-semibold text-gray-800 h-2/3">{lessonTitle}</h2>
+            <h2 className="text-md font-semibold text-gray-800 h-2/3">
+                <strong>{quizTitle}</strong>
+                <p className="text-md font-semibold text-gray-800 h-2/3">{lessonTitle}</p>
+            </h2>
+        
             <div className="flex h-1/3 justify-between">
                 <p className="w-4/5 text-sm font-semibold text-gray-800">{formattedDate}</p>
             </div>
@@ -47,6 +50,6 @@ export default function QuizCard ({quizId, lessonTitle, quizTitle, createdAt}) {
             <div className="absolute bottom-2 right-2 flex bg-[#9BA4B4] w-10 h-10 rounded-full p-1 items-center justify-center">
                 <MdTaskAlt size={24} className="text-blue" />
             </div>
-        </div>
+        </div> 
     )
 }

@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function Questions({questions = [], title = "", total_points = 0, lesson_id, description = "", instructions = "", duration = "", start_time = "", class_id }) {
+export default function Questions({questions = [], title = "", total_points = 0, lesson_id, description = "", instructions = "", duration = 0, start_time = null, class_id }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editableQuestion, setEditableQuestion] = useState([]);
-  const [assigned, setAssigned] = useState(false)
-
-  const { quizId } = useParams(); // get quizId from URL
-  const [quiz, setQuiz] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   const optionLetters = "ABCD".split("");
 
@@ -87,7 +82,7 @@ export default function Questions({questions = [], title = "", total_points = 0,
       );
 
       alert(saveQuiz.data.message || "Quiz assigned successfully!");
-      setAssigned(true)
+    
     } catch (error) {
       console.error("❌ Saving Error:", error);
       alert("Error assigning quiz. Check console for details.");

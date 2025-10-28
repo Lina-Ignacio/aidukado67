@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef} from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import useUserStore from "../store/useUserStore";
+import useUserStore from "../../store/useUserStore";
 import {useParams} from 'react-router-dom';
 
 export default function StudentTest() {
@@ -260,7 +260,7 @@ export default function StudentTest() {
             </p>
             <button
               className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-              onClick={() => navigate("/selectedLesson")}
+              onClick={() => navigate(-1)}
             >
               Back
             </button>
