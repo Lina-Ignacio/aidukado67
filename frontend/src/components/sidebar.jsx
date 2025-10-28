@@ -110,11 +110,13 @@ export default function Sidebar() {
         )}  */}
 
         
-
+        {/*
         <NavLink to="/aipretest" className={linkClasses}>
           <MdMenuBook size={32} />
           <h2 className="font-bold">AI Test & Learn</h2>
         </NavLink>
+        */}
+        
 
         {userRole == "student" && (
           <NavLink to="/studentClasses" className={linkClasses}>
