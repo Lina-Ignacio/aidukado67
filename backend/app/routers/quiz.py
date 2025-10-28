@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Form
 from app.database import SessionLocal
 from sqlalchemy.orm import Session
 from app.models.quiz import Quiz
 from app.schemas.quiz import CreateQuiz, QuizOut
+from ..utils.generate_pretest import generate_pretest
 
 router = APIRouter()
 
@@ -15,6 +16,12 @@ def get_db():
         raise   # 👈 re-raise so FastAPI sees the error
     finally:
         db.close()
+
+#get generated quiz
+@router.post("/getQuiz")
+async def get_quiz(lesson: str = Form(...), items: int = Form(...), type: str = Form(...)):
+    questions = generate_pretest(lesson, items, type)    
+    return {"pretest": questions}
 
 @router.post('/assignQuiz')
 def assign_quiz(quiz: CreateQuiz, db: Session = Depends(get_db)):
@@ -36,6 +43,7 @@ def assign_quiz(quiz: CreateQuiz, db: Session = Depends(get_db)):
 
     return {"message": "Quiz saved successfully"}
 
+#get quiz from database
 @router.get('/getQuiz/{quizId}', response_model = QuizOut)
 def get_quiz(quizId: int, db:Session = Depends(get_db)):
     quiz = db.query(Quiz).filter(Quiz.id == quizId).first()

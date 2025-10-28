@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, HTTPException, Depends, File, Form, UploadFile, Query, Body
+from fastapi import APIRouter, HTTPException, Depends, File, Form, UploadFile
 from typing import List
 from sqlalchemy.orm import Session, load_only
 from app.database import SessionLocal
@@ -8,8 +8,6 @@ from app.schemas.material import MaterialCreate, MaterialOut, MaterialTitleOut
 from app.utils.r2_helper import upload_file, generate_presigned_url
 from app.utils.extract_text_from_file import extract_text_from_file
 from app.models import ClassMaterial, LessonContent, Classes
-from ..utils.extractors import extract_pdf_text, extract_document_text
-from ..utils.generate_pretest import generate_pretest
 from ..utils.generate_summary import generate_summary
 import requests
 
@@ -107,6 +105,7 @@ def get_lessons_by_class(class_id: int, db: Session = Depends(get_db)):
 
 def get_lesson_by_id(lesson_id: int, db: Session = Depends(get_db)):
     lesson = db.query(ClassMaterial).filter(ClassMaterial.id == lesson_id).first()
+
 @router.get("/getMaterialById/{material_id}", response_model=MaterialOut, response_model_by_alias=True)
 def get_lesson_by_id(material_id: int, db: Session = Depends(get_db)):
     material = db.query(ClassMaterial).filter(ClassMaterial.id == material_id).first()
@@ -130,12 +129,6 @@ def get_lesson_by_id(material_id: int, db: Session = Depends(get_db)):
         "due_date": material.due_date,
         "total_score": material.total_score
     }
-
-
-@router.post("/getQuiz")
-async def upload(lesson: str = Form(...), items: int = Form(...), type: str = Form(...)):
-    questions = generate_pretest(lesson, items, type)    
-    return {"pretest": questions}
 
 
 @router.post("/getSummary")
