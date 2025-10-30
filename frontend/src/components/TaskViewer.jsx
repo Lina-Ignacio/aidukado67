@@ -1,19 +1,26 @@
 import { useState } from "react";
-import { MdEdit, MdDelete, MdRemoveRedEye, MdVisibilityOff } from "react-icons/md";
+import { MdEdit, MdRemoveRedEye, MdVisibilityOff, MdArchive } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 import FileView from "../pages/Lesson/FileView";
 import FileUploader from "./FileUploader";
 import useUserStore from "../store/useUserStore";
 import axios from "axios";
+import ArchiveMaterial from "../pages/Lesson/ArchiveMaterial";
+import Modal from "./Modal";
 
-export default function TaskViewer({fileExtension, fileUrl, title, description, setIsVisible, isVisible, materialId, materialType}) {
+export default function TaskViewer({materialData, setIsVisible, isVisible, setArchiveMaterialOpen, setEditMaterialOpen}) {
+
+    const navigate = useNavigate();
     
     const [file, setFile] = useState(null)
 
     const userId = useUserStore((state) => state.userId);
+    const userRole = useUserStore((state) => state.userRole);
 
+    
     const [metaData, setMetaData] = useState({
-        materialId: materialId,
-        type: materialType,
+        materialId: materialData.materialId,
+        type: materialData.materialType,
         studentId: userId,
     })
 
@@ -58,35 +65,41 @@ export default function TaskViewer({fileExtension, fileUrl, title, description, 
         }
     }
 
+    const panelStyleEdit = "w-full h-2/5 max-w-lg rounded-xl shadow-xl"
+    const panelStyleArchive = "w-full h-1/5 max-w-lg rounded-xl shadow-xl"
+
     return (
         <>
             {isVisible ? (
                 <div className="sm:w-3/5 sm:h-auto">
                     <FileView 
-                        fileExtension={fileExtension}
-                        fileUrl={fileUrl}
+                        fileExtension={materialData.fileExtension}
+                        fileUrl={materialData.fileUrl}
                     />
                 </div>
             ) : (
                 <div className="sm:w-1/2 sm:h-auto bg-gray-800 p-3 rounded-xl">
                     <div className="w-full h-full flex flex-col sm:h-auto sm:min-h-[250px] rounded-md p-4 bg-[#F4F6FF]">
+                        {successMessage && <p className="text-green-800">{successMessage}</p>}
                         {uploadError && <p className="text-red-800">{uploadError}</p>}
-                        <h2 className="sm:w-full font-bold text-3xl text-[#102E50]">{title}</h2>
-                        <p className="sm:min-h-[20px] sm:h-auto text-lg text-[#102E50]">{description}</p>
+                        <h2 className="sm:w-full font-bold text-3xl text-[#102E50]">{materialData.title}</h2>
+                        <p className="sm:min-h-[20px] sm:h-auto text-lg text-[#102E50]">{materialData.description}</p>
                         <p className="text-md text-[#F5C45E]">October 10</p>
                         
                         <div className="flex w-full h-[200px] gap-4 mt-4">
-                            <div className="flex flex-col gap-4 w-1/2 h-full shadow-lg">
-                                 <FileUploader 
-                                    type=".pdf, .doc, .docx"
-                                    handleFileChange={handleFileChange}
-                                 />
-                                 <button 
-                                    onClick={handleSubmit}
-                                    className="w-full bg-[#102E50]">
-                                    Submit File
-                                 </button>   
-                            </div>
+                            {userRole == "student" && (
+                                <div className="flex flex-col gap-4 w-1/2 h-full shadow-lg">
+                                    <FileUploader 
+                                        type=".pdf, .doc, .docx"
+                                        handleFileChange={handleFileChange}
+                                    />
+                                    <button 
+                                        onClick={handleSubmit}
+                                        className="w-full bg-[#102E50]">
+                                        Submit File
+                                    </button>   
+                                </div>
+                            )}
                             <div className="w-1/2 h-full flex flex-col gap-2">
                                 <button
                                     className="w-full h-1/2 bg-white text-[#BE3D2A] shadow-xl flex flex-col items-center justify-center"
@@ -101,11 +114,28 @@ export default function TaskViewer({fileExtension, fileUrl, title, description, 
                                     alt="Lesson Preview"
                                 />
                             </div>
+                            {userRole == "teacher" && (
+                                <div className="flex items-end justify-end self-end w-1/2 gap-2 ml-auto">
+                                    <button 
+                                        className="sm:h-[50px] rounded-lg flex items-center justify-center bg-[#F5C45E]"
+                                        onClick={() => setEditMaterialOpen(true)}
+                                    >
+                                        <MdEdit size={24} />
+                                    </button>
+                                    <button 
+                                        className="sm:h-[50px] rounded-lg flex items-center justify-center bg-[#BE3D2A]"
+                                        onClick={() => setArchiveMaterialOpen(true)} 
+                                    >
+                                        <MdArchive size={24} />
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                     </div>   
                 </div> 
             )}
+            
         </>
 
     )

@@ -1,6 +1,6 @@
 
 
-from sqlalchemy import Column, Integer, String, func, TIMESTAMP, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, func, TIMESTAMP, ForeignKey, Text, Boolean
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -17,6 +17,7 @@ class ClassMaterial(Base):
     total_score = Column(Integer, nullable=True)
     file_url = Column(String(500), nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
+    is_archive = Column(Boolean, default=False)
 
     class_ = relationship("Classes", back_populates="materials")
     term = relationship("Term", back_populates="materials")

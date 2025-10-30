@@ -2,22 +2,37 @@ import PdfViewer from "../../components/PdfViewer";
 import FileViewer from "../../components/FileViewer";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate} from "react-router-dom";
 import useUserStore from "../../store/useUserStore";
+
 import LessonViewer from "../../components/LessonViewer";
 import { MdClose } from "react-icons/md";
 import TaskViewer from "../../components/TaskViewer";
+import Modal from "../../components/Modal";
+import ArchiveMaterial from "./ArchiveMaterial";
+import EditMaterial from "./EditMaterial";
 
 
 export default function SelectedLesson() {
 
-    const { materialId, materialType, classId} = useParams();
+    const navigate = useNavigate();
 
-    const [lesson, setLesson] = useState(null);
+    const { materialId, materialType} = useParams();
+    
+
+    const [material, setMaterial] = useState(null);
     const [isVisible, setIsVisible] = useState(false);
     
-    const [isEditOpen, setIsEditOpen] = useState(false);
-    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [editMaterialOpen, setEditMaterialOpen] = useState(false);
+    const [archiveMaterialOpen, setArchiveMaterialOpen] = useState(false);
+
+    // Error and Messages
+    const [archiveError, setArchiveError] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
+    
+
+    const panelStyleEdit = "w-full h-4/5 5 max-w-lg rounded-xl shadow-xl"
+    const panelStyleArchive = "w-full h-1/5 max-w-lg rounded-xl shadow-xl"
 
     const userRole = useUserStore((state) => state.userRole);
 
@@ -27,7 +42,7 @@ export default function SelectedLesson() {
         try {
             const response = await axios.get(`http://localhost:8000/class_material/getMaterialById/${materialId}`)
 
-            setLesson(response.data)
+            setMaterial(response.data)
             console.log(response.data)
         } catch (err) {
             if (err.response?.data?.detail) {
@@ -42,14 +57,30 @@ export default function SelectedLesson() {
         getFileUrl();
     }, [materialId])
 
+    useEffect(() => {
+        if (successMessage) {
+            const timer = setTimeout(() => {
+                setSuccessMessage("");
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [successMessage]);
+
     
-    const fileUrl = lesson?.fileUrl || "";
-    const title = lesson?.title || "";
-    const description = lesson?.description || "";
-    const fileKey = lesson?.fileKey || "";
+    const fileUrl = material?.fileUrl || "";
+    const title = material?.title || "";
+    const description = material?.description || "";
+    const fileKey = material?.fileKey || "";
     const fileExtension = fileKey.split(".").pop().toLowerCase();
-    const lessonType = lesson?.type || "";
-    
+   
+    const materialData = {
+        materialId: materialId,
+        materialType: materialType,
+        fileExtension: fileExtension,
+        fileUrl: fileUrl,
+        title: title,
+        description: description
+    }
 
     return (
         <div className="w-full h-full flex flex-col sm:p-[3%] gap-[2%] items-center">
@@ -58,31 +89,54 @@ export default function SelectedLesson() {
                     <MdClose size={24} className="text-white font-bold m-auto" />
                 </div>
             )}
-            {lessonType == "lesson" && (
+            {materialType == "lesson" && (
                 <LessonViewer 
-                    fileExtension={fileExtension}
-                    fileUrl={fileUrl}
-                    title={title}
-                    description={description}
+                    materialData={materialData}
                     setIsVisible={setIsVisible}
                     isVisible={isVisible}
-                    materialId={materialId}
-                    classId={classId}
+                    setArchiveMaterialOpen={setArchiveMaterialOpen}
+                    setEditMaterialOpen={setEditMaterialOpen}
                 />
             )}
-            {lessonType != "lesson" && (
+            {materialType != "lesson" && (
                 <TaskViewer 
-                    materialId={materialId}
-                    materialType={materialType}
-                    fileExtension={fileExtension}
-                    fileUrl={fileUrl}
-                    title={title}
-                    description={description}
+                    materialData={materialData}
                     setIsVisible={setIsVisible}
                     isVisible={isVisible}
-                    
+                    setArchiveMaterialOpen={setArchiveMaterialOpen}
+                    setEditMaterialOpen={setEditMaterialOpen}
                 />
             )}
+
+            <Modal isOpen={archiveMaterialOpen} onClose={() => setArchiveMaterialOpen(false)} title="Archive Lesson" panelStyle={panelStyleArchive}>
+                <ArchiveMaterial 
+                    setArchiveLessonOpen={setArchiveMaterialOpen}
+                    materialId={materialData.materialId}
+                    materialType={materialData.materialType}
+                    setArchiveError={setArchiveError}
+                    setSuccessMessage={setSuccessMessage}
+                    onSuccess={() => {
+                        setTimeout(() => {
+                            setArchiveMaterialOpen(false);
+                            navigate(-1, { state: { refresh: true } });
+                        }, 800);
+                    }}
+                />
+            </Modal>
+            
+            <Modal isOpen={editMaterialOpen} onClose={() => setEditMaterialOpen(false)} title="Edit Lesson" panelStyle={panelStyleEdit}>
+                <EditMaterial 
+                    materialId={materialId}
+                    setEditMaterialOpen={setEditMaterialOpen}
+                    setSuccessMessage={setSuccessMessage}
+                    onSuccess={() => {
+                        setTimeout(() => {
+                            setEditMaterialOpen(false);
+                            navigate(-1, { state: { refresh: true } });
+                        }, 800);
+                    }}
+                />  
+            </Modal>
             
         </div>
     )

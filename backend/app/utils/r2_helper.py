@@ -37,7 +37,14 @@ def upload_file(file_bytes: bytes, filename: str, folder: str) -> str:
 
     return file_key
 
+def delete_file(file_key: str) -> None:
+    try:
+        s3_client.delete_object(Bucket=R2_BUCKET, Key=file_key)
+        print(f"✅ Deleted file: {file_key}")
+    except Exception as e:
+        print(f"❌ Error deleting {file_key}: {e}")
 
+    
 def generate_presigned_url(file_key: str, expires_in: int = 3600) -> str:
     """Generate presigned URL with Signature Version 4"""
     return s3_client.generate_presigned_url(

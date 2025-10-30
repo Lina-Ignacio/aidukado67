@@ -25,7 +25,7 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
     }));
   }, [term]);
 
-  const maxFileSize = 5 * 1024 * 1024;
+  const maxFileSize = 20 * 1024 * 1024;
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -78,8 +78,7 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
     }
   };
 
-  const inputClass =
-    "w-full sm:h-[6%] border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-[1%] rounded-md shadow-md";
+  const inputClass ="w-full sm:h-[6%] border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-[1%] rounded-md shadow-md";
   const labelClass = "text-[#102E50] font-bold opacity-75";
 
   return (

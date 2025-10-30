@@ -4,8 +4,8 @@ from typing import List
 from sqlalchemy.orm import Session, load_only
 from app.database import SessionLocal
 import json
-from app.schemas.material import MaterialCreate, MaterialOut, MaterialTitleOut
-from app.utils.r2_helper import upload_file, generate_presigned_url
+from app.schemas.material import MaterialCreate, MaterialOut, MaterialTitleOut, MaterialUpdate
+from app.utils.r2_helper import upload_file, generate_presigned_url, delete_file
 from app.utils.extract_text_from_file import extract_text_from_file
 from app.models import ClassMaterial, LessonContent, Classes
 from ..utils.generate_summary import generate_summary
@@ -79,9 +79,8 @@ async def upload_material(metadata: str = Form(...), file: UploadFile = File(...
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/getByClassId/{class_id}", response_model=list[MaterialTitleOut])
-
 def get_lessons_by_class(class_id: int, db: Session = Depends(get_db)):
-    
+
     class_exist = db.query(Classes).filter(Classes.id == class_id).first()
     
     if not class_exist:
@@ -90,21 +89,26 @@ def get_lessons_by_class(class_id: int, db: Session = Depends(get_db)):
             detail=f"Class with ID {class_id} not found."
         )
         
+    
     lessons = (
         db.query(ClassMaterial)
-        .options(load_only(ClassMaterial.id, ClassMaterial.title, ClassMaterial.term_id, ClassMaterial.type, ClassMaterial.created_at))
-        .filter(ClassMaterial.class_id == class_id)
+        .options(load_only(
+            ClassMaterial.id,
+            ClassMaterial.title,
+            ClassMaterial.term_id,
+            ClassMaterial.type,
+            ClassMaterial.created_at
+        ))
+        .filter(
+            ClassMaterial.class_id == class_id,
+            ClassMaterial.is_archive == False  
+        )
         .order_by(ClassMaterial.id.desc())
         .all()
     )
 
     return [MaterialTitleOut.model_validate(lesson) for lesson in lessons]
         
-    
-@router.get("/getLessonById/{lesson_id}", response_model=MaterialOut, response_model_by_alias=True)
-
-def get_lesson_by_id(lesson_id: int, db: Session = Depends(get_db)):
-    lesson = db.query(ClassMaterial).filter(ClassMaterial.id == lesson_id).first()
 
 @router.get("/getMaterialById/{material_id}", response_model=MaterialOut, response_model_by_alias=True)
 def get_lesson_by_id(material_id: int, db: Session = Depends(get_db)):
@@ -131,16 +135,62 @@ def get_lesson_by_id(material_id: int, db: Session = Depends(get_db)):
     }
 
 
+@router.patch("/toggleArchive/{material_id}")
+def toggle_archive(material_id: int, db: Session = Depends(get_db)):
+    material = db.query(ClassMaterial).filter(ClassMaterial.id == material_id).first()
+
+    if not material:
+        raise HTTPException(status_code=404, detail="Material not found")
+
+    material.is_archive = not material.is_archive  
+    db.commit()
+    db.refresh(material)
+
+    return {
+        "message": f"Material archive status set to {material.is_archive}",
+        "data": material
+    }
+
+@router.patch("/updateMaterial/{material_id}")
+async def update_material(material_id: int, metadata: str = Form(...), file: UploadFile = None, db: Session = Depends(get_db)):
+    material = db.query(ClassMaterial).filter(ClassMaterial.id == material_id).first()
+    
+    if not material:
+        raise HTTPException(status_code=404, detail="Lesson not existing")
+    
+    try:
+        data = json.loads(metadata)
+        material_update = MaterialUpdate.model_validate(data)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid metadata JSON")
+    
+    for key, value in material_update.model_dump(exclude_unset=True).items():
+        setattr(material, key, value)
+        
+    if file and file.filename:
+        contents = await file.read()
+        if contents:
+            await file.seek(0)
+            if material.file_key:
+                delete_file(material.file_key)  
+            file_key = upload_file(contents, file.filename, "lesson")
+            material.file_url = file_key
+
+    db.commit()
+    db.refresh(material)
+    
+    return {"message": "Material updated successfully"}
+
+
 @router.post("/getSummary")
 async def summary(lesson: str = Form(...), db: Session = Depends(get_db)):
     summary = generate_summary(lesson)
     return {"summary": summary}
 
-# @router.patch("/editLesson")
-# def edit_lesson(lesson_id: int, db: Session = Depends(get_db)):
-#     lesson = db.query(ClassMaterial).filter(ClassMaterial.id == lesson_id).first()
-    
-#     if not lesson:
-#         raise HTTPException(status_code=404, detail="Lesson not existing")
+
+
+
+
+
     
     

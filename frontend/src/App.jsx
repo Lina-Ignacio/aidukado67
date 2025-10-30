@@ -84,11 +84,9 @@ function AppContent() {
             element={<TeacherClasses />} 
           />
 
-
-
           <Route path='/selectedClass/:classId/:term' element={<SelectedClass />}/>
           {/*<Route path='/selectedLesson/:lessonId/:classId' element={<SelectedLesson />} />*/}
-          <Route path='/selectedLesson/:materialId/:materialType/:classId' element={<SelectedLesson />} />
+          <Route path='/selectedLesson/:materialId/:materialType' element={<SelectedLesson />} />
           <Route path='/termPage' element={<TermPage />} />
           <Route path='/fileView' element={<FileView />} />
 
