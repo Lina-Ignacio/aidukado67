@@ -67,4 +67,4 @@ export default function QuizMonitoring(){
             </div>
         </div>
     )
-}
+} //Add for commit
