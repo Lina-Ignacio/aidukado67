@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import classStore from '../store/useClassStore' 
 
-export default function Questions({questions = [], title = "", total_points = 0, lesson_id, description = "", instructions = "", duration = 0, start_time = null, class_id }) {
+export default function Questions({questions = [], title = "", total_points = 0, lesson_id, description = "", instructions = "", duration = 0, start_time = null}) {
   const [isEditing, setIsEditing] = useState(false);
   const [editableQuestion, setEditableQuestion] = useState([]);
-
+  const class_id = classStore((state) => state.classId)
+  
   const optionLetters = "ABCD".split("");
 
 
@@ -58,7 +60,7 @@ export default function Questions({questions = [], title = "", total_points = 0,
       setEditableQuestion(updated);
     });
   };
-
+  console.log(class_id)
   const handleAssign = async () => {
     try {
       const quizData = {
@@ -70,7 +72,8 @@ export default function Questions({questions = [], title = "", total_points = 0,
         quiz_content: editableQuestion,
         start_time,
         duration,
-        class_id
+        class_id,
+        archived: false
       };
 
       console.log("📦 Sending quiz data:", quizData);

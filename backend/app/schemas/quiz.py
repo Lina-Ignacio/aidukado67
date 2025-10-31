@@ -12,6 +12,7 @@ class CreateQuiz(BaseModel):
     start_time: datetime
     duration: int
     class_id: int
+    archived: bool
 
 class QuizOut(BaseModel):
     id: int
@@ -25,4 +26,5 @@ class QuizOut(BaseModel):
     duration: int
     created_at: datetime
     class_id: int
+    archived:bool
     

@@ -17,7 +17,7 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
     const navigate = useNavigate();
     
     const handleClick = () => {
-        navigate(`/selectedLesson/${materialId}/${materialType}/${classId}`)
+        navigate(`/selectedLesson/${materialId}/${materialType}`)
         //navigate(`/selectedLesson/${materialId}/${materialType}`)
     }
 

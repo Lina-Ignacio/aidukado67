@@ -1,15 +1,12 @@
-import { MdDriveFolderUpload } from "react-icons/md";
 import axios from "axios";
-import React, {useEffect, useState} from "react";
+import {useState} from "react";
 import { useParams} from "react-router-dom";
 import AssignQuiz from '../../components/AssignQuiz';
-//import storePostTestLesson from "../store/storePostTestLesson";
-
 
 
 export default function AIQuiz() {
 
-  const {materialId, classId} = useParams();
+  const {materialId} = useParams();
 
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -145,7 +142,7 @@ export default function AIQuiz() {
 
       {!loading && questions.length > 0 && (
         <div>
-          <AssignQuiz questions={questions} title={quizTitle} total_points={quizItems} lesson_id={lessonId} description={description} instructions={instruction} duration={duration} start_time={startTime} class_id={classId} />
+          <AssignQuiz questions={questions} title={quizTitle} total_points={quizItems} lesson_id={lessonId} description={description} instructions={instruction} duration={duration} start_time={startTime} />
         </div>
       )}
 

@@ -1,15 +1,25 @@
 import { useNavigate} from "react-router-dom"
 import { MdTaskAlt} from "react-icons/md";
 import userRole from "../store/useUserStore"
+import axios from 'axios';
 
 export default function QuizCard ({quizId, lessonTitle, quizTitle, createdAt}) {
 
     const navigate = useNavigate();
     const usersRole = userRole((state) => state.userRole);
+
+    const handleArchive = async () => {
+        try{
+            await axios.post(`http://localhost:8000/archiveQuiz/${quizId}`)
+        }
+        catch(error){
+            console.log("Error: ", error)
+        }
+    }
     
     const handleClick = () => {
         if (usersRole.toLowerCase() === "teacher"){
-            navigate(`/studentQuizPage/${quizId}`)
+            navigate(`/quizMonitoring/${quizId}`)
         }
         else if (usersRole.toLowerCase() === "student"){
             navigate(`/studentQuizPage/${quizId}`)
@@ -46,6 +56,14 @@ export default function QuizCard ({quizId, lessonTitle, quizTitle, createdAt}) {
             <div className="flex h-1/3 justify-between">
                 <p className="w-4/5 text-sm font-semibold text-gray-800">{formattedDate}</p>
             </div>
+
+            {usersRole.toLowerCase === "teacher" &&(
+                <div className="w-full h-full flex">
+                    <MdDelete size={24} color="red" 
+                        onClick={handleArchive}
+                    />                                                                
+                </div>
+            )}
 
             <div className="absolute bottom-2 right-2 flex bg-[#9BA4B4] w-10 h-10 rounded-full p-1 items-center justify-center">
                 <MdTaskAlt size={24} className="text-blue" />

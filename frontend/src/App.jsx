@@ -27,6 +27,7 @@ import FileView from './pages/Lesson/FileView';
 import CreateQuiz from './pages/Quiz/CreateQuiz';
 import StudentQuizPage from './pages/Quiz/StudentQuizPage';
 import LessonSummary from './pages/Lesson/LessonSummary';
+import QuizMonitoring from './pages/Quiz/QuizMonitoring';
 
 function AppContent() {
   const location = useLocation();
@@ -83,18 +84,15 @@ function AppContent() {
             element={<TeacherClasses />} 
           />
 
-
-
           <Route path='/selectedClass/:classId/:term' element={<SelectedClass />}/>
-          {/*<Route path='/selectedLesson/:lessonId/:classId' element={<SelectedLesson />} />*/}
-          <Route path='/selectedLesson/:materialId/:materialType/:classId' element={<SelectedLesson />} />
+          <Route path='/selectedLesson/:materialId/:materialType/' element={<SelectedLesson />} />
           <Route path='/termPage' element={<TermPage />} />
           <Route path='/fileView' element={<FileView />} />
 
           <Route path='/createQuiz/:classId/:materialId' element={<CreateQuiz />} />
           <Route path='/studentQuizPage/:quizId' element={<StudentQuizPage />} />
           <Route path='/lessonSummary/:materialId' element={<LessonSummary />} />
-          
+          <Route path='/quizMonitoring/:quizId' element={<QuizMonitoring/>} />
           
           <Route path='/userManagement' element={<UserManagement/>}/>
           <Route path='/classManagement' element={<ClassManagement/>}/>
