@@ -1,0 +1,35 @@
+[33m362243e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: commit: Remove .env from tracking
+[33m5b92732[m[33m ([m[1;31morigin/quizAndSummarization[m[33m)[m HEAD@{1}: pull origin main: Fast-forward
+[33m972e052[m HEAD@{2}: checkout: moving from main to main
+[33m972e052[m HEAD@{3}: commit: Added edit lesson
+[33m711c5b8[m HEAD@{4}: commit: updated the login page
+[33me61479b[m HEAD@{5}: rebase (finish): returning to refs/heads/main
+[33me61479b[m HEAD@{6}: commit: added upload functionality for students submission and refactor some ui
+[33mc9a62f1[m HEAD@{7}: pull origin main --rebase (start): checkout c9a62f17277f34667d04fe7928b47a5fb9335026
+[33m03c0139[m HEAD@{8}: commit: Remove .env from repository tracking
+[33m807f791[m HEAD@{9}: commit: Added lesson upload to cloud functionality but still has small error
+[33md60559a[m HEAD@{10}: commit: added term page and term component. Added dynamic routing
+[33m9cc505a[m HEAD@{11}: commit: Fixed the rendering of classes
+[33m77b4402[m HEAD@{12}: commit: refactored some functionality in admin and added student classes page and class card component
+[33m9a72c2a[m HEAD@{13}: commit: added table for subjects and classes
+[33m0be88fa[m HEAD@{14}: commit: added userManagement functionality for admin
+[33m2a6a398[m HEAD@{15}: rebase (finish): returning to refs/heads/main
+[33m2a6a398[m HEAD@{16}: commit: added login, rbac, models and studentArea
+[33mae3e0a8[m HEAD@{17}: pull origin main --rebase (start): checkout ae3e0a8945a1961abce7b7a61ba3043c5f0b3cb2
+[33m554c786[m HEAD@{18}: commit: added login, rbac and studentArea page
+[33m2910ce4[m HEAD@{19}: commit: updates the post test for loading animation
+[33m7fe889c[m HEAD@{20}: pull origin main: Fast-forward
+[33m18e2a1d[m HEAD@{21}: checkout: moving from main to main
+[33m18e2a1d[m HEAD@{22}: commit: added generate_lesson feature and loading component
+[33m6263b2e[m HEAD@{23}: commit (merge): Resolved merge conflicts between main and co-user-branch
+[33m5584f9e[m HEAD@{24}: checkout: moving from co-user-branch to main
+[33mc257b23[m[33m ([m[1;31mco-user/main[m[33m, [m[1;31mco-user/HEAD[m[33m, [m[1;32mco-user-branch[m[33m)[m HEAD@{25}: checkout: moving from main to co-user-branch
+[33m5584f9e[m HEAD@{26}: commit: WIP: Save changes before switching branch
+[33m5a14405[m HEAD@{27}: checkout: moving from main to main
+[33m5a14405[m HEAD@{28}: commit (merge): Use co-user's version of parse_questions.py
+[33mc5dfa00[m HEAD@{29}: commit: WIP: Save local changes before merging
+[33mdfe7754[m HEAD@{30}: checkout: moving from main to main
+[33mdfe7754[m HEAD@{31}: commit: added a feature in backend(pretest generation)
+[33mb53ca22[m HEAD@{32}: commit: Update frontend: added login/signup, removed old screens, UI updates
+[33maa6c815[m HEAD@{33}: Branch: renamed refs/heads/master to refs/heads/main
+[33maa6c815[m HEAD@{35}: commit (initial): Initial fullstack project with backend and frontend

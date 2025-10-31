@@ -1,8 +1,10 @@
 import {useState, useEffect} from 'react';
 import axios from 'axios';
-import {useParams} from 'react-router-dom';
+import {useParams,useNavigate} from 'react-router-dom';
 
 export default function QuizMonitoring(){
+
+    const navigate = useNavigate()
 
     const [quizTitle, setQuizTitle] = useState("");
     const [lessonTitle, setLessonTitle] = useState("");
@@ -62,9 +64,16 @@ export default function QuizMonitoring(){
                         </td>
                     </tr>
                     )}
-                </tbody>
+                </tbody>  
                 </table>
             </div>
+            <div className='flex justify-end '>
+                <button onClick={() => navigate(-1)} 
+                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                    Back
+                </button>
+            </div>
+            
         </div>
     )
-} //Add for commit
+} 

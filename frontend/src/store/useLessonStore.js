@@ -1,11 +1,19 @@
-
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 
-const createLessonStore = create((set) => ({
-    lessonId: null,
+const createLessonStore = create(
+  persist(
+    (set) => ({
+      lessonId: null,
 
-    storeLessonId: (id) => set({lessonId: id}),
-    clearLessonId: () => set({lessonId: null})
-}))
+      storeLessonId: (id) => set({ lessonId: id }),
+      clearLessonId: () => set({ lessonId: null }),
+    }),
+    {
+      name: "lesson-storage",
+      storage: createJSONStorage(() => sessionStorage),
+    }
+  )
+);
 
-export default createLessonStore;  
+export default createLessonStore;

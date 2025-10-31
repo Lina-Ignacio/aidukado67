@@ -9,7 +9,7 @@ export default function Modal({ isOpen, onClose, title, children, panelStyle }) 
         {/* Overlay */}
         <DialogBackdrop
           transition
-          className="fixed inset-0 bg-black/50 transition-opacity duration-200 ease-out"
+          className="fixed inset-0 bg-black/50 transition-opacity duration-100 ease-out"
         />
 
         {/* Modal box */}

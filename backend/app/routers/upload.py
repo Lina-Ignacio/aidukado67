@@ -2,7 +2,7 @@ from fastapi import APIRouter, File, UploadFile, HTTPException, Depends
 from ..utils.extractors import extract_pdf_text, extract_document_text
 from ..utils.generate_pretest import generate_pretest
 from ..utils.role_required import role_required
-from ..utils.supabase_client import supabase
+
 
 
 teacher_router = APIRouter (

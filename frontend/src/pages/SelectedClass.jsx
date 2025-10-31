@@ -2,7 +2,7 @@
 import React from "react";
 import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import Modal from "../components/Modal";
 import UploadLesson from "./Lesson/UploadLesson";
 import LessonCard from "../components/LessonCard";
@@ -11,8 +11,9 @@ import useUserStore from "../store/useUserStore";
 import useClassStore from "../store/useClassStore";
 import QuizCard from "../components/QuizCard";
 
-export default function SelectedSubject() {
-    
+export default function SelectedClass() {
+  const navigate = useNavigate();
+
   const [isOpen, setIsOpen] = useState(false);
   const panelStyle = "w-full sm:h-[70%] max-w-lg rounded-xl shadow-xl"
   const [successMessage, setSuccessMessage] = useState("");
@@ -33,6 +34,9 @@ export default function SelectedSubject() {
   const [fetchMaterialsError, setFetchMaterialsError] = useState("");
 
   const [quiz, setQuiz] = useState([])
+  const handleArchiveQuiz = (quizId) => {
+    setQuiz((prev) => prev.filter((quiz) => quiz.id !== quizId));
+  };
   
   const { classId, term } = useParams();
   const userRole = useUserStore((state) => state.userRole);
@@ -51,7 +55,15 @@ export default function SelectedSubject() {
          }
     } 
   }
- 
+
+  const location = useLocation();
+  useEffect(() => {
+    if (location.state?.refresh) {
+      getLessons();
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state]);
+
   const getQuizzes = async() => {
     try{
       const response = await axios.get(`http://localhost:8000/getQuizzes/${classId}`)
@@ -122,7 +134,7 @@ export default function SelectedSubject() {
           <h2 className="text-[#F5C45E] font-bold text-2xl">{termName}'s Materials</h2>
         </div>
         
-        <div className="flex flex-wrap justify-between gap-6 w-3/4 sm:w-[80%]">
+        <div className="flex flex-wrap justify-start gap-[5%] w-3/4 sm:w-[80%]">
           
           {filteredMaterials.length > 0 ? (
             filteredMaterials.map((lesson) => (
@@ -146,8 +158,7 @@ export default function SelectedSubject() {
           <h2 className="text-[#F5C45E] font-bold text-2xl">{termName}'s Quizzes</h2>
         </div>
 
-        <div className="flex flex-wrap justify-between gap-6 w-3/4 sm:w-[80%]">
-            
+        <div className="flex flex-wrap justify-start w-3/4 sm:w-[80%] gap-[5%]">
           {materials.length > 0 && quiz.length > 0 ? (
             quiz.map((quiz) => {
               const lesson = materials.find((m) => m.id === quiz.lesson_id);
@@ -160,6 +171,7 @@ export default function SelectedSubject() {
                 lessonTitle={lessonTitle}
                 quizTitle={quiz.title} 
                 createdAt={quiz.created_at}
+                onArchive={handleArchiveQuiz} 
               />
               )
             })

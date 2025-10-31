@@ -11,7 +11,8 @@ class MaterialCreate(BaseModel):
     type: str                     
     total_score: Optional[int] = None
     due_date: Optional[datetime] = None
-
+    is_archive: Optional[bool] = False
+    
     model_config = ConfigDict(
         from_attributes=True,
         alias_generator=to_camel,
@@ -42,6 +43,19 @@ class MaterialTitleOut(BaseModel):
     created_at: datetime
     type: str
     
+    model_config = ConfigDict(
+        from_attributes=True,
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
+    
+class MaterialUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    type: Optional[str] = None
+    total_score: Optional[int] = None
+    due_date: Optional[datetime] = None
+
     model_config = ConfigDict(
         from_attributes=True,
         alias_generator=to_camel,

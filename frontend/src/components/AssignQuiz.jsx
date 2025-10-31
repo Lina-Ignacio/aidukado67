@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import classStore from '../store/useClassStore' 
+import { useNavigate} from "react-router-dom";
 
 export default function Questions({questions = [], title = "", total_points = 0, lesson_id, description = "", instructions = "", duration = 0, start_time = null}) {
   const [isEditing, setIsEditing] = useState(false);
   const [editableQuestion, setEditableQuestion] = useState([]);
   const class_id = classStore((state) => state.classId)
+  const navigate = useNavigate()
   
   const optionLetters = "ABCD".split("");
 
@@ -85,6 +87,7 @@ export default function Questions({questions = [], title = "", total_points = 0,
       );
 
       alert(saveQuiz.data.message || "Quiz assigned successfully!");
+      navigate(-2)
     
     } catch (error) {
       console.error("❌ Saving Error:", error);
@@ -241,4 +244,4 @@ export default function Questions({questions = [], title = "", total_points = 0,
       </div>
     </div>
   );
-} //add for commit 
+} 
