@@ -92,21 +92,12 @@ export default function AIQuiz() {
             className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
 
-          <label> Set Quiz Duration:  </label>
+          <label> Set Assessment Duration:  </label>
           <input
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
             type="number"
-            placeholder="Set quiz timer"
-            className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-
-          <label> Description: </label>
-          <input
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            type="text"
-            placeholder="Enter Description"
+            placeholder="Set assessment timer"
             className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
 
@@ -142,7 +133,7 @@ export default function AIQuiz() {
 
       {!loading && questions.length > 0 && (
         <div>
-          <AssignQuiz questions={questions} title={quizTitle} total_points={quizItems} lesson_id={lessonId} description={description} instructions={instruction} duration={duration} start_time={startTime} />
+          <AssignQuiz questions={questions} title={quizTitle} total_points={quizItems} lesson_id={lessonId} instructions={instruction} duration={duration} start_time={startTime} />
         </div>
       )}
 

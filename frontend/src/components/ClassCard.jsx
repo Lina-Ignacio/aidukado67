@@ -25,14 +25,17 @@ export default function ClassCard({ subjectName, classId}) {
         rounded-2xl p-1
         hover:shadow-lg hover:scale-105 transition-transform duration-300
         bg-gray-200 truncate
+        p-1
       "
       onClick={handleClick}
     >
-        <div className="flex flex-col w-full h-full rounded-2xl p-2 bg-[#102E50]">
+        <div className="h-[90px] bg-[#102E50] p-4 rounded-2xl border border-gray-300">
           <div>
             <p className="text-xl sm:text-2xl font-bold text-white">{subjectName}</p> 
           </div>
         </div>
+
+         <div className="h-24"></div>
     </div>
   );
 }

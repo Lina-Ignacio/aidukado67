@@ -16,7 +16,7 @@ export default function StudentTest() {
   const [timeLeft, setTimeLeft] = useState(0);
 
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
-  const maxAllowedSwitches = 3;
+  const maxAllowedSwitches = 1;
 
   const optionLetters = "ABCD".split("");
   const fetchCalled = useRef(false);
@@ -175,7 +175,7 @@ export default function StudentTest() {
 
   // ---------------- RENDER ----------------
   return (
-    <div className="flex justify-center items-center min-h-screen p-4">
+    <div className="flex justify-center items-center min-h-screen p-4 bg-[#102E50]">
       <div className="w-full max-w-4xl bg-white text-black rounded-2xl shadow-xl p-8 sm:p-10 overflow-y-auto max-h-[90vh]">
         <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6">
           {quiz.title || "Lesson Quiz"}

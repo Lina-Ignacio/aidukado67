@@ -3,7 +3,7 @@ import axios from "axios";
 import classStore from '../store/useClassStore' 
 import { useNavigate} from "react-router-dom";
 
-export default function Questions({questions = [], title = "", total_points = 0, lesson_id, description = "", instructions = "", duration = 0, start_time = null}) {
+export default function Questions({questions = [], title = "", total_points = 0, lesson_id, instructions = "", duration = 0, start_time = null}) {
   const [isEditing, setIsEditing] = useState(false);
   const [editableQuestion, setEditableQuestion] = useState([]);
   const class_id = classStore((state) => state.classId)
@@ -68,7 +68,6 @@ export default function Questions({questions = [], title = "", total_points = 0,
       const quizData = {
         lesson_id,
         title,
-        description,
         total_points,
         instructions,
         quiz_content: editableQuestion,

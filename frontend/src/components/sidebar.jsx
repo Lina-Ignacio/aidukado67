@@ -65,11 +65,11 @@ export default function Sidebar() {
             <h2 className="font-bold">Dashboard(A)</h2>
           </NavLink>
         )} */}
-
-        <NavLink to="/dashboard" className={linkClasses}>
+        
+        {/*<NavLink to="/dashboard" className={linkClasses}>
           <MdAnalytics size={32} />
           <h2 className="font-bold">Dashboard</h2>
-        </NavLink>
+        </NavLink> */}
 
 
         {userRole == "admin" && (

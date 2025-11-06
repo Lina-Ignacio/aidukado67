@@ -29,9 +29,13 @@ import StudentQuizPage from './pages/Quiz/StudentQuizPage';
 import LessonSummary from './pages/Lesson/LessonSummary';
 import QuizMonitoring from './pages/Quiz/QuizMonitoring';
 
+import useUserStore from './store/useUserStore';
+
 function AppContent() {
   const location = useLocation();
   const hideSidebar = location.pathname === "/login" || location.pathname === "/signup";
+
+  const role = useUserStore((state) => state.userRole)
 
   return (
     <div className="flex h-full w-full bg-white">
@@ -42,9 +46,22 @@ function AppContent() {
           <Route 
             path="/dashboard" 
             element={
-              <RoleProtectedRoute allowed_roles={["student", "admin", "teacher"]}>
-                <Dashboard />
-              </RoleProtectedRoute>
+
+              role === "student" ? (
+                <Navigate to="/studentClasses" replace />
+              ) : role === "teacher" ? (
+                <Navigate to="/teacherClasses" replace />
+              ) : role === "admin" ? (
+                <Navigate to="/enrollmentManagement" replace />
+              ) : role === "smis_admin" ? (
+                <Navigate to="/userManagemnet" replace />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+
+              //<RoleProtectedRoute allowed_roles={["student", "admin", "teacher"]}>
+                //<Dashboard />
+              //</RoleProtectedRoute>
             } 
           />
           <Route 
