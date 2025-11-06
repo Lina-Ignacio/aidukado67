@@ -91,7 +91,7 @@ export default function Login() {
                     onSubmit={handleSubmit}
                     className="bg-transparent backdrop-blur-md h-[60%] w-[50%] flex justify-center flex-col gap-2 rounded-3xl p-4"
                 >
-                    <h2 className="w-full text-[50px] font-extrabold text-[#102E50] self-center mb-1">WELCOME BACK TO AIDUKADO</h2>
+                    <h2 className="w-full text-[50px] font-extrabold text-[#102E50] self-center mb-1">WELCOME BACK TO AI-DUKADO</h2>
                     <p2 className="w-full text-[#102E50] text-md mb-4">Aidukado is an AI-assisted LMS that enhances learning through smart content generation and automation.</p2>
 
                     <label className="block font-medium mb-1 text-[#102E50] text-xl w-full">Email:</label>

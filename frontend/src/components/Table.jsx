@@ -7,7 +7,7 @@ export default function Table({ columns, data, setSelectedData, setIsOpenEditMod
     const tableDataStyle = "text-[#10375C] px-4 py-2 text-left"
 
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 5;
+    const itemsPerPage = 15;
 
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;

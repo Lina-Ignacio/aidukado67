@@ -7,7 +7,6 @@ import useUserStore from "../store/useUserStore";
 export default function StudentClasses() {
   const userId = useUserStore((state) => state.userId)
   
-
   const [classes, setClasses] = useState([
   ])
   

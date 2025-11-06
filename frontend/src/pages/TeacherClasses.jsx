@@ -6,9 +6,9 @@ import useUserStore from "../store/useUserStore.js";
 
 export default function StudentClasses() {
 
-  //const teacherId = useUserStore((state) => state.userId)
+  const teacherId = useUserStore((state) => state.userId)
 
-  const teacherId = 5;
+  
 
   const [classes, setClasses] = useState([])
   
@@ -47,7 +47,7 @@ export default function StudentClasses() {
               ))}
             </div>
             ) : (
-                <p>No classes enrolled</p>
+                <p className="text-[#102E50] text-xl">No Available Classes</p>
             )}
     </main>
   )

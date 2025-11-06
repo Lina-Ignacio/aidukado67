@@ -45,7 +45,7 @@ export default function LessonViewer({materialData, setIsVisible, isVisible, set
                     />
                 </div>
             ) : (
-                <div className="sm:w-[55%] sm:h-auto bg-gray-800 p-3 rounded-xl">
+                <div className="sm:w-[55%] sm:h-auto bg-white p-3 rounded-xl">
                     <div className="w-full h-full flex flex-col sm:h-auto sm:min-h-[250px] rounded-md p-4 bg-[#F4F6FF]">
                         <h2 className="sm:w-full font-bold text-3xl text-[#102E50]">{materialData.title}</h2>
                         <p className="sm:min-h-[20px] sm:h-auto text-lg text-[#102E50]">{materialData.description}</p>

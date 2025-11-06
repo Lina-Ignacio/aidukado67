@@ -106,10 +106,10 @@ export default function SelectedClass() {
         >
             <div 
                 className="flex flex-col justify-end flex-grow-[8] p-2 
-                bg-[#102E50]/80 bg-[url('https://images.pexels.com/photos/895544/pexels-photo-895544.jpeg')] 
+                bg-[#102E50]/80 bg-[url('https://images.pexels.com/photos/289737/pexels-photo-289737.jpeg')] 
                 bg-cover bg-center bg-blend-overlay"
             >
-                <p className="text-xl sm:text-2xl font-bold text-white" >{className}</p>
+                <p className="text-xl sm:text-[2rem] font-bold text-white" >{className}</p>
             </div>
             
         </div>

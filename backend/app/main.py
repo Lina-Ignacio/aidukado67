@@ -39,7 +39,7 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 @app.middleware("http")
-@limiter.limit("100/hour")
+@limiter.limit("1000/hour")
 async def global_rate_limit(request: Request, call_next):
     return await call_next(request)
 

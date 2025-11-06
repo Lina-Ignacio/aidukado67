@@ -3,13 +3,24 @@ from fastapi.responses import JSONResponse
 from .parse_questions import parse_questions
 from dotenv import load_dotenv
 import os
+from pathlib import Path
 
-load_dotenv()
-AI_ACCESS_KEY = os.getenv("GEMINI_KEY")
+env_path = Path(__file__).resolve().parents[2] / ".env"
+print(f"🔍 Looking for .env at: {env_path}")
+print(f"📁 .env exists: {env_path.exists()}")
+
+load_dotenv(dotenv_path=env_path)
+
+AI_ACCESS_KEY = os.getenv("GEMINI")
+
+print(f"🔑 API Key loaded: {bool(AI_ACCESS_KEY)}")
+if AI_ACCESS_KEY:
+    print(f"🔑 API Key preview: {AI_ACCESS_KEY[:10]}...{AI_ACCESS_KEY[-4:]}")
+
+if not AI_ACCESS_KEY:
+    raise ValueError("❌ GEMINI_KEY not found. Check your .env location or name.")
 
 genai.configure(api_key=AI_ACCESS_KEY)
-
-model = genai.GenerativeModel("gemini-2.0-flash")
 
 def generate_pretest(lesson_content, num_items, question_type):
     prompt = f"""

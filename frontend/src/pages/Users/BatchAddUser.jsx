@@ -34,13 +34,16 @@ export default function BatchAddUser({onClose, onSuccess}) {
         try {
             
             const transformedData = rows.map(row => ({
-                firstName: row.first_name || row.firstName,
-                lastName: row.last_name || row.lastName,
-                middleName: row.middle_name || row.middleName,
-                email: row.email,
-                password: row.password,
-                role: row.role || "student"
-            }));
+               
+                first_name: String(row.first_name || row.firstName || "").trim(),
+                last_name: String(row.last_name || row.lastName || "").trim(),
+                middle_name: String(row.middle_name || row.middleName || "").trim(),
+                email: String(row.email || "").trim(),
+                password: String(row.password || row.Password || "").trim(),
+                role: String(row.role || "student").trim()
+            })).filter(user => user.email && user.password); // Filter out rows missing essential data
+
+            console.log(transformedData);
             
             const response = await axios.post(
                 "http://localhost:8000/user/batch_create", 
@@ -92,7 +95,7 @@ export default function BatchAddUser({onClose, onSuccess}) {
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
             >
-                Register Students
+                Register Users
             </button>
         </div>
     )

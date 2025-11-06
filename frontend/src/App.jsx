@@ -52,9 +52,7 @@ function AppContent() {
               ) : role === "teacher" ? (
                 <Navigate to="/teacherClasses" replace />
               ) : role === "admin" ? (
-                <Navigate to="/enrollmentManagement" replace />
-              ) : role === "smis_admin" ? (
-                <Navigate to="/userManagemnet" replace />
+                <Navigate to="/userManagement" replace />
               ) : (
                 <Navigate to="/login" replace />
               )

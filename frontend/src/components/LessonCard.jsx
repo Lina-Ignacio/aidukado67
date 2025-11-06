@@ -47,7 +47,7 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
             style={{ backgroundColor: 'rgba(158, 198, 243, 0.2)' }}
             onClick={handleClick}
         >
-            <h2 className="text-md font-semibold text-gray-800 h-2/3">{materialName}</h2>
+            <h2 className="text-md font-bold text-gray-800 h-2/3">{materialName}</h2>
             <div className="flex h-1/3 justify-between">
                 <p className="w-4/5 text-sm font-semibold text-gray-800">{formattedDate}</p>
                 <div className="flex bg-[#9BA4B4] w-10 h-10 rounded-full p-1">

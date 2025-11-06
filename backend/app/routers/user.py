@@ -69,7 +69,7 @@ def create_multiple_users(users: list[UserCreate], db: Session = Depends(get_db)
                 middle_name = user.middle_name,
                 email = user.email,
                 password_hash = password,
-                role = "student"
+                role = user.role
             )
             db.add(new_user)
         db.commit()
