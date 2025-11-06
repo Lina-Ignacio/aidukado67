@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import classStore from '../store/useClassStore' 
+import { useNavigate} from "react-router-dom";
 
-export default function Questions({questions = [], title = "", total_points = 0, lesson_id, description = "", instructions = "", duration = "", start_time = "", class_id }) {
+export default function Questions({questions = [], title = "", total_points = 0, lesson_id, instructions = "", duration = 0, start_time = null}) {
   const [isEditing, setIsEditing] = useState(false);
   const [editableQuestion, setEditableQuestion] = useState([]);
-  const [assigned, setAssigned] = useState(false)
-
-  const { quizId } = useParams(); // get quizId from URL
-  const [quiz, setQuiz] = useState(null);
-  const [loading, setLoading] = useState(true);
-
+  const class_id = classStore((state) => state.classId)
+  const navigate = useNavigate()
+  
   const optionLetters = "ABCD".split("");
 
 
@@ -63,19 +62,19 @@ export default function Questions({questions = [], title = "", total_points = 0,
       setEditableQuestion(updated);
     });
   };
-
+  console.log(class_id)
   const handleAssign = async () => {
     try {
       const quizData = {
         lesson_id,
         title,
-        description,
         total_points,
         instructions,
         quiz_content: editableQuestion,
         start_time,
         duration,
-        class_id
+        class_id,
+        archived: false
       };
 
       console.log("📦 Sending quiz data:", quizData);
@@ -87,7 +86,8 @@ export default function Questions({questions = [], title = "", total_points = 0,
       );
 
       alert(saveQuiz.data.message || "Quiz assigned successfully!");
-      setAssigned(true)
+      navigate(-2)
+    
     } catch (error) {
       console.error("❌ Saving Error:", error);
       alert("Error assigning quiz. Check console for details.");
@@ -243,4 +243,4 @@ export default function Questions({questions = [], title = "", total_points = 0,
       </div>
     </div>
   );
-}
+} 

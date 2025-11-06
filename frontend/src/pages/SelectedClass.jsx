@@ -34,6 +34,9 @@ export default function SelectedClass() {
   const [fetchMaterialsError, setFetchMaterialsError] = useState("");
 
   const [quiz, setQuiz] = useState([])
+  const handleArchiveQuiz = (quizId) => {
+    setQuiz((prev) => prev.filter((quiz) => quiz.id !== quizId));
+  };
   
   const { classId, term } = useParams();
   const userRole = useUserStore((state) => state.userRole);
@@ -168,6 +171,7 @@ export default function SelectedClass() {
                 lessonTitle={lessonTitle}
                 quizTitle={quiz.title} 
                 createdAt={quiz.created_at}
+                onArchive={handleArchiveQuiz} 
               />
               )
             })

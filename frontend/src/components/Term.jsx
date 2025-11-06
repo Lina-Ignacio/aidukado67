@@ -22,4 +22,4 @@ export default function Term({term}) {
             <h2 className="mx-auto my-auto font-bold text-3xl">{termName}</h2>
         </div>
     )
-}
+} 

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey, func, JSON, DateTime
+from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey, func, JSON, DateTime, Boolean
 from app.database import Base
 from sqlalchemy.orm import relationship
 
@@ -17,6 +17,7 @@ class Quiz(Base):
     start_time = Column(DateTime)
     duration = Column(Integer)
     class_id = Column(Integer, ForeignKey("classes.id", ondelete="CASCADE" ))
+    archived = Column(Boolean, default=False)
 
     material = relationship("ClassMaterial", back_populates="quizzes")
     student_progress = relationship("StudentQuizProgress", back_populates="quiz")

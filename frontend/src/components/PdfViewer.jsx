@@ -52,21 +52,21 @@ export default function PdfViewer({ fileUrl }) {
   const prevPage = () => setPageNumber((prev) => Math.max(prev - 1, 1));
 
   return (
-    <div className="w-full h-3/4 flex flex-col items-center gap-3">
+    <div className="w-full h-full flex flex-col items-center gap-3">
       {/* Controls */}
       <div className="flex gap-2">
         <button 
           onClick={zoomOut} 
-          className="px-3 py-1 bg-[#102E50] text-white rounded hover:bg-opacity-90"
+          className="px-3 py-1 bg-white rounded hover:bg-opacity-90"
         >
-          -
+          <p className="text-[#102E50] font-bold text-3xl">-</p>
         </button>
-        <span className="text-[#102E50]">Zoom: {(scale * 100).toFixed(0)}%</span>
+        <span className="text-white">Zoom: {(scale * 100).toFixed(0)}%</span>
         <button 
           onClick={zoomIn} 
-          className="px-3 py-1 bg-[#102E50] text-white rounded hover:bg-opacity-90"
+          className="px-3 py-1 bg-white rounded hover:bg-opacity-90"
         >
-          +
+          <p className="text-[#102E50] font-bold text-3xl">+</p>
         </button>
       </div>
 

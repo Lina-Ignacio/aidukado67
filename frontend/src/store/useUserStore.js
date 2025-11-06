@@ -5,7 +5,7 @@ const useUserStore = create(
   persist(
     (set) => ({
       userId: 5,
-      userRole: "teacher",
+      userRole: "admin",
 
       storeUser: (id, role) => set({ userId: id, userRole: role }),
       clearUser: () => set({ userId: null, userRole: "" }),

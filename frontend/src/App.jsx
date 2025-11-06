@@ -24,14 +24,18 @@ import SelectedLesson from './pages/Lesson/SelectedLesson';
 import TermPage from './pages/TermPage';
 import FileView from './pages/Lesson/FileView';
 
-import CreateQuiz from './components/CreateQuiz';
-import StudentQuizPage from './components/StudentQuizPage';
-import TeacherQuizPage from './components/TeacherQuizPage';
-import LessonSummary from './components/LessonSummary';
+import CreateQuiz from './pages/Quiz/CreateQuiz';
+import StudentQuizPage from './pages/Quiz/StudentQuizPage';
+import LessonSummary from './pages/Lesson/LessonSummary';
+import QuizMonitoring from './pages/Quiz/QuizMonitoring';
+
+import useUserStore from './store/useUserStore';
 
 function AppContent() {
   const location = useLocation();
   const hideSidebar = location.pathname === "/login" || location.pathname === "/signup";
+
+  const role = useUserStore((state) => state.userRole)
 
   return (
     <div className="flex h-full w-full bg-white">
@@ -42,9 +46,22 @@ function AppContent() {
           <Route 
             path="/dashboard" 
             element={
-              <RoleProtectedRoute allowed_roles={["student", "admin", "teacher"]}>
-                <Dashboard />
-              </RoleProtectedRoute>
+
+              role === "student" ? (
+                <Navigate to="/studentClasses" replace />
+              ) : role === "teacher" ? (
+                <Navigate to="/teacherClasses" replace />
+              ) : role === "admin" ? (
+                <Navigate to="/enrollmentManagement" replace />
+              ) : role === "smis_admin" ? (
+                <Navigate to="/userManagemnet" replace />
+              ) : (
+                <Navigate to="/login" replace />
+              )
+
+              //<RoleProtectedRoute allowed_roles={["student", "admin", "teacher"]}>
+                //<Dashboard />
+              //</RoleProtectedRoute>
             } 
           />
           <Route 
@@ -93,7 +110,7 @@ function AppContent() {
           <Route path='/createQuiz/:classId/:materialId' element={<CreateQuiz />} />
           <Route path='/studentQuizPage/:quizId' element={<StudentQuizPage />} />
           <Route path='/lessonSummary/:materialId' element={<LessonSummary />} />
-          
+          <Route path='/quizMonitoring/:quizId' element={<QuizMonitoring/>} />
           
           <Route path='/userManagement' element={<UserManagement/>}/>
           <Route path='/classManagement' element={<ClassManagement/>}/>

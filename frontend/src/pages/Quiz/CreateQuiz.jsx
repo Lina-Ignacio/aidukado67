@@ -1,16 +1,12 @@
-import { MdDriveFolderUpload } from "react-icons/md";
 import axios from "axios";
-import React, {useEffect, useState} from "react";
+import {useState} from "react";
 import { useParams} from "react-router-dom";
-import TeacherQuizPage from '../components/TeacherQuizPage';
-//import storePostTestLesson from "../store/storePostTestLesson";
-
+import AssignQuiz from '../../components/AssignQuiz';
 
 
 export default function AIQuiz() {
 
-  const {materialId, classId} = useParams();
-  const [lesson, setLesson] = useState();
+  const {materialId} = useParams();
 
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -25,11 +21,11 @@ export default function AIQuiz() {
   const [lessonId, setLessonId] = useState();
 
   const handleUpload = async () => {
+    
     setLoading(true);
 
     try {
       const res = await axios.get(`http://localhost:8000/getLesson/${materialId}`);
-      setLesson(res.data)
       setLessonId(res.data.id)
 
       const formData = new FormData();
@@ -38,7 +34,7 @@ export default function AIQuiz() {
       formData.append("type", quizType);
       
 
-      const response = await axios.post("http://localhost:8000/class_material/getQuiz", formData, {
+      const response = await axios.post("http://localhost:8000/getQuiz", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         }
@@ -83,7 +79,7 @@ export default function AIQuiz() {
           <input
             value={quizItems}
             onChange={(e) => setQuizItems(e.target.value)}
-            type="text"
+            type="number"
             placeholder="Enter Number of Items"
             className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
@@ -96,21 +92,12 @@ export default function AIQuiz() {
             className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
 
-          <label> Set Quiz Duration:  </label>
+          <label> Set Assessment Duration:  </label>
           <input
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
             type="number"
-            placeholder="Set quiz timer"
-            className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-
-          <label> Description: </label>
-          <input
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            type="text"
-            placeholder="Enter Description"
+            placeholder="Set assessment timer"
             className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
 
@@ -146,7 +133,7 @@ export default function AIQuiz() {
 
       {!loading && questions.length > 0 && (
         <div>
-          <TeacherQuizPage questions={questions} title={quizTitle} total_points={quizItems} lesson_id={lessonId} description={description} instructions={instruction} duration={duration} start_time={startTime} class_id={classId} />
+          <AssignQuiz questions={questions} title={quizTitle} total_points={quizItems} lesson_id={lessonId} instructions={instruction} duration={duration} start_time={startTime} />
         </div>
       )}
 

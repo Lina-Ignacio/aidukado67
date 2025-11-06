@@ -1,8 +1,13 @@
 import google.generativeai as genai
 from fastapi.responses import JSONResponse
 from .parse_questions import parse_questions
+from dotenv import load_dotenv
+import os
 
-genai.configure(api_key = "AIzaSyDKQ6uASlEbzeilq8z6TanbL-PKKSxh4yM")
+load_dotenv()
+AI_ACCESS_KEY = os.getenv("GEMINI_KEY")
+
+genai.configure(api_key=AI_ACCESS_KEY)
 
 model = genai.GenerativeModel("gemini-2.0-flash")
 
