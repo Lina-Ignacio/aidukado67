@@ -9,7 +9,7 @@ class StudentSubmission(Base):
     id = Column(Integer, primary_key=True, index=True)
     material_id = Column(Integer, ForeignKey("class_materials.id", ondelete="CASCADE"), nullable=False)
     student_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    file_path = Column(Text, nullable=False)
+    file_path = Column(String, nullable=True)
     submitted_at = Column(TIMESTAMP, server_default=func.now())
     score = Column(Integer, nullable=True)
     remarks = Column(Text, nullable=True)

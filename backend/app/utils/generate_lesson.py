@@ -1,8 +1,12 @@
 import google.generativeai as genai
 import json
+from dotenv import load_dotenv
+import os
+from pathlib import Path
 
 
-genai.configure(api_key = "AIzaSyDKQ6uASlEbzeilq8z6TanbL-PKKSxh4yM")
+env_path = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(dotenv_path=env_path)
 
 model = genai.GenerativeModel("gemini-2.0-flash")
 
@@ -18,8 +22,7 @@ def generate_lesson(data: list[dict]):
 
         Keep explanations concise, beginner-friendly, and relevant.
     
-    
-    
+
 
         """
     
