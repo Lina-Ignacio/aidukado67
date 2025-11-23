@@ -8,6 +8,8 @@ from app.schemas.material import MaterialCreate, MaterialOut, MaterialTitleOut, 
 from app.utils.r2_helper import upload_file, generate_presigned_url, delete_file
 from app.utils.extract_text_from_file import extract_text_from_file
 from app.models import ClassMaterial, LessonContent, Classes
+from app.models.summary import Summary
+from app.schemas.summary import CreateSummary, SummaryOut
 from ..utils.generate_summary import generate_summary
 import requests
 
@@ -182,11 +184,31 @@ async def update_material(material_id: int, metadata: str = Form(...), file: Upl
     return {"message": "Material updated successfully"}
 
 
-@router.post("/getSummary")
-async def summary(lesson: str = Form(...), db: Session = Depends(get_db)):
-    summary = generate_summary(lesson)
-    return {"summary": summary}
+@router.post("/generateSummary")
+async def summary(id: str = Form(...), lesson: str = Form(...), db: Session = Depends(get_db)):
 
+    isExist = db.query(Summary).filter(Summary.lesson_id == id).first()
+
+    if not isExist:
+        generated_summary = generate_summary(lesson)
+
+        summary = Summary(
+            lesson_id = id,
+            summary = generated_summary
+        )
+
+        db.add(summary)
+        db.commit()
+        db.refresh(summary)
+   
+
+@router.get("/getSummary/{lesson_id}")
+async def summary(lesson_id: int, db: Session = Depends(get_db)):
+    summary = db.query(Summary).filter(Summary.lesson_id == lesson_id).first()
+    return summary
+
+#the generated summary will be save to the databse first then it will be retrieve from the database, if its the first time to save
+#the it will be save or it will already be save already 
 
 
 

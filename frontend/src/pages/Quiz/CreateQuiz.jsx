@@ -14,11 +14,11 @@ export default function AIQuiz() {
   const [quizTitle, setQuizTitle] = useState("");
   const [quizItems, setQuizItems] = useState();
   const [quizType, setQuizType] = useState("");
-  const [description, setDescription] = useState("");
   const [instruction, setInstruction] = useState("");
-  const [startTime, setStartTime] = useState();
+  {/*const [startTime, setStartTime] = useState(); */}
   const [duration, setDuration] = useState();
   const [lessonId, setLessonId] = useState();
+  const [type, setType] = useState("");
 
   const handleUpload = async () => {
     
@@ -84,13 +84,13 @@ export default function AIQuiz() {
             className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
 
-          <label> Set start time: </label>
+          {/*<label> Set start time: </label>
           <input
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
             type="datetime-local"
             className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
+          /> */}
 
           <label> Set Assessment Duration:  </label>
           <input
@@ -110,13 +110,25 @@ export default function AIQuiz() {
             className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
 
-          <label className="block mb-2 font-medium text-gray-700">Choose Quiz Type:</label>
+          <label className="block mb-2 font-medium text-gray-700">Choose Type:</label>
+          <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="" disabled>Choose Task Type</option>
+            <option value="Exam">Exam</option>
+            <option value="Quiz">Quiz</option>
+            <option value="Seatwork">Seatwork</option>
+          </select>
+
+          <label className="block mb-2 font-medium text-gray-700">Choose Assessment Type:</label>
           <select
             value={quizType}
             onChange={(e) => setQuizType(e.target.value)}
             className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
-            <option value="" disabled>Select Quiz Type</option>
+            <option value="" disabled>Select Assessment Type</option>
             <option value="multiple_choice">Multiple Choice</option>
             <option value="true_false">True or False</option>
           </select>
@@ -133,11 +145,10 @@ export default function AIQuiz() {
 
       {!loading && questions.length > 0 && (
         <div>
-          <AssignQuiz questions={questions} title={quizTitle} total_points={quizItems} lesson_id={lessonId} instructions={instruction} duration={duration} start_time={startTime} />
+          {/*<AssignQuiz questions={questions} title={quizTitle} total_points={quizItems} lesson_id={lessonId} instructions={instruction} duration={duration} start_time={startTime} type={type} /> */}
+           <AssignQuiz questions={questions} title={quizTitle} total_points={quizItems} lesson_id={lessonId} instructions={instruction} duration={duration} type={type} />
         </div>
       )}
-
     </div>
-  )
-   
+  ) 
 }

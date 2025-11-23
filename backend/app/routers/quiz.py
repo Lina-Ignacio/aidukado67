@@ -8,6 +8,10 @@ from app.models.lesson_content import LessonContent
 from app.models.class_material import ClassMaterial
 from app.models.student_quiz_progress import StudentQuizProgress
 from app.models.users import Users
+from app.models.class_enrollment import ClassEnrollment
+from app.models.quiz_attempts import StartTime
+from app.schemas.quiz_attempts import CreateStartTime
+from datetime import datetime
 
 router = APIRouter()
 
@@ -33,14 +37,14 @@ def assign_quiz(quiz: CreateQuiz, db: Session = Depends(get_db)):
     new_quiz = Quiz(
         lesson_id = quiz.lesson_id,
         title = quiz.title,
-        description = quiz.description,
         total_points = quiz.total_points,
         instructions = quiz.instructions,
         quiz_content = quiz.quiz_content,
-        start_time = quiz.start_time,
+        #start_time = quiz.start_time,
         duration = quiz.duration,
         class_id = quiz.class_id,
-        archived = quiz.archived
+        archived = quiz.archived,
+        type = quiz.type
     )
     db.add(new_quiz)
     db.commit()
@@ -114,3 +118,44 @@ def quizMonitoring(quizId: int, db: Session = Depends(get_db)):
         "lessonTitle" : material.title, 
         "scores" : scores
     }
+
+@router.get('/getStudentsByClass/{class_id}')
+def getStudents(class_id: int, db: Session = Depends(get_db)):
+    getStudents = (
+     db.query(Users.id, Users.first_name, Users.last_name)
+    .join(ClassEnrollment, ClassEnrollment.student_id == Users.id)
+    .filter(ClassEnrollment.class_id == class_id).all()
+    )
+
+    return [
+        {
+            'id': s.id,
+            'first_name': s.first_name,
+            'last_name' : s.last_name
+        }
+        for s in getStudents
+    ]
+
+@router.post('/saveStartTime')
+def addStartTime(timer: CreateStartTime, db: Session = Depends(get_db)):
+
+    existing = db.query(StartTime).filter(StartTime.quiz_id == timer.quiz_id, StartTime.student_id == timer.student_id).first()
+
+    if existing:
+        start_time = existing.start_time
+
+    else:
+        save_start_time = StartTime(
+            quiz_id = timer.quiz_id,
+            student_id = timer.student_id
+        )
+   
+        db.add(save_start_time)
+        db.commit()
+        db.refresh(save_start_time)
+
+        start_time = save_start_time.start_time
+
+    return {'start_time': start_time}
+
+

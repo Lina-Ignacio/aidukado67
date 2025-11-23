@@ -21,6 +21,7 @@ if not AI_ACCESS_KEY:
     raise ValueError("❌ GEMINI_KEY not found. Check your .env location or name.")
 
 genai.configure(api_key=AI_ACCESS_KEY)
+model = genai.GenerativeModel("gemini-2.0-flash")
 
 def generate_pretest(lesson_content, num_items, question_type):
     prompt = f"""
@@ -28,6 +29,12 @@ def generate_pretest(lesson_content, num_items, question_type):
 
         Content:
         \"\"\"{lesson_content}\"\"\"
+
+        Important rules:
+        - You must ALWAYS provide a correct answer for every question.
+        - Never return an "N/A" as a answer.
+        - If the content is unclear, infer the most reasonable correct answer instead of outputting N/A.
+        - Every question must be answerable.
 
         Format your response like this (for multiple choice):
 

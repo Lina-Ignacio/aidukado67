@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
+import { marked } from 'marked';
 
 export default function Summary() {
   const [summary, setSummary] = useState("");
@@ -16,17 +17,20 @@ export default function Summary() {
         const res = await axios.get(`http://localhost:8000/getLesson/${materialId}`);
         console.log(res.data)
         const formData = new FormData();
+        formData.append('id', res.data.id);
         formData.append('lesson', res.data.extracted_content);
 
-
-        const response = await axios.post("http://localhost:8000/class_material/getSummary", formData, {
+        await axios.post("http://localhost:8000/class_material/generateSummary", formData, {
           headers: {
           "Content-Type": "multipart/form-data",
           }
         }
          );
-        setSummary(response.data.summary);
-
+        
+        const response = await axios.get(`http://localhost:8000/class_material/getSummary/${res.data.id}`)
+        console.log(response.data)
+        setSummary(response.data.summary)
+        
       } catch (error) {
         console.error("Error fetching summary:", error);
         setSummary("Failed to load summary.");
@@ -52,15 +56,16 @@ export default function Summary() {
         {loading ? (
           <p className="text-gray-500 italic">Generating summary...</p>
         ) : (
-          <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-            {summary}
-          </p>
+          <div
+          className="prose prose-blue max-w-none"
+          dangerouslySetInnerHTML={{ __html: marked(summary) }}
+          ></div>
         )}
 
         <div className="mt-6 flex justify-end">
           <button
             onClick={handleClick}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow transition"
+            className="bg-[#333446] hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow transition"
           >
             Back
           </button>

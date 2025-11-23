@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useRef} from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useUserStore from "../../store/useUserStore";
-import {useParams} from 'react-router-dom';
 
 export default function StudentTest() {
   const navigate = useNavigate();
@@ -14,9 +13,9 @@ export default function StudentTest() {
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [startTime, setStartTime] = useState(null);
+  const [duration, setDuration] = useState(0);
 
-  const [tabSwitchCount, setTabSwitchCount] = useState(0);
-  const maxAllowedSwitches = 1;
 
   const optionLetters = "ABCD".split("");
   const fetchCalled = useRef(false);
@@ -64,15 +63,8 @@ export default function StudentTest() {
         setQuiz(res.data);
         quizRef.current = res.data;
 
-        const startTime = new Date(res.data.start_time);
-        const durationMinutes = res.data.duration || 10;
-        const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
-        const remaining = Math.max(0, endTime - new Date());
-        setTimeLeft(remaining);
-
-        if (remaining <= 0) {
-          handleSubmit(res.data, res.data.quiz_content);
-        }
+        setDuration(res.data.duration);
+        console.log('duration', res.data.duration)
       } catch (error) {
         console.error("Error fetching quiz:", error);
       }
@@ -80,33 +72,135 @@ export default function StudentTest() {
     fetchQuiz();
   }, [quizId]);
 
-  // ---------------- TAB SWITCH HANDLER ----------------
-  const handleVisibilityChange = useCallback(() => {
-    if (document.hidden && !submitted) {
-      setTabSwitchCount((prevCount) => {
-        const newCount = prevCount + 1;
+  // ---------------VIOLATION HANDLER ----------------
+  //const handleVisibilityChange = useCallback(() => {
+  //  if (document.hidden && !submitted) {
+  //    setViolation((prevCount) => {
+  //      const newCount = prevCount + 1;
 
-        if (newCount < maxAllowedSwitches) {
-          alert(`⚠️ You switched tabs! (${newCount}/${maxAllowedSwitches})`);
-        } else if (newCount === maxAllowedSwitches) {
-          alert("🚫 You switched tabs too many times. Your quiz will now be submitted.");
-          handleSubmit(quizRef.current, quizRef.current.quiz_content);
-        }
+  //      if (newCount < maxAllowedSwitches) {
+   //       alert(`⚠️ You switched tabs! (${newCount}/${maxAllowedSwitches})`);
+    //    } else if (newCount === maxAllowedSwitches) {
+      //    alert("🚫 You switched tabs. Your quiz will now be submitted.");
+        //  handleSubmit(quizRef.current, quizRef.current.quiz_content);
+        //}
 
-        return newCount;
-      });
-    }
-  }, [submitted]);
+       // return newCount;
+      //});
+    //}
+  //}, [submitted]);
 
   
 
+  //useEffect(() => {
+    //document.addEventListener("visibilitychange", handleVisibilityChange);
+    //return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  //}, [handleVisibilityChange]);
+
   useEffect(() => {
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [handleVisibilityChange]);
+    const saveStartTime = async () => {
+      try{
+
+        const data = {
+          quiz_id: quizId,
+          student_id
+        }
+        const response = await axios.post('http://localhost:8000/saveStartTime', data, {
+          headers: {
+            'Content-Type' : 'application/json'
+          }
+        })
+
+        setStartTime(new Date(response.data.start_time));
+        console.log(response.data.start_time);
+      } catch(error){ 
+        console.log("Error: ", error)
+      }
+    }
+    saveStartTime()
+  },[quizId])
+
+  useEffect(() => {
+    if (!startTime || !duration || submitted) return;
+
+    const elapsed = (new Date() - new Date(startTime)) / 1000; // seconds elapsed
+    const remaining = Math.max(duration * 60 - elapsed, 0);
+
+    setTimeLeft(remaining); // initial value
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const elapsed = (now - new Date(startTime)) / 1000;
+      const remaining = Math.max(duration * 60 - elapsed, 0);
+
+      setTimeLeft(remaining);
+
+      if (remaining <= 0) {
+        clearInterval(interval);
+        handleSubmit();
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [startTime, duration, submitted]);
+
+  useEffect(() => {
+
+    if (submitted) return;
+
+    //tab switching
+    const handleVisibility = () => {
+      if (document.hidden) {
+        alert("You are switching tabs. Please stay in the quiz.");
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+
+    //refresh / close
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+      alert("Not allowed to refresh and close");
+      //handleSubmit(quizRef.current, quizRef.current.quiz_content);
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+
+    //back button
+    const handlePopState = (e) => {
+        alert("You cannot leave the quiz until you submit.");
+        window.history.pushState(null, "", window.location.href);
+      };
+      window.history.pushState(null, "", window.location.href);
+      window.addEventListener("popstate", handlePopState);
+
+    // Detect navigation 
+    const blockClicks = (e) => {
+      const anchor = e.target.closest("a");
+      if (anchor && anchor.href) {
+        e.preventDefault();
+        alert("You must submit the quiz before leaving this page.");
+      }
+    };
+
+    document.addEventListener("click", blockClicks);
+
+
+    // Cleanup
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+      document.removeEventListener("click", blockClicks);
+    };
+
+
+}, [submitted]);
+
 
   // ---------------- COUNTDOWN TIMER ----------------
-  useEffect(() => {
+  {/*useEffect(() => {
     if (submitted || timeLeft <= 0) return;
 
     const interval = setInterval(() => {
@@ -117,11 +211,11 @@ export default function StudentTest() {
           return 0;
         }
         return prev - 1000;
-      });
-    }, 1000);
+      },1000 );
+    });
 
     return () => clearInterval(interval);
-  }, [submitted, timeLeft]);
+  }, [submitted, timeLeft]); */}
 
   // ---------------- HANDLE ANSWER CHANGE ----------------
   const handleOptionChange = (qIndex, selectedText) => {
@@ -165,13 +259,6 @@ export default function StudentTest() {
     }
   };
 
-  // ---------------- FORMAT TIME ----------------
-  const formatTime = (ms) => {
-    const totalSeconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
 
   // ---------------- RENDER ----------------
   return (
@@ -182,7 +269,8 @@ export default function StudentTest() {
         </h1>
 
         <p className="font-semibold mb-4 text-center">
-          Time left: ⏱ {formatTime(timeLeft)}
+          {/*Time left: ⏱ {formatTime(timeLeft)} */}
+          Time left: ⏱ {Math.floor(timeLeft / 60)}:{String(Math.floor(timeLeft % 60)).padStart(2, "0")}
         </p>
 
         <h2 className="font-semibold mb-6 text-xl"><strong>Instruction: </strong> {quiz.instructions} </h2> 
@@ -270,3 +358,4 @@ export default function StudentTest() {
     </div>
   );
 }
+ //upon open just then the timer starts
