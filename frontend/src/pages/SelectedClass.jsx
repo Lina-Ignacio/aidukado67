@@ -10,11 +10,13 @@ import { getTermName } from "../utils/getTermName";
 import useUserStore from "../store/useUserStore";
 import useClassStore from "../store/useClassStore";
 import QuizCard from "../components/QuizCard";
+import TOSForm from "./Exam/TosForm";
 
 export default function SelectedClass() {
   const navigate = useNavigate();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [isOpenTOS, setIsOpenTOS] = useState(false);
   const panelStyle = "w-full sm:h-[70%] max-w-lg rounded-xl shadow-xl"
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -124,6 +126,15 @@ export default function SelectedClass() {
                 > 
                   Create + 
                 </button>
+
+                <button
+                  onClick={() => setIsOpenTOS(true)}
+                  className="w-1/2 sm:w-[15%] p-2 bg-[#F5C45E] text-white rounded font-bold
+                  hover:bg-[#F4F6FF] hover:text-[#F5C45E]"
+                >
+                  Generate Exam
+                </button>
+
                 
                 {successMessage && (<p className="text-green-800 self-end">{successMessage}</p>)}
               </>
@@ -194,6 +205,14 @@ export default function SelectedClass() {
                 setIsOpen(false);
               }}
             />
+        </Modal>
+
+        <Modal isOpen={isOpenTOS} onClose={() => setIsOpenTOS(false)} title="Generate Exam">
+          <TOSForm
+            lessons={filteredMaterials}
+            onClose={() => setIsOpenTOS(false)}
+            onSuccess={(data) => console.log("TOS Generated:", data)}
+          />
         </Modal>
 
     </div>

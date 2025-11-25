@@ -54,19 +54,19 @@ export default function PdfViewer({ fileUrl }) {
   return (
     <div className="w-full h-full flex flex-col items-center gap-3">
       {/* Controls */}
-      <div className="flex gap-2">
+      <div className="flex gap-5 items-end">
         <button 
           onClick={zoomOut} 
-          className="px-3 py-1 bg-white rounded hover:bg-opacity-90"
+          className="px-2 py-1 bg-transparent rounded hover:bg-opacity-90"
         >
-          <p className="text-[#102E50] font-bold text-3xl">-</p>
+          <p className="text-white font-bold text-3xl">-</p>
         </button>
-        <span className="text-white">Zoom: {(scale * 100).toFixed(0)}%</span>
+        <span className="text-white font-bold">Zoom: {(scale * 100).toFixed(0)}%</span>
         <button 
           onClick={zoomIn} 
-          className="px-3 py-1 bg-white rounded hover:bg-opacity-90"
+          className="px-2 py-1 bg-transparent  rounded hover:bg-opacity-90"
         >
-          <p className="text-[#102E50] font-bold text-3xl">+</p>
+          <p className="text-white font-bold text-3xl">+</p>
         </button>
       </div>
 

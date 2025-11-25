@@ -1,9 +1,9 @@
 import os
 from fastapi import APIRouter, HTTPException, Depends, File, Form, UploadFile
 from typing import Optional
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from app.database import SessionLocal
-from app.schemas.student_submission import SubmissionCreate, SubmissionUpdate, SubmissionOut
+from app.schemas.student_submission import SubmissionCreate, SubmissionUpdate, SubmissionOut, SubmissionWithStudentOut
 from app.models import StudentSubmission
 from app.utils.r2_helper import upload_file, generate_presigned_url, delete_file
 import json
@@ -31,7 +31,6 @@ def check_submission(material_id: int, student_id: int, db: Session = Depends(ge
     )
 
     if not submission:
-        # No submission found
         return None
 
     # ✅ Generate a presigned URL if the file exists
@@ -40,12 +39,12 @@ def check_submission(material_id: int, student_id: int, db: Session = Depends(ge
     else:
         file_url = None
 
-    # ✅ Create a Pydantic model from the ORM object
+    
     submission_out = SubmissionOut(
         id=submission.id,
         material_id=submission.material_id,
         student_id=submission.student_id,
-        file_path=file_url,  # send the presigned URL here
+        file_path=file_url,  
         submitted_at=submission.submitted_at,
         score=submission.score,
         remarks=submission.remarks,
@@ -154,3 +153,57 @@ def update_score_remarks(submission_id: int, payload: SubmissionUpdate, db: Sess
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/stats/{material_id}")
+def get_submission_stats(material_id: int, db: Session = Depends(get_db)):
+
+    total_submissions = db.query(StudentSubmission).filter(
+        StudentSubmission.material_id == material_id
+    ).count()
+
+    if total_submissions == 0:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No submissions found for material_id {material_id}"
+        )
+
+    scored_submissions = db.query(StudentSubmission).filter(
+        StudentSubmission.material_id == material_id,
+        StudentSubmission.score.isnot(None)
+    ).count()
+
+    return {
+        "material_id": material_id,
+        "total_submissions": total_submissions,
+        "scored_submissions": scored_submissions
+    }
+
+
+@router.get("/material/{material_id}", response_model=list[SubmissionWithStudentOut])
+def get_submissions_by_material(material_id: int, db: Session = Depends(get_db)):
+
+    submissions = db.query(StudentSubmission).options(
+        joinedload(StudentSubmission.student)
+    ).filter(
+        StudentSubmission.material_id == material_id,
+        StudentSubmission.file_path.isnot(None),
+        StudentSubmission.file_path != ""
+    ).all()
+
+    if not submissions:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No submitted files found for material_id {material_id}"
+        )
+
+    return submissions
+
+@router.get("/get_url/{submission_id}")
+def get_submission_file(submission_id: int, db: Session = Depends(get_db)):
+    submission = db.query(StudentSubmission).filter_by(id=submission_id).first()
+    if not submission or not submission.file_path:
+        raise HTTPException(404, "File not found")
+
+    url = generate_presigned_url(submission.file_path)
+    return {"url": url}

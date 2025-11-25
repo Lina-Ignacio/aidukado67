@@ -23,6 +23,7 @@ import SelectedClass from './pages/SelectedClass';
 import SelectedLesson from './pages/Lesson/SelectedLesson';
 import TermPage from './pages/TermPage';
 import FileView from './pages/Lesson/FileView';
+import Submissions from './pages/Lesson/Submissions';
 
 import CreateQuiz from './pages/Quiz/CreateQuiz';
 import StudentQuizPage from './pages/Quiz/StudentQuizPage';
@@ -97,6 +98,15 @@ function AppContent() {
           <Route 
             path="/teacherClasses" 
             element={<TeacherClasses />} 
+          />
+
+          <Route 
+            path="/submissions/:materialId" 
+            element={
+              <RoleProtectedRoute allowed_roles={"teacher"}>
+                <Submissions />
+              </RoleProtectedRoute>
+            }
           />
 
           <Route path='/selectedClass/:classId/:term' element={<SelectedClass />}/>
