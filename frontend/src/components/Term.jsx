@@ -1,14 +1,17 @@
 import { useNavigate } from "react-router-dom"
 import useClassStore from "../store/useClassStore"
 import { getTermName } from "../utils/getTermName";
+import useTermStore from "../store/useTermStore";
 
 export default function Term({term}) {
 
     const classId = useClassStore((state) => state.classId);
+    const storeTerm = useTermStore((state) => state.storeTerm)
     
     const navigate = useNavigate();
     const handleClick = () => {
-        navigate(`/selectedClass/${classId}/${term}`)
+        storeTerm(term);
+        navigate(`/selectedClass/${classId}/${term}`);
     }
 
     

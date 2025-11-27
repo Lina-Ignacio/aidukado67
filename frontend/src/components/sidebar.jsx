@@ -16,9 +16,13 @@ import useClassStore from "../store/useClassStore";
 import axios from "axios";
 
 
-export default function Sidebar() {
+export default function Sidebar({closeMobile}) {
 
   const userRole = useUserStore((state) => state.userRole)
+
+  const handleClick = () => {
+    if (closeMobile) closeMobile();
+  }
  
   const navigate = useNavigate();
 
@@ -47,7 +51,8 @@ export default function Sidebar() {
   }
 
   return (
-    <div className="hidden md:block h-full w-[16%] min-w-[15%] bg-[#F1F2F7]">
+    //<div className="hidden md:block h-full w-[16%] min-w-[15%] bg-[#F1F2F7]">
+    <div className=" h-full w-full bg-[#F1F2F7]">
       <div className="flex space-x-3 p-[15%] justify-center items-center">
         <div className="rounded-full h-[35px] w-[35px] bg-[#102E50] flex justify-center items-center font-bold text-white text-[1.5rem]">
           A
@@ -146,7 +151,7 @@ export default function Sidebar() {
 
 
 
-        <button onClick={handleLogout} className="flex p-1 gap-2 bg-transparent">
+        <button onClick={() => {handleLogout(); handleClick(); }} className="flex p-1 gap-2 bg-transparent">
           <MdExitToApp size={40} color="#102E50"/>
           <h2 className="font-bold text-[#102E50] text-xl">Logout</h2>
         </button>

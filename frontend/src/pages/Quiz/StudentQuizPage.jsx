@@ -72,31 +72,8 @@ export default function StudentTest() {
     fetchQuiz();
   }, [quizId]);
 
-  // ---------------VIOLATION HANDLER ----------------
-  //const handleVisibilityChange = useCallback(() => {
-  //  if (document.hidden && !submitted) {
-  //    setViolation((prevCount) => {
-  //      const newCount = prevCount + 1;
 
-  //      if (newCount < maxAllowedSwitches) {
-   //       alert(`⚠️ You switched tabs! (${newCount}/${maxAllowedSwitches})`);
-    //    } else if (newCount === maxAllowedSwitches) {
-      //    alert("🚫 You switched tabs. Your quiz will now be submitted.");
-        //  handleSubmit(quizRef.current, quizRef.current.quiz_content);
-        //}
-
-       // return newCount;
-      //});
-    //}
-  //}, [submitted]);
-
-  
-
-  //useEffect(() => {
-    //document.addEventListener("visibilitychange", handleVisibilityChange);
-    //return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  //}, [handleVisibilityChange]);
-
+  //save start time upon opening quiz
   useEffect(() => {
     const saveStartTime = async () => {
       try{
@@ -120,6 +97,7 @@ export default function StudentTest() {
     saveStartTime()
   },[quizId])
 
+  //----------TIMER------------------
   useEffect(() => {
     if (!startTime || !duration || submitted) return;
 
@@ -147,35 +125,15 @@ export default function StudentTest() {
   useEffect(() => {
 
     if (submitted) return;
-
-    //tab switching
+    //tab switching handler
     const handleVisibility = () => {
       if (document.hidden) {
-        alert("You are switching tabs. Please stay in the quiz.");
+        alert("You switch tab. Your quiz will be submitted now! ");
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
 
-
-    //refresh / close
-    const handleBeforeUnload = (e) => {
-      e.preventDefault();
-      e.returnValue = "";
-      alert("Not allowed to refresh and close");
-      //handleSubmit(quizRef.current, quizRef.current.quiz_content);
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-
-    //back button
-    const handlePopState = (e) => {
-        alert("You cannot leave the quiz until you submit.");
-        window.history.pushState(null, "", window.location.href);
-      };
-      window.history.pushState(null, "", window.location.href);
-      window.addEventListener("popstate", handlePopState);
-
-    // Detect navigation 
+    // Detect navigation handler
     const blockClicks = (e) => {
       const anchor = e.target.closest("a");
       if (anchor && anchor.href) {
@@ -183,39 +141,23 @@ export default function StudentTest() {
         alert("You must submit the quiz before leaving this page.");
       }
     };
-
     document.addEventListener("click", blockClicks);
 
+    //back button handler 
+    const handlePopState = (e) => {
+        window.history.pushState(null, "", window.location.href);
+        alert("You must submit the quiz before leaving this page");
+      };
+      window.history.pushState(null, "", window.location.href);
+      window.addEventListener("popstate", handlePopState);
 
-    // Cleanup
     return () => {
       document.removeEventListener("visibilitychange", handleVisibility);
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener('popstate', handlePopState);
       document.removeEventListener("click", blockClicks);
     };
 
-
 }, [submitted]);
-
-
-  // ---------------- COUNTDOWN TIMER ----------------
-  {/*useEffect(() => {
-    if (submitted || timeLeft <= 0) return;
-
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1000) {
-          clearInterval(interval);
-          handleSubmit();
-          return 0;
-        }
-        return prev - 1000;
-      },1000 );
-    });
-
-    return () => clearInterval(interval);
-  }, [submitted, timeLeft]); */}
 
   // ---------------- HANDLE ANSWER CHANGE ----------------
   const handleOptionChange = (qIndex, selectedText) => {
@@ -225,10 +167,8 @@ export default function StudentTest() {
     }));
   };
 
-  
-
   // ---------------- HANDLE QUIZ SUBMISSION ----------------
-  const handleSubmit = async (quizData = quizRef.current, quizContent = quizRef.current?.quiz_content) => {
+  const handleSubmit = async (quizContent = quizRef.current?.quiz_content) => {
     if (submitted) return; // prevent double submission
 
     let totalScore = 0;
@@ -269,7 +209,6 @@ export default function StudentTest() {
         </h1>
 
         <p className="font-semibold mb-4 text-center">
-          {/*Time left: ⏱ {formatTime(timeLeft)} */}
           Time left: ⏱ {Math.floor(timeLeft / 60)}:{String(Math.floor(timeLeft % 60)).padStart(2, "0")}
         </p>
 
@@ -358,4 +297,3 @@ export default function StudentTest() {
     </div>
   );
 }
- //upon open just then the timer starts

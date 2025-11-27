@@ -11,4 +11,5 @@ class Term(Base):
     name = Column(String(50), unique=True, nullable=False)
     
     materials = relationship("ClassMaterial", back_populates="term")
+    quiz = relationship("Quiz", back_populates="term")
     

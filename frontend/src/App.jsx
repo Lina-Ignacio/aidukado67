@@ -1,6 +1,6 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
-import Sidebar from './components/sidebar';
+//import Sidebar from './components/sidebar';
 import AIPretest from "./pages/AIPretest";
 import Dashboard from "./pages/Dashboard";
 import Lesson from './pages/Lesson';
@@ -29,6 +29,7 @@ import CreateQuiz from './pages/Quiz/CreateQuiz';
 import StudentQuizPage from './pages/Quiz/StudentQuizPage';
 import LessonSummary from './pages/Lesson/LessonSummary';
 import QuizMonitoring from './pages/Quiz/QuizMonitoring';
+import Layout from './components/Layout';
 
 import useUserStore from './store/useUserStore';
 
@@ -40,97 +41,89 @@ function AppContent() {
 
   return (
     <div className="flex h-full w-full bg-white">
-      {!hideSidebar && <Sidebar />}
-      <main className="flex-grow">
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route 
-            path="/dashboard" 
-            element={
 
-              role === "student" ? (
-                <Navigate to="/studentClasses" replace />
-              ) : role === "teacher" ? (
-                <Navigate to="/teacherClasses" replace />
-              ) : role === "admin" ? (
-                <Navigate to="/userManagement" replace />
-              ) : (
-                <Navigate to="/login" replace />
-              )
-
-              //<RoleProtectedRoute allowed_roles={["student", "admin", "teacher"]}>
-                //<Dashboard />
-              //</RoleProtectedRoute>
-            } 
-          />
-          <Route 
-            path="subjects" 
-            element={
-              <RoleProtectedRoute allowed_roles={["student"]}>
-                <StudentArea />
-              </RoleProtectedRoute>
-            }
-          />
-          <Route 
-            path="/aipretest" 
-            element={
-              <RoleProtectedRoute allowed_roles={"teacher"}>
-                <AIPretest />
-              </RoleProtectedRoute>
-            }
-          />
-          <Route path="/lesson" element={<Lesson/>}/>
-          <Route path="/postTest" element={<PostTest/>}/>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-
-          <Route path='/studentClasses' element={<StudentClasses />}/>
-
-          {/* <Route 
-            path='/teacherClasses' 
-            element={
-              <RoleProtectedRoute allowed_roles={"teacher"}>
-                <TeacherClasses />
-              </RoleProtectedRoute>
-            }
-          /> */}
-
-          <Route 
-            path="/teacherClasses" 
-            element={<TeacherClasses />} 
-          />
-
-          <Route 
-            path="/submissions/:materialId" 
-            element={
-              <RoleProtectedRoute allowed_roles={"teacher"}>
-                <Submissions />
-              </RoleProtectedRoute>
-            }
-          />
-
-          <Route path='/selectedClass/:classId/:term' element={<SelectedClass />}/>
-          {/*<Route path='/selectedLesson/:lessonId/:classId' element={<SelectedLesson />} />*/}
-          <Route path='/selectedLesson/:materialId/:materialType' element={<SelectedLesson />} />
-          <Route path='/termPage' element={<TermPage />} />
-          <Route path='/fileView' element={<FileView />} />
-
-          <Route path='/createQuiz/:classId/:materialId' element={<CreateQuiz />} />
-          <Route path='/studentQuizPage/:quizId' element={<StudentQuizPage />} />
-          <Route path='/lessonSummary/:materialId' element={<LessonSummary />} />
-          <Route path='/quizMonitoring/:quizId' element={<QuizMonitoring/>} />
+      {hideSidebar ? (
+        // NO SIDEBAR MODE
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </main>
+      ) : (
+        // WITH SIDEBAR MODE
+        <main className="flex-grow">
+        <Layout>
           
-          <Route path='/userManagement' element={<UserManagement/>}/>
-          <Route path='/classManagement' element={<ClassManagement/>}/>
-          <Route path='/subjectManagement' element={<SubjectManagement/>} />
-          <Route path="/enrollmentManagement" element={<EnrollmentManagement />} />
-          <Route path="/admin" element={<AdminDashboard />}/>
-          <Route path='/settings' element={<Settings/>}/>
-          <Route path='/help' element={<AboutPage/>}/>
-          <Route path="*" element={<h1>404 - Page Not Found</h1>} />
-        </Routes>
-      </main>
+          <Routes>
+            <Route 
+              path="/dashboard" 
+              element={
+                role === "student" ? (
+                  <Navigate to="/studentClasses" replace />
+                ) : role === "teacher" ? (
+                  <Navigate to="/teacherClasses" replace />
+                ) : role === "admin" ? (
+                  <Navigate to="/userManagement" replace />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+
+            <Route 
+              path="subjects" 
+              element={
+                <RoleProtectedRoute allowed_roles={["student"]}>
+                  <StudentArea />
+                </RoleProtectedRoute>
+              }
+            />
+
+            <Route 
+              path="/aipretest" 
+              element={
+                <RoleProtectedRoute allowed_roles={"teacher"}>
+                  <AIPretest />
+                </RoleProtectedRoute>
+              }
+            />
+
+            <Route path="/lesson" element={<Lesson/>}/>
+            <Route path="/postTest" element={<PostTest/>}/>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+
+            <Route path='/studentClasses' element={<StudentClasses />}/>
+            <Route path="/teacherClasses" element={<TeacherClasses />} />
+
+            <Route path='/selectedClass/:classId/:term' element={<SelectedClass />}/>
+            <Route path='/selectedLesson/:materialId/:materialType' element={<SelectedLesson />} />
+            <Route path='/termPage' element={<TermPage />} />
+            <Route path='/fileView' element={<FileView />} />
+
+            <Route path='/createQuiz/:classId/:materialId' element={<CreateQuiz />} />
+            <Route path='/studentQuizPage/:quizId' element={<StudentQuizPage />} />
+            <Route path='/lessonSummary/:materialId' element={<LessonSummary />} />
+            <Route path='/quizMonitoring/:quizId' element={<QuizMonitoring/>} />
+            
+            <Route path='/userManagement' element={<UserManagement/>}/>
+            <Route path='/classManagement' element={<ClassManagement/>}/>
+            <Route path='/subjectManagement' element={<SubjectManagement/>} />
+            <Route path="/enrollmentManagement" element={<EnrollmentManagement />} />
+            <Route path="/admin" element={<AdminDashboard />}/>
+            <Route path='/settings' element={<Settings/>}/>
+            <Route path='/help' element={<AboutPage/>}/>
+
+            <Route path="*" element={<h1>404 - Page Not Found</h1>} />
+          </Routes>
+          
+        </Layout>
+        </main>
+      )}
+
     </div>
+
   );
 }
 

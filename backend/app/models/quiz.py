@@ -18,11 +18,14 @@ class Quiz(Base):
     class_id = Column(Integer, ForeignKey("classes.id", ondelete="CASCADE" ))
     archived = Column(Boolean, default=False)
     type = Column(String(50))
+    term_id = Column(Integer, ForeignKey("terms.id", ondelete="CASCADE"))
 
     material = relationship("ClassMaterial", back_populates="quizzes")
     student_progress = relationship("StudentQuizProgress", back_populates="quiz")
     classes = relationship("Classes", back_populates="quiz")
     attempts = relationship('StartTime', back_populates='quiz')
+    term = relationship('Term', back_populates = 'quiz')
+
 
 
 #from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey, func

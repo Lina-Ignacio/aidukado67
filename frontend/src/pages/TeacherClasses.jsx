@@ -3,12 +3,11 @@ import { useEffect, useState } from "react"
 import axios from 'axios'
 import ClassCard from "../components/ClassCard";
 import useUserStore from "../store/useUserStore.js";
+import Layout from "../components/Layout.jsx";
 
 export default function StudentClasses() {
 
   const teacherId = useUserStore((state) => state.userId)
-
-  
 
   const [classes, setClasses] = useState([])
   

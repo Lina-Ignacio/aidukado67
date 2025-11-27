@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Form
+from fastapi import APIRouter, Depends, HTTPException, Form, Query
 from app.database import SessionLocal
 from sqlalchemy.orm import Session
 from app.models.quiz import Quiz
@@ -44,12 +44,13 @@ def assign_quiz(quiz: CreateQuiz, db: Session = Depends(get_db)):
         duration = quiz.duration,
         class_id = quiz.class_id,
         archived = quiz.archived,
-        type = quiz.type
+        type = quiz.type,
+        term_id = quiz.term_id
     )
     db.add(new_quiz)
     db.commit()
     db.refresh(new_quiz)
-
+    print(new_quiz.term_id)
     return {"message": "Quiz saved successfully"}
 
 #get quiz from database
@@ -64,8 +65,8 @@ def get_quiz(quizId: int, db:Session = Depends(get_db)):
 
 #display Quiz cards in class
 @router.get('/getQuizzes/{classId}', response_model=list[QuizOut])
-def get_quizzes(classId: int, db: Session = Depends(get_db)):
-    quizzes = db.query(Quiz).filter(Quiz.class_id == classId, Quiz.archived == False).all()
+def get_quizzes(classId: int, term:int = Query(...),  db: Session = Depends(get_db)):
+    quizzes = db.query(Quiz).filter(Quiz.class_id == classId, Quiz.term_id == term, Quiz.archived == False).all()
 
     if not quizzes:
         raise HTTPException(status_code=404, detail="No quizzes found for this class")

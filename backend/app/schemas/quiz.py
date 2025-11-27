@@ -13,6 +13,7 @@ class CreateQuiz(BaseModel):
     class_id: int
     archived: bool
     type:str
+    term_id:int
 
 class QuizOut(BaseModel):
     id: int
@@ -27,3 +28,4 @@ class QuizOut(BaseModel):
     class_id: int
     archived:bool
     type:str
+    term_id:int

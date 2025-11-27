@@ -11,6 +11,7 @@ import useUserStore from "../store/useUserStore";
 import useClassStore from "../store/useClassStore";
 import QuizCard from "../components/QuizCard";
 import TOSForm from "./Exam/TosForm";
+//import termStore from "../store/useTermStore";
 
 export default function SelectedClass() {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ export default function SelectedClass() {
   const [isOpenTOS, setIsOpenTOS] = useState(false);
   const panelStyle = "w-full sm:h-[70%] max-w-lg rounded-xl shadow-xl"
   const [successMessage, setSuccessMessage] = useState("");
+  //const termId = termStore((state) => state.termId);
 
   useEffect(() => {
     if (successMessage) {
@@ -46,7 +48,7 @@ export default function SelectedClass() {
 
   const getLessons = async() => {
     try {
-        const response = await axios.get(`http://localhost:8000/class_material/getByClassId/${classId}`)
+        const response = await axios.get(`http://localhost:8000/class_material/getByClassId/${classId}`)//termId
         setMaterials(response.data)
         console.log(response.data)
     } catch(err) {
@@ -68,7 +70,9 @@ export default function SelectedClass() {
 
   const getQuizzes = async() => {
     try{
-      const response = await axios.get(`http://localhost:8000/getQuizzes/${classId}`)
+      const response = await axios.get(`http://localhost:8000/getQuizzes/${classId}`, {
+        params: {term}
+      })
       console.log(response.data);
       setQuiz(response.data);
     }

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import classStore from '../store/useClassStore' 
+import classStore from '../store/useClassStore';
 import { useNavigate} from "react-router-dom";
 import { MdClose } from "react-icons/md";
+import useTermStore from '../store/useTermStore';
 
 {/*export default function Questions({questions = [], title = "", total_points = 0, lesson_id, instructions = "", duration = 0, start_time = null, type=""}) { */}
 export default function Questions({questions = [], title = "", total_points = 0, lesson_id, instructions = "", duration = 0, type=""}) {
@@ -10,6 +11,8 @@ export default function Questions({questions = [], title = "", total_points = 0,
   const [editableQuestion, setEditableQuestion] = useState([]);
   const class_id = classStore((state) => state.classId);
   const navigate = useNavigate();
+  const term_id = useTermStore((state) => state.termId);
+  console.log("term_id", term_id);
 
   const [showStudentSelect, setShowStudentSelect] = useState(false);
   const [students, setStudents] = useState([]);
@@ -123,7 +126,8 @@ export default function Questions({questions = [], title = "", total_points = 0,
         duration,
         class_id,
         archived: false,
-        type
+        type,
+        term_id
       };
 
       console.log("📦 Sending quiz data:", quizData);

@@ -117,7 +117,6 @@ export default function AIQuiz() {
             className="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
           >
             <option value="" disabled>Choose Task Type</option>
-            <option value="Exam">Exam</option>
             <option value="Quiz">Quiz</option>
             <option value="Seatwork">Seatwork</option>
           </select>
