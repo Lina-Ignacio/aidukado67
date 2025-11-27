@@ -38,12 +38,11 @@ export default function SelectedLesson() {
 
     const [fetchFileError, setFetchFileError] = useState("");
 
-    const getFileUrl = async () => {
+    const getMaterial = async () => {
         try {
             const response = await axios.get(`http://localhost:8000/class_material/getMaterialById/${materialId}`)
 
             setMaterial(response.data)
-            console.log(response.data)
         } catch (err) {
             if (err.response?.data?.detail) {
                 setFetchFileError(err.response.data.detail)
@@ -54,7 +53,7 @@ export default function SelectedLesson() {
     }
 
     useEffect(() => {
-        getFileUrl();
+        getMaterial();
     }, [materialId])
 
     useEffect(() => {
@@ -72,20 +71,26 @@ export default function SelectedLesson() {
     const description = material?.description || "";
     const fileKey = material?.fileKey || "";
     const fileExtension = fileKey.split(".").pop().toLowerCase();
-   
+    const totalScore = material?.totalScore || 0;
+    const dueDate = material?.dueDate || "";
+    const createdAt = material?.createdAt || "";
+
     const materialData = {
         materialId: materialId,
         materialType: materialType,
         fileExtension: fileExtension,
         fileUrl: fileUrl,
         title: title,
-        description: description
+        description: description,
+        totalScore: totalScore,
+        dueDate: dueDate,
+        createdAt: createdAt
     }
 
     return (
-        <div className="w-full h-full flex flex-col sm:p-[3%] gap-[2%] items-center">
+        <div className="w-full h-full flex flex-col gap-[2%] items-center">
             {isVisible && (
-                <div className="w-[30px] h-[30px] bg-[#BE3D2A] flex" onClick={() => setIsVisible(false)}>
+                <div className="w-[30px] h-[30px] bg-[#BE3D2A] flex mt-2" onClick={() => setIsVisible(false)}>
                     <MdClose size={24} className="text-white font-bold m-auto" />
                 </div>
             )}

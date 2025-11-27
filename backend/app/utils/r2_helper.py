@@ -23,16 +23,30 @@ s3_client = boto3.client(
     config=Config(signature_version='s3v4')  # Force SigV4
 )
 
+MIME_TYPES = {
+    "pdf": "application/pdf",
+    "doc": "application/msword",
+    "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "ppt": "application/vnd.ms-powerpoint",
+    "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "jpg": "image/jpeg",
+    "jpeg": "image/jpeg",
+    "png": "image/png"
+}
+
 def upload_file(file_bytes: bytes, filename: str, folder: str) -> str:
-    file_extension = filename.split(".")[-1]
+    file_extension = filename.split(".")[-1].lower()
     file_key = f"{folder}/{uuid.uuid4()}.{file_extension}"
 
     buffer = io.BytesIO(file_bytes)
+
+    content_type = MIME_TYPES.get(file_extension, "application/octet-stream")
+
     s3_client.upload_fileobj(
         buffer,
         R2_BUCKET,
         file_key,
-        ExtraArgs={"ContentType": f"application/{file_extension}"}
+        ExtraArgs={"ContentType": content_type}
     )
 
     return file_key

@@ -126,15 +126,17 @@ def get_lesson_by_id(material_id: int, db: Session = Depends(get_db)):
     file_url = generate_presigned_url(file_key)
     print(file_key)
     
-    return {
-        "title": material.title,
-        "description": material.description,
-        "file_key": file_key,
-        "file_url": file_url,
-        "type": material.type,
-        "due_date": material.due_date,
-        "total_score": material.total_score
-    }
+    return MaterialOut(
+        title=material.title,
+        description=material.description,
+        file_key=file_key,
+        file_url=file_url,
+        type=material.type,
+        due_date=material.due_date,
+        total_score=material.total_score,
+        created_at=material.created_at
+    )
+
 
 
 @router.patch("/toggleArchive/{material_id}")

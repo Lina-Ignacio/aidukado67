@@ -28,6 +28,7 @@ class MaterialOut(BaseModel):
     file_url: str
     file_key: str
     due_date: Optional[datetime]
+    created_at: Optional[datetime]
 
     model_config = ConfigDict(
         from_attributes=True,

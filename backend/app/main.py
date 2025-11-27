@@ -13,8 +13,12 @@ from .routers import (
     quiz,
     student_quiz_progress,
     student_submission,
-    lesson_content
+    lesson_content,
+    exam
 )
+
+
+
 
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -56,3 +60,4 @@ app.include_router(quiz.router)
 app.include_router(student_quiz_progress.router)
 app.include_router(student_submission.router)
 app.include_router(lesson_content.router)
+app.include_router(exam.router)

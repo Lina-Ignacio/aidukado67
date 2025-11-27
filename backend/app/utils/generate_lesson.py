@@ -1,5 +1,8 @@
 import google.generativeai as genai
 import json
+from dotenv import load_dotenv
+import os
+from pathlib import Path
 
 
 from dotenv import load_dotenv
@@ -28,8 +31,7 @@ def generate_lesson(data: list[dict]):
 
         Keep explanations concise, beginner-friendly, and relevant.
     
-    
-    
+
 
         """
     
