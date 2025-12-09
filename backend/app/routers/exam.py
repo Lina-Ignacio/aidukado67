@@ -11,3 +11,8 @@ def generate_tos(data: TOSRequest):
     result = compute_tos(lessons_data, data.total_items)
     exam_questions = generate_exam_from_tos(result)
     return {"tos": exam_questions}
+
+@router.post("/hello")
+def hello():
+    print("Lina")  # still logs on server
+    return {"message": "Hello from Lina!"}
