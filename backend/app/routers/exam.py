@@ -12,7 +12,9 @@ def generate_tos(data: TOSRequest):
     exam_questions = generate_exam_from_tos(result)
     return {"tos": exam_questions}
 
-@router.post("/hello")
+@router.get("/hello")
 def hello():
     print("Lina")  # still logs on server
     return {"message": "Hello from Lina!"}
+
+
