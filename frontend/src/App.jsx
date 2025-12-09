@@ -1,8 +1,8 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
-//import Sidebar from './components/sidebar';
+//import Sidebar from '../components/sidebar';
 import AIPretest from "./pages/AIPretest";
-import Dashboard from "./pages/Dashboard";
+//import Dashboard from "./pages/Dashboard";
 import Lesson from './pages/Lesson';
 import PostTest from './pages/PostTest';
 import Login from "./components/Login";
@@ -46,6 +46,7 @@ function AppContent() {
         // NO SIDEBAR MODE
         <main className="flex-grow">
           <Routes>
+            
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
@@ -56,6 +57,8 @@ function AppContent() {
         <Layout>
           
           <Routes>
+
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route 
               path="/dashboard" 
               element={
@@ -106,6 +109,8 @@ function AppContent() {
             <Route path='/studentQuizPage/:quizId' element={<StudentQuizPage />} />
             <Route path='/lessonSummary/:materialId' element={<LessonSummary />} />
             <Route path='/quizMonitoring/:quizId' element={<QuizMonitoring/>} />
+
+            <Route path='/submissions/:materialId' element={<Submissions/>} />
             
             <Route path='/userManagement' element={<UserManagement/>}/>
             <Route path='/classManagement' element={<ClassManagement/>}/>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-//import Sidebar from "./Sidebar";
+import Sidebar from './sidebar'
 import { MdMenu } from "react-icons/md";
 
 export default function Layout({ children }) {

@@ -1,9 +1,16 @@
 import React, { useState, useMemo } from "react";
 import axios from "axios";
+import AssignExam from '../../components/AssignQuiz';
 
 export default function TOSForm({ lessons, onClose, onSuccess }) {
   const [hours, setHours] = useState({});
   const [totalItems, setTotalItems] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [questions, setQuestions] = useState([]);
+
+  const [title, setTitle] = useState("");
+  const [instruction, setInstruction] = useState("");
+  const [duration, setDuration] = useState("");
 
   const filteredLessons = useMemo(
     () => lessons.filter((lesson) => lesson.type === "lesson"),
@@ -18,6 +25,9 @@ export default function TOSForm({ lessons, onClose, onSuccess }) {
   };
 
   const handleSubmit = async () => {
+
+    setLoading(true);
+
     try {
       const payload = {
         total_items: Number(totalItems),
@@ -32,11 +42,14 @@ export default function TOSForm({ lessons, onClose, onSuccess }) {
         "http://localhost:8000/exam/compute_tos",
         payload
       );
-
+      console.log(response.data)
+      setQuestions(response.data.tos)
       if (onSuccess) onSuccess(response.data);
-      onClose();
+      //onClose();
     } catch (err) {
       console.error("Error generating TOS:", err);
+    } finally{
+      setLoading(false)
     }
   };
 
@@ -44,12 +57,51 @@ export default function TOSForm({ lessons, onClose, onSuccess }) {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
+      {loading && (
+        <div className="flex flex-col items-center gap-4 text-white">
+        <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        <div className="text-white text-xl font-semibold animate-pulse"> Generating Quiz... Please Wait</div>
+        </div>
+      )}
+      {!loading && questions.length === 0 &&(
+        <>
       <h2 className="text-2xl font-bold text-[#102E50] mb-4">
         Table of Specifications
       </h2>
 
-      {/* Total Items */}
+      {/*Total Items */}
       <div className="mb-4">
+
+        <label className="block font-semibold text-[#102E50] mb-2">Term Period</label>
+        <select
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full p-2 rounded border border-[#102E50] bg-[#F4F6FF] text-[#102E50] focus:outline-none focus:ring-2 focus:ring-[#102E50] font-bold"
+        >
+          <option value="" disabled>Select Term Period</option>
+          <option value="Prelim Exam">Prelim</option>
+          <option value="Midterm Exam">Midterm</option>
+          <option value="Final Exam">Final</option>
+        </select>
+
+        <label className="block font-semibold text-[#102E50] mb-2">Instruction </label>
+        <input
+          value={instruction}
+          onChange={(e) => setInstruction(e.target.value)}
+          type="text"
+          placeholder="Enter exam instruction"
+          className="w-full p-2 rounded border border-[#102E50] bg-[#F4F6FF] text-[#102E50] focus:outline-none focus:ring-2 focus:ring-[#102E50] font-bold"
+        />
+
+        <label className="block font-semibold text-[#102E50] mb-2">Set Exam Duration </label>
+        <input
+          value={duration}
+          onChange={(e) => setDuration(e.target.value)}
+          type="number"
+          placeholder="Set assessment timer"
+          className="w-full p-2 rounded border border-[#102E50] bg-[#F4F6FF] text-[#102E50] focus:outline-none focus:ring-2 focus:ring-[#102E50] font-bold"
+        />
+
         <label className="block font-semibold text-[#102E50] mb-2">
           Total Number of Items
         </label>
@@ -62,7 +114,7 @@ export default function TOSForm({ lessons, onClose, onSuccess }) {
         />
       </div>
 
-      {/* Lessons Hours */}
+      {/*Lessons Hours*/}
       <div className="mb-4">
         <h3 className="font-semibold text-[#F5C45E] mb-3">Hours Per Lesson</h3>
         <div className="flex flex-col gap-3">
@@ -105,6 +157,14 @@ export default function TOSForm({ lessons, onClose, onSuccess }) {
           Generate Exam
         </button>
       </div>
+      </>
+      )}
+
+      {!loading && questions.length > 0 &&(
+        <div>
+          <AssignExam questions={questions} title={title} total_points={totalItems} lesson_id={0} instructions={instruction} duration={duration} type={"exam"} />
+        </div>
+      )}
     </div>
   );
 }

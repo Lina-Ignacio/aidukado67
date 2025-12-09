@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 from app.models.lesson_content import LessonContent
 from app.schemas.lesson_content import LessonOut
 
+
+
 router = APIRouter()
 
 def get_db():

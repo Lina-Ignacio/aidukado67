@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef} from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import useUserStore from "../../store/useUserStore";
@@ -6,7 +6,7 @@ import useUserStore from "../../store/useUserStore";
 export default function StudentTest() {
   const navigate = useNavigate();
   const student_id = useUserStore((state) => state.userId);
-  const {quizId} = useParams();
+  const { quizId } = useParams();
 
   const [quiz, setQuiz] = useState({ quiz_content: [] });
   const [userAnswers, setUserAnswers] = useState({});
@@ -16,95 +16,88 @@ export default function StudentTest() {
   const [startTime, setStartTime] = useState(null);
   const [duration, setDuration] = useState(0);
 
-
   const optionLetters = "ABCD".split("");
   const fetchCalled = useRef(false);
 
   const quizRef = useRef(null);
   const userAnswersRef = useRef({});
 
-  useEffect (() => {
+  // ---------------- FETCH USER ANSWERS ----------------
+  useEffect(() => {
     const fetchUserAnswer = async () => {
-      try{
-        const res = await axios.get(`http://localhost:8000/getUserAnswers/${quizId}/${student_id}`)
-        console.log(res.data);
+      try {
+        const res = await axios.get(
+          `http://localhost:8000/getUserAnswers/${quizId}/${student_id}`
+        );
 
-        if(res.data.taken){
+        if (res.data.taken) {
           setUserAnswers(res.data.answers);
-          setScore(res.data.score)
-          setSubmitted(true)
+          setScore(res.data.score);
+          setSubmitted(true);
+        } else {
+          setSubmitted(false);
         }
-        else{
-          setSubmitted(false)
-        }
-        
-      } catch(error){
+      } catch (error) {
         console.log(error);
       }
-        
     };
     fetchUserAnswer();
-  }, [quizId, student_id])
+  }, [quizId, student_id]);
 
-  //----------Store User Answer -------
+  // Store user answers in ref
   useEffect(() => {
     userAnswersRef.current = userAnswers;
   }, [userAnswers]);
 
   // ---------------- FETCH QUIZ ----------------
   useEffect(() => {
-
     if (fetchCalled.current) return;
     fetchCalled.current = true;
-    
+
     const fetchQuiz = async () => {
       try {
-        const res = await axios.get(`http://localhost:8000/getQuiz/${quizId}`);
+        const res = await axios.get(
+          `http://localhost:8000/getQuiz/${quizId}`
+        );
         setQuiz(res.data);
         quizRef.current = res.data;
-
         setDuration(res.data.duration);
-        console.log('duration', res.data.duration)
       } catch (error) {
         console.error("Error fetching quiz:", error);
       }
     };
+
     fetchQuiz();
   }, [quizId]);
 
-
-  //save start time upon opening quiz
+  // ---------------- SAVE START TIME ----------------
   useEffect(() => {
     const saveStartTime = async () => {
-      try{
-
-        const data = {
-          quiz_id: quizId,
-          student_id
-        }
-        const response = await axios.post('http://localhost:8000/saveStartTime', data, {
-          headers: {
-            'Content-Type' : 'application/json'
-          }
-        })
+      try {
+        const data = { quiz_id: quizId, student_id };
+        const response = await axios.post(
+          "http://localhost:8000/saveStartTime",
+          data,
+          { headers: { "Content-Type": "application/json" } }
+        );
 
         setStartTime(new Date(response.data.start_time));
-        console.log(response.data.start_time);
-      } catch(error){ 
-        console.log("Error: ", error)
+      } catch (error) {
+        console.log("Error: ", error);
       }
-    }
-    saveStartTime()
-  },[quizId])
+    };
 
-  //----------TIMER------------------
+    saveStartTime();
+  }, [quizId]);
+
+  // ---------------- TIMER ----------------
   useEffect(() => {
     if (!startTime || !duration || submitted) return;
 
-    const elapsed = (new Date() - new Date(startTime)) / 1000; // seconds elapsed
+    const elapsed = (new Date() - new Date(startTime)) / 1000;
     const remaining = Math.max(duration * 60 - elapsed, 0);
 
-    setTimeLeft(remaining); // initial value
+    setTimeLeft(remaining);
 
     const interval = setInterval(() => {
       const now = new Date();
@@ -122,18 +115,18 @@ export default function StudentTest() {
     return () => clearInterval(interval);
   }, [startTime, duration, submitted]);
 
+  // ---------------- TAB SWITCH + NAVIGATION BLOCK ----------------
   useEffect(() => {
-
     if (submitted) return;
-    //tab switching handler
+
     const handleVisibility = () => {
       if (document.hidden) {
-        alert("You switch tab. Your quiz will be submitted now! ");
+        alert("You switched tab. Your quiz will be submitted now!");
+        handleSubmit();
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
 
-    // Detect navigation handler
     const blockClicks = (e) => {
       const anchor = e.target.closest("a");
       if (anchor && anchor.href) {
@@ -143,21 +136,20 @@ export default function StudentTest() {
     };
     document.addEventListener("click", blockClicks);
 
-    //back button handler 
-    const handlePopState = (e) => {
-        window.history.pushState(null, "", window.location.href);
-        alert("You must submit the quiz before leaving this page");
-      };
+    // Back button
+    const handlePopState = () => {
       window.history.pushState(null, "", window.location.href);
-      window.addEventListener("popstate", handlePopState);
+      alert("You must submit the quiz before leaving this page.");
+    };
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handlePopState);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibility);
-      window.removeEventListener('popstate', handlePopState);
       document.removeEventListener("click", blockClicks);
+      window.removeEventListener("popstate", handlePopState);
     };
-
-}, [submitted]);
+  }, [submitted]);
 
   // ---------------- HANDLE ANSWER CHANGE ----------------
   const handleOptionChange = (qIndex, selectedText) => {
@@ -167,15 +159,17 @@ export default function StudentTest() {
     }));
   };
 
-  // ---------------- HANDLE QUIZ SUBMISSION ----------------
-  const handleSubmit = async (quizContent = quizRef.current?.quiz_content) => {
-    if (submitted) return; // prevent double submission
+  // ---------------- SUBMIT QUIZ ----------------
+  const handleSubmit = async (
+    quizContent = quizRef.current?.quiz_content
+  ) => {
+    if (submitted) return;
 
     let totalScore = 0;
+
     quizContent.forEach((q, index) => {
       const correctAnswer = q.answer?.trim();
       const studentAnswer = userAnswersRef.current[index] || "";
-      console.log(studentAnswer);
       if (studentAnswer === correctAnswer) totalScore++;
     });
 
@@ -187,10 +181,8 @@ export default function StudentTest() {
       quiz_id: quizId,
       status: "done",
       score: totalScore,
-      answers: userAnswers
+      answers: userAnswers,
     };
-
-    console.log("Saving to database:", saveScore);
 
     try {
       await axios.post("http://localhost:8000/saveScore", saveScore);
@@ -198,7 +190,6 @@ export default function StudentTest() {
       console.error("Error saving score:", error);
     }
   };
-
 
   // ---------------- RENDER ----------------
   return (
@@ -209,10 +200,13 @@ export default function StudentTest() {
         </h1>
 
         <p className="font-semibold mb-4 text-center">
-          Time left: ⏱ {Math.floor(timeLeft / 60)}:{String(Math.floor(timeLeft % 60)).padStart(2, "0")}
+          Time left: ⏱ {Math.floor(timeLeft / 60)}:
+          {String(Math.floor(timeLeft % 60)).padStart(2, "0")}
         </p>
 
-        <h2 className="font-semibold mb-6 text-xl"><strong>Instruction: </strong> {quiz.instructions} </h2> 
+        <h2 className="font-semibold mb-6 text-xl">
+          <strong>Instruction: </strong> {quiz.instructions}
+        </h2>
 
         {quiz.quiz_content.length === 0 && <p>No questions available.</p>}
 
@@ -225,9 +219,16 @@ export default function StudentTest() {
               key={index}
               className="mb-8 p-4 border border-gray-200 rounded-xl bg-[#F9FAFB]"
             >
-              {q.question && <p className="font-semibold text-lg mb-3">{q.question}</p>}
+              {q.question && (
+                <p className="font-semibold text-lg mb-3">{q.question}</p>
+              )}
+
               {q.questionImage && (
-                <img src={q.questionImage} alt="Question" className="max-w-xs rounded-lg mb-3 border" />
+                <img
+                  src={q.questionImage}
+                  alt="Question"
+                  className="max-w-xs rounded-lg mb-3 border"
+                />
               )}
 
               <ul className="space-y-2">
@@ -239,14 +240,21 @@ export default function StudentTest() {
                         name={`question-${index}`}
                         value={optionLetters[i]}
                         checked={studentAnswer === optionLetters[i]}
-                        onChange={() => handleOptionChange(index, optionLetters[i])}
+                        onChange={() =>
+                          handleOptionChange(index, optionLetters[i])
+                        }
                         disabled={submitted}
                         className="accent-[#424874]"
                       />
+
                       <div className="flex flex-col items-start gap-1">
-                        {opt.text && <span>{opt.text}</span>} 
+                        {opt.text && <span>{opt.text}</span>}
                         {opt.image && (
-                          <img src={opt.image} alt="Option" className="max-w-[150px] mt-2 sm:mt-0 rounded border" />
+                          <img
+                            src={opt.image}
+                            alt="Option"
+                            className="max-w-[150px] mt-2 rounded border"
+                          />
                         )}
                       </div>
                     </label>
@@ -285,6 +293,7 @@ export default function StudentTest() {
             <p className="text-3xl font-bold text-[#424874]">
               Score: {score} / {quiz.quiz_content.length}
             </p>
+
             <button
               className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
               onClick={() => navigate(-1)}

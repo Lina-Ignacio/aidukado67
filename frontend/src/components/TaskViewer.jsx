@@ -313,7 +313,7 @@ return (
           <h2 className="text-[#F5C45E] font-bold text-md">Submitted: <span className="font-semibold text-[#102E50]">{stats.totalSubmissions}</span></h2>
           <h2 className="text-[#F5C45E] font-bold text-md">Graded: <span className="font-semibold text-[#102E50]">{stats.scoredSubmissions}</span></h2>
           <button 
-            className="mt-5 bg-[#102E50]"
+            className="mt-5 bg-[#102E50] text-white"
             onClick={() => navigate(`/submissions/${materialData.materialId}`)}
           >
             View Submissions
