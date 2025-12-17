@@ -56,7 +56,7 @@ export default function TOSForm({ lessons, onClose, onSuccess }) {
   const isGenerateDisabled = filteredLessons.length === 0;
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg max-w-3xl mx-auto">
+    <div className="bg-white p-6 rounded-lg shadow-lg min-w-[500px] max-w-3xl mx-auto">
       {loading && (
         <div className="flex flex-col items-center gap-4 text-white">
         <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>

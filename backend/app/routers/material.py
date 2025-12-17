@@ -20,6 +20,7 @@ router = APIRouter(prefix="/class_material", tags=["class_material"])
 
 def get_db():
     db = SessionLocal()
+    
     try:
         yield db
     finally:
