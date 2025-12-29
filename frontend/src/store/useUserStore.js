@@ -11,7 +11,7 @@ const useUserStore = create(
       clearUser: () => set({ userId: null, userRole: "" }),
     }),
     {
-      name: "user-storage", // storage key name
+      name: "user-storage", 
       storage: createJSONStorage(() => sessionStorage),
     }
   )
