@@ -6,26 +6,7 @@ html, body, #root {
 }
 
 
-.image-background {
-  --bg-image: url("https://images.pexels.com/photos/82256/pexels-photo-82256.jpeg");
-  --bg-image-opacity: .15;
-  background-color: #102E50;
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  flex-direction: column;
-}
 
-.image-background::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-image: var(--bg-image);
-  opacity: var(--bg-image-opacity);
-}
 
 .side-background-signup {
   --bg-image: url("https://images.pexels.com/photos/589808/pexels-photo-589808.jpeg");
@@ -62,3 +43,5 @@ html, body, #root {
 .float {
   animation: float 2s ease-in-out infinite;
 }
+
+ 

@@ -2,6 +2,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import useUserStore from "../store/useUserStore";
+import { MdPerson, MdEmail, MdSecurity } from "react-icons/md";
+
 
 export default function Login() {
 
@@ -82,42 +84,66 @@ export default function Login() {
     }
 
     return (
-        <div className="bg-[#333446] flex h-full w-full flex">
-            
-            {success && <p className="text-green-800">{success}</p>}
-            
-            <div className="flex h-full w-[60%] bg-white justify-center items-center flex-col">
+        <div className="grid grid-cols-1 lg:grid-cols-[4.5fr_5.5fr] h-screen w-screen bg-white">
+
+            <div className="hidden lg:grid relative rounded-r-[20%] bg-[#102E50] w-full h-full justify-items-center content-center gap-5 p-[30px]">
+                <h1 className="md:text-[35px] lg:text-[50px] font-extrabold text-white text-center">
+                    WELCOME BACK!
+                </h1>
+                <p className="text-white/90 text-sm lg:text-lg text-center max-w-md">
+                    Aidukado is an AI-assisted LMS that enhances learning through smart content generation and automation.
+                </p>
+            </div>
+
+
+
+            <div className="flex w-full h-full bg-white justify-center items-center flex-col">
+                {success && <p className="text-green-800">{success}</p>}
                 <form 
                     onSubmit={handleSubmit}
-                    className="bg-transparent backdrop-blur-md h-[60%] w-[50%] flex justify-center flex-col gap-2 rounded-3xl p-4"
+                    className="bg-transparent backdrop-blur-md w-3/4 sm:w-3/5 lg:w-1/2 flex justify-center flex-col gap-8 rounded-3xl p-4"
                 >
-                    <h2 className="w-full text-[50px] font-extrabold text-[#102E50] self-center mb-1">WELCOME BACK TO AI-DUKADO</h2>
-                    <p2 className="w-full text-[#102E50] text-md mb-4">Aidukado is an AI-assisted LMS that enhances learning through smart content generation and automation.</p2>
+                    
+                    <h1 className="text-[40px] font-extrabold text-[#102E50] text-center mb-5">
+                        Login
+                    </h1>
 
-                    <label className="block font-medium mb-1 text-[#102E50] text-xl w-full">Email:</label>
-                    <input 
-                        onChange={handleChange}
-                        type="text"
-                        name="email"
-                        value={formData.email}
-                        className="bg-transparent border-2 rounded-md w-full h-[10%] p-1 text-[#102E50] mb-4" 
-                        placeholder="Email"
-                    />
+                    <div className="relative">
+                        <MdPerson className="absolute right-4 top-1/2 -translate-y-1/2 text-[#102E50] text-2xl" />
+                        <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="Email"
+                            className="w-full px-5 py-3 rounded-lg border border-gray-300
+                                bg-gray-100 text-lg text-[#102E50] placeholder:font-semibold
+                                placeholder:text-gray-600 focus:outline-none focus:ring-2 
+                                focus:ring-[#102E50]/40 focus:border-[#102E50] transition duration-200
+                            "
+                        />
+                    </div>
 
-                    <label className="block font-medium mb-1 text-[#102E50] text-xl w-full">Password:</label>
-                    <input 
-                        onChange={handleChange}
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        className="w-full bg-transparent border-2 rounded-md h-[10%] p-1 text-[#102E50] mb-4" 
-                        placeholder="Password"
+                    <div className="relative">
+                        <MdSecurity className="absolute right-4 top-1/2 -translate-y-1/2 text-[#102E50] text-2xl" />
+                        <input
+                            type="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="Username"
+                            className="w-full px-5 py-3 rounded-lg border border-gray-300 bg-gray-100
+                                text-lg text-[#102E50] placeholder:font-semibold placeholder:text-gray-600
+                                focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 focus:border-[#102E50]
+                                transition duration-200"
+                        />
+                    </div>
 
-                    />
-                    <a>Forgot Password?</a>
+                    <a className="text-[#102E50]/80 self-end">Forgot Password?</a>
                     <button 
                         disabled={loading} 
-                        className={`w-[40%] h-[10%] mt-2 p-1 bg-[#102E50] ${loading && "opacity-50"} rounded-md text-white`}
+                        className={`p-3 bg-[#102E50] ${loading && "opacity-50"} rounded-lg text-white 
+                        font-bold lg:text-[20px] hover:bg-[#E78B48] focus:outline-none transition duration-200`}
                     >
                         {loading ? "Logging in..." : "Login"}
                     </button>
@@ -125,20 +151,8 @@ export default function Login() {
                     {errors.api && <p className="text-red-800">{errors.api}</p>}
                 </form>
             </div>
-            <div className="w-[40%] h-full image-background">
-                 <img
-                    className="w-1/2] h-[25%] object-contain rounded-b-lg m-auto shadow-lg float hidden md:block absolute right-[10%] top-[15%]"
-                    src="/bookLogin.png"
-                    alt="Lesson Preview"
-                />
-                <img
-                    className="w-1/2 h-1/2 object-contain rounded-b-lg m-auto float hidden md:block absolute right-[50%] top-[35%]"
-                    src="/bot.png"
-                    alt="Lesson Preview"
-                />
+
             
-               
-            </div>
         </div>
     )
 }
