@@ -87,10 +87,13 @@ export default function Login() {
         <div className="grid grid-cols-1 lg:grid-cols-[4.5fr_5.5fr] h-screen w-screen bg-white">
 
             <div className="hidden lg:grid relative rounded-r-[20%] bg-[#102E50] w-full h-full justify-items-center content-center gap-5 p-[30px]">
-                <h1 className="md:text-[35px] lg:text-[50px] font-extrabold text-white text-center">
-                    WELCOME BACK!
+                <div className="bg-white/90 w-[80px] h-[75px] flex rounded-full mb-4">
+                    <h1 className="text-[#102E50] m-auto font-bold">A</h1>
+                </div>
+                <h1 className="lg:text-[40px] xl:text-[55px] font-bold text-white text-center">
+                    WELCOME BACK !
                 </h1>
-                <p className="text-white/90 text-sm lg:text-lg text-center max-w-md">
+                <p className="text-white/90 lg:text-md xl:text-lg text-center max-w-md">
                     Aidukado is an AI-assisted LMS that enhances learning through smart content generation and automation.
                 </p>
             </div>
@@ -99,11 +102,11 @@ export default function Login() {
 
             <div className="flex w-full h-full bg-white justify-center items-center flex-col">
                 {success && <p className="text-green-800">{success}</p>}
+                
                 <form 
                     onSubmit={handleSubmit}
                     className="bg-transparent backdrop-blur-md w-3/4 sm:w-3/5 lg:w-1/2 flex justify-center flex-col gap-8 rounded-3xl p-4"
                 >
-                    
                     <h1 className="text-[40px] font-extrabold text-[#102E50] text-center mb-5">
                         Login
                     </h1>
@@ -131,7 +134,7 @@ export default function Login() {
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
-                            placeholder="Username"
+                            placeholder="Password"
                             className="w-full px-5 py-3 rounded-lg border border-gray-300 bg-gray-100
                                 text-lg text-[#102E50] placeholder:font-semibold placeholder:text-gray-600
                                 focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 focus:border-[#102E50]
