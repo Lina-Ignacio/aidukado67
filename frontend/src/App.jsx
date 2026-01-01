@@ -40,7 +40,7 @@ function AppContent() {
   const role = useUserStore((state) => state.userRole)
 
   return (
-    <div className="flex h-full w-full bg-white">
+    <div className="flex h-full w-full bg-white overflow-hidden">
 
       {hideSidebar ? (
         // NO SIDEBAR MODE

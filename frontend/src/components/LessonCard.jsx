@@ -21,7 +21,7 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
         navigate(`/selectedLesson/${materialId}/${materialType}`)
     }
 
-    const iconStyle = "text-[#102E50] m-auto"
+    const iconStyle = "text-white text-lg"
     const returnIcon = (type) => {
         switch (type) {
             case "lesson":
@@ -37,23 +37,41 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
         }
     };
     
+    const returnColor = (type) => {
+        switch (type) {
+            case "lesson":
+                return "206A5D";
+            case "assignment":
+                return "1F4068";
+            case "activity":
+                return "E78B48";
+            case "project":
+                return "BE3D2A";
+            default:
+                return "206A5D"; 
+        }
+    }
+
+    const iconColor = returnColor(materialType);
+
     return (
         <div 
-            className="flex flex-col w-full max-w-sm p-5 gap-2
+            className="flex flex-col w-full h-auto lg:w-[45%] xl:w-[31%] p-5 gap-2
                     rounded-md cursor-pointer shadow-sm hover:shadow-md
                     transition-all duration-300 ease-in-out
-                    hover:scale-[1.01]
+                    hover:scale-[1.01] relative
                     relative overflow-hidden"
             style={{ backgroundColor: 'rgba(158, 198, 243, 0.2)' }}
             onClick={handleClick}
         >
-            <h2 className="text-md font-bold text-gray-800 h-2/3">{materialName}</h2>
-            <div className="flex h-1/3 justify-between">
-                <p className="w-4/5 text-sm font-semibold text-gray-800">{formattedDate}</p>
-                <div className="flex bg-[#9BA4B4] w-10 h-10 rounded-full p-1">
-                    {returnIcon(materialType)}
-                </div>
+            <h2 className="text-md font-bold text-gray-800">{materialName}</h2>
+            
+            <p className="w-4/5 text-sm font-semibold text-gray-800">{formattedDate}</p>
+            <div className={`flex justify-center items-center bg-[#${iconColor}] w-11 h-11 
+                absolute bottom-2 right-5 rounded-full p-3`}>
+                {returnIcon(materialType)}
             </div>
+            
             
       </div>
             

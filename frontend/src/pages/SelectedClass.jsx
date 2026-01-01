@@ -48,7 +48,7 @@ export default function SelectedClass() {
 
   const getLessons = async() => {
     try {
-        const response = await axios.get(`http://localhost:8000/class_material/getByClassId/${classId}`)//termId
+        const response = await axios.get(`http://localhost:8000/class_material/getByClassId/${classId}`)
         setMaterials(response.data)
         console.log(response.data)
     } catch(err) {
@@ -98,7 +98,7 @@ export default function SelectedClass() {
   let termName = getTermName(Number(term));
 
   return (
-    <div className="flex flex-col w-full h-full py-5 gap-5 items-center">
+    <div className="flex flex-col w-full h-auto min-h-screen py-5 gap-5 items-center">
         <div
             className="
             flex flex-col
@@ -146,10 +146,10 @@ export default function SelectedClass() {
         </div>
 
         <div className="w-4/5 sm:w-[80%] mt-10">
-          <h2 className="text-[#F5C45E] font-bold text-2xl">{termName}'s Materials</h2>
+          <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Materials</h2>
         </div>
         
-        <div className="flex flex-wrap justify-start gap-[5%] w-3/4 sm:w-[80%]">
+        <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[80%]">
           
           {filteredMaterials.length > 0 ? (
             filteredMaterials.map((lesson) => (
@@ -170,7 +170,7 @@ export default function SelectedClass() {
         </div>
         
         <div className="w-3/4 sm:w-[80%] mt-10">
-          <h2 className="text-[#F5C45E] font-bold text-2xl">{termName}'s Quizzes</h2>
+          <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Quizzes</h2>
         </div>
 
         <div className="flex flex-wrap justify-start w-3/4 sm:w-[80%] gap-[5%]">

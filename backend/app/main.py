@@ -17,13 +17,17 @@ from .routers import (
     exam
 )
 
-
-
+from dotenv import load_dotenv
+from pathlib import Path
 
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+
+env_path = Path(__file__).resolve().parents[1] / ".env"
+load_dotenv(dotenv_path=env_path, override=True)
+
 
 # Initialize limiter and app
 limiter = Limiter(key_func=get_remote_address)

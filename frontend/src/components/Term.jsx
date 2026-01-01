@@ -19,10 +19,15 @@ export default function Term({term}) {
 
     return (
         <div 
-            className="w-[25%] h-[20%] sm:h-[50%] rounded-xl shadow-xl bg-[#102E50] flex hover:scale-95 transition-transform duration-300"
+            className="w-3/5 md:w-1/2 2xl:w-1/4 h-[250px] sm:h-[300px] md:h-[400px] xl:h-[450px] rounded-xl shadow-xl 
+                flex flex-col justify-center items-center bg-[#102E50] flex hover:scale-95 transition-transform duration-300"
             onClick={handleClick}
         >
-            <h2 className="mx-auto my-auto font-bold text-3xl">{termName}</h2>
+            <img 
+                src={`../public/${termName}Icon.png`}
+                className="w-[200px] h-[100px] sm:w-[450px] sm:h-[200px] lg:w-[300px] lg:h-[200px]"
+            />
+            <h2 className="font-bold text-xl sm:text-2xl xl:text-3xl">{termName}</h2>
         </div>
     )
 } 
