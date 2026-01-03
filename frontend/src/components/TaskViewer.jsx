@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { MdEdit, MdArchive } from "react-icons/md";
+import { MdEdit, MdArchive, MdFileUpload, MdMenuBook, MdCalendarToday, 
+  MdOutlineComment, MdOutlinePreview, MdOutlineCancel, MdVisibility } from "react-icons/md";
 import FileView from "../pages/Lesson/FileView";
 import FileUploader from "./FileUploader";
 import useUserStore from "../store/useUserStore";
@@ -195,23 +196,26 @@ export default function TaskViewer({
   });
 
 return (
-  <div className="w-full h-full flex flex-col items-center p-2">
-    
-    <div className="w-3/4 h-2/5 flex gap-5 mt-8">
-
-      <div className="child sm:w-3/4 sm:h-4/5 flex flex-col sm:min-h-[250px] rounded-md p-4 gap-5 bg-white">
+  <div className="w-full h-auto grid xl:grid-cols-[3fr_2fr]">
+    {/* Material */}
+    <div className="xl:max-h-[600px] p-[25px] xl:p-[60px]">
+      <div className="child w-full flex flex-col rounded-md
+              gap-5 h-auto p-[15px]"
+      >
         {uploadError && <p className="text-red-800">{uploadError}</p>}
 
-        <h2 className="sm:w-full font-bold text-3xl text-[#102E50]">
+        <h2 className="font-bold text-2xl md:text-4xl text-[#102E50]">
           {materialData.title}
         </h2>
 
-        <p className="sm:min-h-[30px] text-lg text-[#102E50]">
+        <p className="text-base md:text-xl text-[#102E50]/80">
           {materialData.description}
         </p>
 
-        <p className="text-md text-[#F5C45E] font-bold">
-          Due: {formattedDue}
+        <p className="text-[#F5C45E]/90 font-bold flex justify-items 
+              items-center gap-2 text-sm md:text-lg"
+        >
+          <MdCalendarToday/> Due: {formattedDue}
         </p>
 
         <hr className="h-[1px] bg-[#102E50] border-0" />
@@ -219,11 +223,11 @@ return (
         <div className="flex w-full h-[50px]">
           <button
             onClick={() => setIsVisible(true)}
-            className="w-1/3 bg-[#102E50] hover:bg-[#1b3a63] 
-              text-white py-3 rounded-lg font-semibold 
-              transition-colors duration-200"
+            className="bg-[#102E50] hover:bg-[#0B2239] text-white py-3 rounded-lg font-semibold 
+              transition-colors duration-200 flex justify-items items-center gap-2"
           >
-            Open Material
+            <MdMenuBook className="text-lg lg:text-xl xl:text-2xl text-white"/>
+            <span className="text-md lg:text-lg">Open Material</span>
           </button>
 
           
@@ -246,13 +250,14 @@ return (
           )}
         </div>
       </div>
+    </div>
 
-      
+    {/* Submit */}
+    <div className="xl:max-h-[500px] p-[25px] xl:py-[60px]">
       {userRole === "student" && (
-        <div className="child sm:w-1/4 sm:h-3/5 shadow-md rounded-xl bg-[#F4F6FF] p-4 gap-5 border border-black/10">
-          <div className="flex flex-col gap-4 w-full h-full items-start">
-
-            
+        <div className="child w-full sm:w-1/2 xl:w-full 2xl:w-4/5 h-auto shadow-md rounded-xl bg-[#F4F6FF] 
+                border border-black/10 flex flex-col p-[15px] 2xl:px-[20px] gap-5"
+        >
             {!submissionData ? (
               <>
                 <FileUploader
@@ -262,31 +267,37 @@ return (
 
                 <button
                   onClick={handleSubmit}
-                  className="w-full bg-[#102E50] text-white py-2 rounded-md hover:bg-[#1b3a63]"
+                  className="bg-[#102E50] text-white py-2 rounded-md hover:bg-[##0B2239]
+                      flex justify-center items-center gap-2"
                 >
-                  Submit File
+                  <MdFileUpload className="text-lg lg:text-xl xl:text-2xl text-white"/>
+                  <span className="text-md lg:text-lg">Submit File</span>
                 </button>
               </>
             ) : (
               <>
-                <h2 className="text-[#102E50] font-bold text-3xl">Your Work</h2>
-                <p className="text-[#F5C45E] font-semibold">
+                <h2 className="text-[#102E50] font-bold text-2xl md:text-3xl xl:text-4xl">Your Work</h2>
+                <p className="text-[#102E50]/80 font-semibold md:text-md lg:text-lg xl:text-xl">
                   You already submitted this task.
                 </p>
 
                 <div className="w-full flex gap-2">
                   <button
                     onClick={() => setViewSubmittedFile(true)}
-                    className="w-1/2 h-full bg-[#102E50] text-white px-4 py-2 rounded-md hover:bg-[#1b406f] transition"
+                    className="bg-[#102E50] text-white px-4 py-2 rounded-md hover:bg-[#0B2239] 
+                      flex items-center justify-items gap-2 transition"
                   >
-                    View File
+                    <MdVisibility className="text-lg lg:text-xl xl:text-2xl text-white"/>
+                    <span className="text-md lg:text-lg">View File</span>
                   </button>
 
                   <button
                     onClick={handleUnsubmit}
-                    className="w-1/2 h-full bg-red-600 text-white rounded-md hover:bg-red-700"
+                    className="bg-red-600 text-white rounded-md
+                      flex items-center justify-items gap-2"
                   >
-                    Unsubmit
+                    <MdOutlineCancel className="text-lg lg:text-xl xl:text-2xl text-white" />
+                    <span className="text-md lg:text-lg">Unsubmit</span>
                   </button>
                 </div>
 
@@ -294,45 +305,32 @@ return (
 
                 
                 {submissionData.score != null ? (
-                  <p className="text-[#F5C45E] font-semibold">
+                  <p className="text-[#206A5D] font-semibold">
                     Score: {submissionData.score}/{materialData.totalScore}
                   </p>
                 ) : (
-                  <p className="text-[#F5C45E] font-semibold">
+                  <p className="text-[#206A5D] font-semibold">
                     Total Score: {materialData.totalScore} points
                   </p>
                 )}
               </>
             )}
-          </div>
-        </div>
-      )}
 
-      {userRole === "teacher" && (
-        <div className="child sm:w-1/4 sm:h-2/5 shadow-md rounded-xl bg-[#F4F6FF] p-4 gap-5 border border-black/10 mt-5">
-          <h2 className="text-[#F5C45E] font-bold text-md">Submitted: <span className="font-semibold text-[#102E50]">{stats.totalSubmissions}</span></h2>
-          <h2 className="text-[#F5C45E] font-bold text-md">Graded: <span className="font-semibold text-[#102E50]">{stats.scoredSubmissions}</span></h2>
-          <button 
-            className="mt-5 bg-[#102E50] text-white"
-            onClick={() => navigate(`/submissions/${materialData.materialId}`)}
-          >
-            View Submissions
-          </button>
+            {submissionData &&
+            submissionData.remarks != null && (
+              <>
+                <h2 className="text-[#102E50] font-bold text-lg self-center flex justify-items items-center gap-1"><MdOutlineComment />Remarks:</h2>
+                <p className="text-[#102E50]/80">{submissionData.remarks}</p>
+              </>
+            )}
+          
         </div>
+        
       )}
+      
     </div>
-
     
-    {userRole === "student" &&
-      submissionData &&
-      submissionData.remarks != null && (
-        <div className="child sm:w-3/4 shadow-md sm:h-auto rounded-xl p-4 bg-[#F4F6FF] border border-black/10 mt-5">
-          <h2 className="text-[#F5C45E] font-bold text-lg">Remarks:</h2>
-          <p className="text-[#102E50]">{submissionData.remarks}</p>
-        </div>
-    )}
-
-  </div>
+</div>
 );
 
 

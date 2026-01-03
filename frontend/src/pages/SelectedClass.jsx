@@ -11,6 +11,8 @@ import useUserStore from "../store/useUserStore";
 import useClassStore from "../store/useClassStore";
 import QuizCard from "../components/QuizCard";
 import TOSForm from "./Exam/TosForm";
+import { FiPlus } from "react-icons/fi";
+import { GiMagicBroom } from "react-icons/gi";
 //import termStore from "../store/useTermStore";
 
 export default function SelectedClass() {
@@ -98,54 +100,49 @@ export default function SelectedClass() {
   let termName = getTermName(Number(term));
 
   return (
-    <div className="flex flex-col w-full h-auto min-h-screen py-5 gap-5 items-center">
+    <div className="flex flex-col w-full h-auto min-h-screen py-5 gap-8 items-center">
         <div
-            className="
-            flex flex-col
-            w-3/4 sm:w-[80%]
-            min-h-[150px] 
-            h-auto         
-            p-2
-            truncate
-            bg-[#F4F6FF]
-        "
+            className="flex flex-col w-3/4 sm:w-[80%] min-h-[150px] h-auto         
+              p-4 truncate bg-[#F4F6FF] rounded-tl-3xl rounded-br-3xl"
         >
             <div 
-                className="flex flex-col justify-end flex-grow-[8] p-2 
-                bg-[#102E50]/80 bg-[url('https://images.pexels.com/photos/289737/pexels-photo-289737.jpeg')] 
-                bg-cover bg-center bg-blend-overlay"
+                className="flex flex-col flex-grow-[8] p-4 justify-center
+                bg-[#8FABD4]/30 bg-[url('https://images.pexels.com/photos/256559/pexels-photo-256559.jpeg')] 
+                bg-cover bg-center bg-blend-overlay rounded-tl-3xl rounded-br-3xl"
             >
-                <p className="text-xl sm:text-[2rem] font-bold text-white" >{className}</p>
+                <p className="text-[2rem] sm:text-[2.5rem] font-bold text-white">{className}</p>
             </div>
             
         </div>
 
-        <div className="flex flex-row w-3/4 sm:w-[80%] gap-5 mx-auto mt-4">
-            {userRole == "teacher" && (
-              <>
-                <button 
-                  onClick={() => setIsOpen(true)} 
-                  className="w-1/2 sm:w-[15%] shadow-xl rounded p-2 text-white font-bold bg-[#102E50] 
-                  hover:bg-[#F4F6FF] hover:text-[#102E50] transition-transform duration-300" 
-                > 
-                  Create + 
-                </button>
+        {userRole == "teacher" && (
+          <div className="flex flex-row w-3/4 sm:w-[80%] h-auto gap-5 mx-auto justify-end mt-3">
+            <button 
+              onClick={() => setIsOpen(true)} 
+              className="shadow-xl rounded p-3 text-white font-semibold bg-[#102E50] 
+              hover:bg-[#0B2239] hover:text-white transition-transform duration-300 flex justify-center
+              items-center gap-1 rounded-lg" 
+            > 
+              <FiPlus className="text-lg xl:text-2xl"/>
+              <span className="text-md xl:text-lg">Upload Material</span> 
+            </button>
 
-                <button
-                  onClick={() => setIsOpenTOS(true)}
-                  className="w-1/2 sm:w-[15%] p-2 bg-[#F5C45E] text-white rounded font-bold
-                  hover:bg-[#F4F6FF] hover:text-[#F5C45E]"
-                >
-                  Generate Exam
-                </button>
+            <button
+              onClick={() => setIsOpenTOS(true)}
+              className=" p-3 bg-[#E78B48] text-white rounded font-semibold
+              hover:bg-[#D9773A] hover:text-white flex justify-center
+              items-center gap-1 rounded-lg"
+            >
+              <GiMagicBroom className="text-lg xl:text-2xl"/>
+              <span className="text-md xl:text-lg">Generate Exam</span> 
+            </button>
 
-                
-                {successMessage && (<p className="text-green-800 self-end">{successMessage}</p>)}
-              </>
-            )}
-        </div>
+            {successMessage && (<p className="text-green-800 self-end">{successMessage}</p>)}
+          </div>
+        )}
+        
 
-        <div className="w-4/5 sm:w-[80%] mt-10">
+        <div className="w-3/4 sm:w-[80%] mt-4 h-auto">
           <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Materials</h2>
         </div>
         

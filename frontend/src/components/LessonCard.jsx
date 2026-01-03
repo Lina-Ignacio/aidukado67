@@ -60,8 +60,9 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
                     rounded-md cursor-pointer shadow-sm hover:shadow-md
                     transition-all duration-300 ease-in-out
                     hover:scale-[1.01] relative
-                    relative overflow-hidden"
-            style={{ backgroundColor: 'rgba(158, 198, 243, 0.2)' }}
+                    relative overflow-hidden background
+                    rounded-tr-xl rounded-bl-xl"
+            // style={{ backgroundColor: 'rgba(158, 198, 243, 0.2)' }}
             onClick={handleClick}
         >
             <h2 className="text-md font-bold text-gray-800">{materialName}</h2>

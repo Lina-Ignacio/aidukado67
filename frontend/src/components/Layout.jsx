@@ -9,7 +9,7 @@ export default function Layout({ children }) {
     <div className="flex h-screen">
 
       {/* DESKTOP SIDEBAR */}
-      <div className="hidden lg:block h-full w-[300px] bg-[#F1F2F7]">
+      <div className="hidden xl:block h-full w-[300px] bg-[#F1F2F7]">
         <Sidebar />
       </div>
 
@@ -17,7 +17,7 @@ export default function Layout({ children }) {
       <div
         className={`fixed top-0 left-0 h-full w-64 bg-white shadow-md z-50 transform 
           ${isOpen ? "translate-x-0" : "-translate-x-full"} 
-          transition-transform duration-300 lg:hidden`}
+          transition-transform duration-300 xl:hidden`}
       >
         <Sidebar closeMobile={() => setIsOpen(false)} />
       </div>
@@ -25,7 +25,7 @@ export default function Layout({ children }) {
       {/* OVERLAY for mobile/tablet */}
       {isOpen && (
         <div
-          className="fixed w-full h-full inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed w-full h-full inset-0 bg-black/50 z-40 xl:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -34,7 +34,7 @@ export default function Layout({ children }) {
       <div className="flex-1 flex flex-col w-full">
 
         {/* MOBILE/TABLET TOP BAR with burger */}
-        <div className="flex items-center p-3 bg-[#102E50] lg:hidden">
+        <div className="flex items-center p-3 bg-[#102E50] xl:hidden">
           <button onClick={() => setIsOpen(true)} className="bg-transparent">
             <MdMenu size={32} className="text-white" />
           </button>

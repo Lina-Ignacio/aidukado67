@@ -42,7 +42,8 @@ export default function SelectedLesson() {
         try {
             const response = await axios.get(`http://localhost:8000/class_material/getMaterialById/${materialId}`)
 
-            setMaterial(response.data)
+            setMaterial(response.data);
+            console.log("ge", response.data)
         } catch (err) {
             if (err.response?.data?.detail) {
                 setFetchFileError(err.response.data.detail)
@@ -88,7 +89,7 @@ export default function SelectedLesson() {
     }
 
     return (
-        <div className="w-full h-full flex flex-col gap-[2%] items-center">
+        <div className="w-full h-auto flex flex-col gap-[2%] items-center">
             {isVisible && (
                 <div className="w-[30px] h-[30px] bg-[#BE3D2A] flex mt-2" onClick={() => setIsVisible(false)}>
                     <MdClose size={24} className="text-white font-bold m-auto" />

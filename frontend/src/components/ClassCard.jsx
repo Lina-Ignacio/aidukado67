@@ -19,14 +19,9 @@ export default function ClassCard({ subjectName, classId}) {
   return (
     <div 
       className="
-        flex flex-col
-        w-3/4 sm:w-[20%] 
-        sm:min-h-[120px] 
-        rounded-2xl p-1
-        hover:shadow-lg hover:scale-105 transition-transform duration-300
-        bg-gray-200 truncate
-        p-1
-      "
+        flex flex-col w-3/4 sm:w-[20%] sm:min-h-[120px] 
+        p-1 hover:shadow-lg hover:scale-105 transition-transform duration-300
+        bg-gray-200 truncate p-2 rounded-2xl"
       onClick={handleClick}
     >
         <div className="h-[90px] bg-[#102E50] p-4 rounded-2xl border border-gray-300">

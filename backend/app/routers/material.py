@@ -126,6 +126,7 @@ def get_lesson_by_id(material_id: int, db: Session = Depends(get_db)):
     file_key = material.file_url
     file_url = generate_presigned_url(file_key)
     print(file_key)
+    print(f"DEBUG: material.due_date value is: {material.due_date}")
     
     return MaterialOut(
         title=material.title,

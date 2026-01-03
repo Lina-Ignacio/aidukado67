@@ -8,23 +8,19 @@ html, body, #root {
 
 
 
-.side-background-signup {
-  --bg-image: url("https://images.pexels.com/photos/589808/pexels-photo-589808.jpeg");
+.background {
+  --bg-image: url("https://images.pexels.com/photos/13807427/pexels-photo-13807427.jpeg");
   --bg-image-opacity: .1;
-  background-color: #F5C45E;
+  background-color: rgba(158, 198, 243, 0.2);
   position: relative;
   isolation: isolate;
-  width: 45%;
-  display: flex;
-  flex-direction: column;
 }
 
-.side-background-signup::before {
+.background::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
-  width: 100%;
   background-repeat: no-repeat;
   background-size: cover;
   background-image: var(--bg-image);
@@ -44,4 +40,4 @@ html, body, #root {
   animation: float 2s ease-in-out infinite;
 }
 
- 
+
