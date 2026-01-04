@@ -27,7 +27,8 @@ export default function StudentClasses() {
   }, [userId]) 
 
   return (
-    <main className="flex flex-col p-[2%]">
+    <main className="flex flex-col items-center px-8 lg:px-10 xl:px-16
+              py-8 sm:py-10 min-h-screen gap-y-5 lg:gap-y-8">
         <h1 className="text-4xl font-bold text-[#424874] mb-4">All Your Classes in One Place</h1>
           
         {classes.length > 0 ? (

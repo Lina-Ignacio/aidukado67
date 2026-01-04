@@ -27,27 +27,40 @@ export default function StudentClasses() {
   }, [teacherId]) 
 
   return (
-    <main className="flex flex-col p-[2%]">
-        <h1 className="text-4xl font-bold text-[#424874] mb-4">All Your Classes in One Place</h1>
-        
-        {classes.length > 0 ? (
-            <div className="flex flex-col sm:flex-row flex-wrap gap-4">
-              {classes.map((cls) => (
-                  <ClassCard
-                    key={cls.id}
-                    subjectName={cls.name} 
-                    teacher={
-                      cls.userTeacher
-                        ? `${cls.userTeacher.firstName} ${cls.userTeacher.lastName}`
-                        : "Unknown Teacher"
-                    }
-                    classId={cls.id}
-                  />
-              ))}
-            </div>
-            ) : (
-                <p className="text-[#102E50] text-xl">No Available Classes</p>
-            )}
+    <main className="flex flex-col items-center px-8 lg:px-10 xl:px-16
+              py-8 sm:py-10 min-h-screen gap-y-5 lg:gap-y-8"
+    >
+      
+      <h1 className="text-2xl sm:text-3xl md:text-4xl xl:text-5xl
+              font-extrabold text-[#102E50] text-center"
+      >
+        All Your Classes in One Place
+      </h1>
+
+      {classes.length > 0 ? (
+        <div className="w-full max-w-7xl grid grid-cols-1
+                sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
+                gap-4 sm:gap-6 lg:gap-8 mt-6 justify-items-center"
+        >
+          {classes.map((cls) => (
+            <ClassCard
+              key={cls.id}
+              subjectName={cls.name}
+              teacher={
+                cls.userTeacher
+                  ? `${cls.userTeacher.firstName} ${cls.userTeacher.lastName}`
+                  : "Unknown Teacher"
+              }
+              classId={cls.id}
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="text-[#102E50] text-base sm:text-lg mt-10">
+          No Available Classes
+        </p>
+      )}
     </main>
+
   )
 }

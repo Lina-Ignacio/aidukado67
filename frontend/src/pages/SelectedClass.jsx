@@ -107,8 +107,7 @@ export default function SelectedClass() {
         >
             <div 
                 className="flex flex-col flex-grow-[8] p-4 justify-center
-                bg-[#8FABD4]/30 bg-[url('https://images.pexels.com/photos/256559/pexels-photo-256559.jpeg')] 
-                bg-cover bg-center bg-blend-overlay rounded-tl-3xl rounded-br-3xl"
+                bg-[#102E50] rounded-tl-3xl rounded-br-3xl"
             >
                 <p className="text-[2rem] sm:text-[2.5rem] font-bold text-white">{className}</p>
             </div>

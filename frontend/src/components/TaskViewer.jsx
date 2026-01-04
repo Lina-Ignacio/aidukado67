@@ -196,11 +196,11 @@ export default function TaskViewer({
   });
 
 return (
-  <div className="w-full h-auto grid xl:grid-cols-[3fr_2fr]">
+  <div className="w-full h-auto grid xl:grid-cols-[3fr_2fr] py-[10px] xl:px-[80px] ">
     {/* Material */}
     <div className="xl:max-h-[600px] p-[25px] xl:p-[60px]">
-      <div className="child w-full flex flex-col rounded-md
-              gap-5 h-auto p-[15px]"
+      <div className="child w-full flex flex-col rounded-2xl
+              gap-5 h-auto p-[25px] bg-[#F4F6FF] border border-black/10 "
       >
         {uploadError && <p className="text-red-800">{uploadError}</p>}
 
@@ -227,21 +227,21 @@ return (
               transition-colors duration-200 flex justify-items items-center gap-2"
           >
             <MdMenuBook className="text-lg lg:text-xl xl:text-2xl text-white"/>
-            <span className="text-md lg:text-lg">Open Material</span>
+            <span className="text-md lg:text-lg">Open</span>
           </button>
 
           
           {userRole === "teacher" && (
             <div className="flex items-end justify-end self-end w-1/2 gap-2 ml-auto">
               <button
-                className="sm:h-[50px] rounded-lg flex items-center justify-center bg-[#F5C45E]"
+                className="sm:h-[50px] rounded-lg flex items-center justify-center bg-[#F5C45E] py-3"
                 onClick={() => setEditMaterialOpen(true)}
               >
                 <MdEdit size={24} />
               </button>
 
               <button
-                className="sm:h-[50px] rounded-lg flex items-center justify-center bg-[#BE3D2A]"
+                className="sm:h-[50px] rounded-lg flex items-center justify-center bg-[#BE3D2A] py-3"
                 onClick={() => setArchiveMaterialOpen(true)}
               >
                 <MdArchive size={24} />
@@ -254,6 +254,24 @@ return (
 
     {/* Submit */}
     <div className="xl:max-h-[500px] p-[25px] xl:py-[60px]">
+
+      {userRole === "teacher" && (
+        <div className="child w-full xl:w-4/5 h-auto shadow-md rounded-xl bg-[#F4F6FF] 
+                border border-black/10 flex flex-col p-[25px]">
+
+          <h2 className="text-[#F5C45E] font-bold text-md xl:text-lg">Submitted: <span className="font-semibold text-[#102E50]">{stats.totalSubmissions}</span></h2>
+          <h2 className="text-[#F5C45E] font-bold text-md xl:text-lg">Graded: <span className="font-semibold text-[#102E50]">{stats.scoredSubmissions}</span></h2>
+          
+          <button 
+            className="bg-[#102E50] text-white py-2 rounded-md hover:bg-[##0B2239]
+                      flex justify-center items-center gap-2 mt-5 w-full"
+            onClick={() => navigate(`/submissions/${materialData.materialId}`)}
+          >
+            <span className="text-md lg:text-lg">View Submissions</span>
+          </button>
+        </div>
+      )}
+
       {userRole === "student" && (
         <div className="child w-full sm:w-1/2 xl:w-full 2xl:w-4/5 h-auto shadow-md rounded-xl bg-[#F4F6FF] 
                 border border-black/10 flex flex-col p-[15px] 2xl:px-[20px] gap-5"
@@ -315,6 +333,8 @@ return (
                 )}
               </>
             )}
+
+            
 
             {submissionData &&
             submissionData.remarks != null && (

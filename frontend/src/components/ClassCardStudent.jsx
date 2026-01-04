@@ -24,7 +24,7 @@ export default function ClassCardStudent({ subjectName, classId, teacher}) {
     >
       {/* Blue Header Section */}
       <div className="bg-[#102E50] p-4 rounded-2xl border border-gray-300">
-        <p className="text-xl sm:text-2xl font-bold text-white">{subjectName}</p>
+        <p className="text-xl sm:text-2xl font-bold text-white truncate">{subjectName}</p>
         <p className="text-sm text-[#F5C45E]">{teacher}</p>
         <p className="text-sm text-white mt-1">Monday 5:00pm - 7:00pm</p>
       </div>

@@ -53,55 +53,76 @@ export default function LessonViewer({materialData, setIsVisible, isVisible, set
                 </div>
             ) : (
                 
-                    <div className="md:w-3/4 xl:w-3/5 sm:h-auto flex flex-col sm:h-auto sm:min-h-[250px] rounded-md p-[20px] 
-                            bg-[#F4F6FF] mt-[5%] gap-4 shadow-md m-8 lg:mx-5"
-                    >
-                        <h2 className="font-bold text-2xl md:text-4xl text-[#102E50]">{materialData.title}</h2>
-                        <p className="text-base md:text-xl text-[#102E50]/80">{materialData.description}</p>
-                        <p className="text-[#F5C45E]/90 font-semibold gap-2 text-sm md:text-lg">
+                    <div className="w-full sm:w-[95%] md:w-3/4 2xl:w-3/5 min-h-[250px]
+                            flex flex-col gap-4 rounded-md p-4 sm:p-6
+                            bg-[#F4F6FF] shadow-md mx-auto mt-6">
+
+                        <h2 className="font-bold text-xl sm:text-2xl md:text-4xl text-[#102E50]">
+                            {materialData.title}
+                        </h2>
+
+                        <p className="text-sm sm:text-base md:text-xl text-[#102E50]/80">
+                            {materialData.description}
+                        </p>
+
+                        <p className="text-xs sm:text-sm md:text-lg font-semibold text-[#F5C45E]/90 self-end">
                             {formattedDate}
                         </p>
-                        
-                        <hr className="h-[1px] bg-[#102E50] border-0" />
 
-                        <button className="bg-[#102E50] text-white py-2 rounded-md hover:bg-[#0B2239]
-                                    flex justify-center items-center gap-1 w-full sm:w-1/2 lg:w-1/2 
-                                    xl:w-1/3" 
+                        <hr className="h-px bg-[#102E50] border-0" />
+
+                        {/* View Button */}
+                        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr_1fr] w-full gap-2">
+                            <button
                                 onClick={() => setIsVisible(true)}
-                        >
-                            <MdVisibility className="text-lg lg:text-xl xl:text-2xl text-white"/>
-                            <span className="text-md lg:text-lg">View Material</span>
-                        </button>
-
-                        <div className="flex items-center gap-2 sm:w-full">
-                            <button onClick={handleClick} className="bg-[#102E50] text-white py-2 rounded-md hover:bg-[#0B2239]
-                                    flex justify-center items-center gap-1 w-full sm:w-1/2 lg:w-1/2 xl:w-1/3" >
-                                {teacherRole ? 
-                                    <MdAssessment className="text-lg lg:text-xl xl:text-2xl text-white"/> : 
-                                    <MdDescription className="text-lg lg:text-xl xl:text-2xl text-white"/>}
-                                
-                                <span className="text-md lg:text-lg">{teacherRole ? "Generate Quiz AI" : "Lesson Summary" }</span>
+                                className="w-full lg:w-4/5 bg-[#102E50] text-white py-2 rounded-md
+                                        hover:bg-[#0B2239] flex items-center justify-center gap-2"
+                            >
+                                <MdVisibility className="text-lg md:text-2xl" />
+                                <span className="text-sm md:text-lg">View Material</span>
                             </button>
-                            {usersRole == "teacher" && (
-                                <div className="h-full flex gap-2 ml-auto">
-                                    <button 
-                                        className="sm:h-[50px] rounded-lg flex items-center justify-center bg-[#102E50] gap-1"
-                                        onClick={() => {setEditMaterialOpen(true)}} 
-                                    >
-                                        <MdEdit className="text-lg xl:text-2xl"/>
-                                        <span className="text-md xl:text-lg">Edit</span> 
-                                    </button>
-                                    <button 
-                                        className="sm:h-[50px] rounded-lg flex items-center justify-center bg-[#BE3D2A] gap-1"
-                                        onClick={() => {setArchiveMaterialOpen(true)}} 
-                                    >
-                                        <MdArchive className="text-lg xl:text-2xl"/>
-                                        <span className="text-md xl:text-lg">Archive</span> 
-                                    </button>
-                                </div>
+                        </div>
+                        
+
+                        {/* Action Buttons */}
+                        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr_1fr] w-full gap-2">
+
+                            <button
+                            onClick={handleClick}
+                            className="w-full lg:w-4/5 bg-[#102E50] text-white py-2 rounded-md
+                                        hover:bg-[#0B2239] flex items-center justify-center gap-2"
+                            >
+                            {teacherRole ? <MdAssessment className="text-lg md:text-2xl" /> :
+                                            <MdDescription className="text-lg md:text-2xl" />}
+                            <span className="text-sm md:text-lg">
+                                {teacherRole ? "Generate Quiz AI" : "Lesson Summary"}
+                            </span>
+                            </button>
+
+                            {usersRole === "teacher" && (
+                            <>
+                                <button
+                                onClick={() => setEditMaterialOpen(true)}
+                                className="w-full h-[44px] sm:h-[50px] bg-[#102E50] text-white rounded-lg
+                                            flex items-center justify-center gap-2"
+                                >
+                                <MdEdit className="text-lg md:text-2xl" />
+                                <span className="text-sm md:text-lg">Edit</span>
+                                </button>
+
+                                <button
+                                onClick={() => setArchiveMaterialOpen(true)}
+                                className="w-full h-[44px] sm:h-[50px] bg-[#BE3D2A] text-white rounded-lg
+                                            flex items-center justify-center gap-2"
+                                >
+                                <MdArchive className="text-lg md:text-2xl" />
+                                <span className="text-sm md:text-lg">Archive</span>
+                                </button>
+                            </>
                             )}
                         </div>
-                    </div>   
+                        </div>
+
                 
             )}
 
