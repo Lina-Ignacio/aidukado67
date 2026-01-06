@@ -12,7 +12,7 @@ from app.models.summary import Summary
 from app.schemas.summary import CreateSummary, SummaryOut
 from ..utils.generate_summary import generate_summary
 import requests
-
+from datetime import datetime
 
 
 router = APIRouter(prefix="/class_material", tags=["class_material"])
@@ -32,19 +32,27 @@ async def upload_material(metadata: str = Form(...), file: UploadFile = File(...
     try:
         metadata_dict = json.loads(metadata)
 
+        due_date_str = metadata_dict.get("dueDate")
+
+        due_date = None
+        if due_date_str:
+            due_date = datetime.fromisoformat(due_date_str)
+
         material_data = MaterialCreate(
             class_id=metadata_dict["classId"],
             term_id=metadata_dict["termId"],
             title=metadata_dict["title"],
             description=metadata_dict["description"],
             type=metadata_dict["type"],
-            total_score=metadata_dict["totalScore"]
+            total_score=metadata_dict["totalScore"],
+            due_date=due_date
         )
 
         file_bytes = await file.read()
 
         folder = material_data.type
         file_key = upload_file(file_bytes, file.filename, folder)
+        
 
         material = ClassMaterial(
             class_id=material_data.class_id,
@@ -53,7 +61,8 @@ async def upload_material(metadata: str = Form(...), file: UploadFile = File(...
             description=material_data.description,
             file_url=file_key,
             type=material_data.type,
-            total_score=material_data.total_score
+            total_score=material_data.total_score,
+            due_date=material_data.due_date
         )
 
         db.add(material)
