@@ -30,10 +30,12 @@ export default function ClassCard({ subjectName, classId}) {
     // </div>
 
     
-    <div className="bg-[#102E50]  
-            border border-gray-300 w-full h-[100px] lg:h-[150px] relative overflow-hidden
+    <div className="w-full h-[100px] lg:h-[150px] relative">
+      <div className="w-full h-full absolute z-10 bg-[#E78B48] left-[5px] top-[8px] rounded-2xl"></div>
+      <div className="bg-[#102E50]  
+            border border-gray-300 relative overflow-hidden
             hover:scale-105 transition-transform duration-300 cursor-pointer
-            p-4 rounded-2xl shadow-xl"
+            p-4 rounded-2xl shadow-xl w-full h-full z-20"
         onClick={handleClick}
     >
       
@@ -44,9 +46,10 @@ export default function ClassCard({ subjectName, classId}) {
       </p>
       <p className="text-sm text-white mt-1">Monday 5:00pm - 7:00pm</p>
       
-      <div className="bg-[#1F4068] h-1/2 w-1/2 absolute right-[-20%] bottom-[-50%] -rotate-45 z-30"></div>
+      {/* <div className="bg-[#1F4068] h-6 w-6 absolute right-[2%] bottom-[2%]  z-30 rounded-full"></div> */}
       {/* <div className="bg-[#E78B48] h-1/2 w-1/2 absolute right-[-20%] bottom-[-40%] -rotate-45 z-20"></div> */}
-      <div className="bg-[#EBECF1] h-1/2 w-1/2 absolute right-[-20%] bottom-[-30%] -rotate-45  z-10"></div>
+      <div className="bg-[#EBECF1] h-1/2 w-1/2 absolute right-[-20%] bottom-[-50%] -rotate-45  z-10"></div>
+    </div>
     </div>
   );
 }

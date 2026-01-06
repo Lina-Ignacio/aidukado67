@@ -42,11 +42,11 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
             case "lesson":
                 return "206A5D";
             case "assignment":
-                return "1F4068";
+                return "F5C45E";
             case "activity":
-                return "E78B48";
+                return "102E50";
             case "project":
-                return "BE3D2A";
+                return "E78B48";
             default:
                 return "206A5D"; 
         }
@@ -62,7 +62,6 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
                     hover:scale-[1.01] relative
                     relative overflow-hidden background
                     rounded-tr-xl rounded-bl-xl"
-            // style={{ backgroundColor: 'rgba(158, 198, 243, 0.2)' }}
             onClick={handleClick}
         >
             <h2 className="text-md font-bold text-gray-800">{materialName}</h2>

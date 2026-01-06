@@ -35,7 +35,9 @@ import useUserStore from './store/useUserStore';
 
 function AppContent() {
   const location = useLocation();
-  const hideSidebar = location.pathname === "/login" || location.pathname === "/signup";
+  const hideSidebar =
+    location.pathname === "/login" ||
+    location.pathname.startsWith("/submissions/");
 
   const role = useUserStore((state) => state.userRole)
 
@@ -46,7 +48,7 @@ function AppContent() {
         // NO SIDEBAR MODE
         <main className="flex-grow">
           <Routes>
-            
+            <Route path="/submissions/:materialId" element={<Submissions />} />
             <Route path="/login" element={<Login />} />
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>
@@ -109,8 +111,6 @@ function AppContent() {
             <Route path='/studentQuizPage/:quizId' element={<StudentQuizPage />} />
             <Route path='/lessonSummary/:materialId' element={<LessonSummary />} />
             <Route path='/quizMonitoring/:quizId' element={<QuizMonitoring/>} />
-
-            <Route path='/submissions/:materialId' element={<Submissions/>} />
             
             <Route path='/userManagement' element={<UserManagement/>}/>
             <Route path='/classManagement' element={<ClassManagement/>}/>

@@ -103,19 +103,19 @@ export default function SelectedClass() {
     <div className="flex flex-col w-full h-auto min-h-screen py-5 gap-8 items-center">
         <div
             className="flex flex-col w-3/4 sm:w-[80%] min-h-[150px] h-auto         
-              p-4 truncate bg-[#F4F6FF] rounded-tl-3xl rounded-br-3xl"
+              p-2 truncate bg-[#FDFAF6] rounded-tl-3xl rounded-br-3xl"
         >
             <div 
                 className="flex flex-col flex-grow-[8] p-4 justify-center
                 bg-[#102E50] rounded-tl-3xl rounded-br-3xl"
             >
-                <p className="text-[2rem] sm:text-[2.5rem] font-bold text-white">{className}</p>
+                <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white">{className}</p>
             </div>
             
         </div>
 
         {userRole == "teacher" && (
-          <div className="flex flex-row w-3/4 sm:w-[80%] h-auto gap-5 mx-auto justify-end mt-3">
+          <div className="flex flex-col md:flex-row w-3/4 sm:w-[80%] h-auto gap-2 mx-auto justify-end mt-3">
             <button 
               onClick={() => setIsOpen(true)} 
               className="shadow-xl rounded p-3 text-white font-semibold bg-[#102E50] 

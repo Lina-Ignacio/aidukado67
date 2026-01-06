@@ -196,11 +196,11 @@ export default function TaskViewer({
   });
 
 return (
-  <div className="w-full h-auto grid xl:grid-cols-[3fr_2fr] py-[10px] xl:px-[80px] ">
+  <div className="w-full h-auto grid grid-cols-1 xl:grid-cols-[3fr_2fr] py-[10px] xl:px-[40px]">
     {/* Material */}
-    <div className="xl:max-h-[600px] p-[25px] xl:p-[60px]">
-      <div className="child w-full flex flex-col rounded-2xl
-              gap-5 h-auto p-[25px] bg-[#F4F6FF] border border-black/10 "
+    <div className="h-auto xl:max-h-[900px] w-full p-[25px] xl:p-[60px]">
+      <div className="child w-full flex flex-col rounded-2xl bg-[#F4F6FF]
+              gap-8 h-auto p-[25px] bg-white border border-[#102E50]/40 shadow-lg"
       >
         {uploadError && <p className="text-red-800">{uploadError}</p>}
 
@@ -212,39 +212,44 @@ return (
           {materialData.description}
         </p>
 
-        <p className="text-[#F5C45E]/90 font-bold flex justify-items 
-              items-center gap-2 text-sm md:text-lg"
+        <p className="text-[#E78B48]/90 font-bold flex justify-items 
+              items-center gap-2 text-sm md:text-lg self-end"
         >
           <MdCalendarToday/> Due: {formattedDue}
         </p>
 
         <hr className="h-[1px] bg-[#102E50] border-0" />
 
-        <div className="flex w-full h-[50px]">
+        <div className="grid grid-cols-1 md:grid-cols-2 w-full">
           <button
             onClick={() => setIsVisible(true)}
-            className="bg-[#102E50] hover:bg-[#0B2239] text-white py-3 rounded-lg font-semibold 
-              transition-colors duration-200 flex justify-items items-center gap-2"
+            className="w-full md:w-1/2 bg-[#E78B48]/90 hover:bg-[#0B2239] flex justify-center items-center
+              rounded-lg transition-colors duration-200 gap-2 text-white py-2"
           >
             <MdMenuBook className="text-lg lg:text-xl xl:text-2xl text-white"/>
-            <span className="text-md lg:text-lg">Open</span>
+            <span className="text-md md:text-lg">Open</span>
           </button>
 
           
           {userRole === "teacher" && (
-            <div className="flex items-end justify-end self-end w-1/2 gap-2 ml-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 items-end justify-end self-end gap-2  
+                    w-full mt-2 md:mt-0">
               <button
-                className="sm:h-[50px] rounded-lg flex items-center justify-center bg-[#F5C45E] py-3"
+                className="rounded-lg flex items-center justify-center py-3
+                    bg-[#102E50]/90 gap-1"
                 onClick={() => setEditMaterialOpen(true)}
               >
-                <MdEdit size={24} />
+                <MdEdit className="text-white text-lg md:text-xl" size={24} />
+                <span className="text-white text-md md:text-lg">Edit</span>
               </button>
 
               <button
-                className="sm:h-[50px] rounded-lg flex items-center justify-center bg-[#BE3D2A] py-3"
+                className="rounded-lg flex items-center justify-center 
+                  gap-2 bg-[#BE3D2A] py-3"
                 onClick={() => setArchiveMaterialOpen(true)}
               >
-                <MdArchive size={24} />
+                <MdArchive className="text-white text-lg md:text-xl" size={24} />
+                <span className="text-white text-md md:text-lg">Archive</span>
               </button>
             </div>
           )}
@@ -256,15 +261,15 @@ return (
     <div className="xl:max-h-[500px] p-[25px] xl:py-[60px]">
 
       {userRole === "teacher" && (
-        <div className="child w-full xl:w-4/5 h-auto shadow-md rounded-xl bg-[#F4F6FF] 
-                border border-black/10 flex flex-col p-[25px]">
+        <div className="child w-full md:w-1/3 xl:w-4/5 h-auto shadow-lg rounded-xl bg-white 
+                border border-[#102E50]/40 flex flex-col p-[20px] gap-1 bg-[#F4F6FF]">
 
-          <h2 className="text-[#F5C45E] font-bold text-md xl:text-lg">Submitted: <span className="font-semibold text-[#102E50]">{stats.totalSubmissions}</span></h2>
-          <h2 className="text-[#F5C45E] font-bold text-md xl:text-lg">Graded: <span className="font-semibold text-[#102E50]">{stats.scoredSubmissions}</span></h2>
+          <h2 className="text-[#E78B48] font-bold text-md xl:text-lg">Submitted: <span className="font-semibold text-[#102E50]/90">{stats.totalSubmissions}</span></h2>
+          <h2 className="text-[#E78B48] font-bold text-md xl:text-lg">Graded: <span className="font-semibold text-[#102E50]/90">{stats.scoredSubmissions}</span></h2>
           
           <button 
-            className="bg-[#102E50] text-white py-2 rounded-md hover:bg-[##0B2239]
-                      flex justify-center items-center gap-2 mt-5 w-full"
+            className="bg-[#E78B48] text-white py-2 rounded-md hover:bg-[##0B2239]
+                      flex justify-center items-center gap-2 mt-5 w-full 2xl:w-3/4"
             onClick={() => navigate(`/submissions/${materialData.materialId}`)}
           >
             <span className="text-md lg:text-lg">View Submissions</span>

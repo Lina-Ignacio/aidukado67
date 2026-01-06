@@ -1,4 +1,4 @@
-import Term from "../components/Term"
+import TermCard from "../components/TermCard";
 
 
 export default function TermPage() {
@@ -6,9 +6,9 @@ export default function TermPage() {
 
     return (
         <div className="flex flex-col lg:flex-row w-full h-auto min-h-screen text-white 
-            justify-center items-center gap-8 p-8">
+            justify-center items-center lg:items-start gap-8 p-8 lg:py-[80px]">
             {terms.map((term, index) => (
-                <Term key={index} term={term}/>
+                <TermCard key={index} term={term}/>
             ))}
         </div>
     )
