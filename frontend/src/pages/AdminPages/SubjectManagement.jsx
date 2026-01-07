@@ -55,65 +55,73 @@ export default function SubjectManagement() {
     const panelStyleDelete = "w-full h-1/3 max-w-lg rounded-xl shadow-xl"
 
     return (
-        <div className="flex flex-col w-full h-screen gap-[2%] p-[2%] items-center text-white">
-            <div className="w-1/2 h-[5%] flex justify-end items-end gap-2">
-                <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by subject name"/>
-                <button className=" bg-[#102E50] shadow-md" onClick={() => (setIsOpen(true))}>+ Add Subject</button>
+        <>
+            <div className="grid lg:hidden justify-items-center w-full h-full px-5">
+                <h1 className="font-extrabold text-xl md:text-3xl text-[#102E50] mt-[150px]">
+                    NOT AVAILABLE ON MOBILE AND TABLET!
+                </h1>
             </div>
-            <div className="w-1/2 flex flex-col justify-center items-center">
-                {!loading ? (
-                    <Table 
-                        data={subjectData} 
-                        columns={subjectColumns} 
-                        setSelectedData={setSelectedSubjectData} 
-                        setIsOpenEditModal={setIsOpenEditModal}
-                        setIsOpenDeleteModal={setIsOpenDeleteModal}
+
+            <div className="hidden lg:flex flex-col w-full h-screen gap-[2%] p-[2%] items-center text-white">
+                <div className="w-1/2 h-[5%] flex justify-end items-end gap-2">
+                    <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by subject name"/>
+                    <button className=" bg-[#102E50] shadow-md" onClick={() => (setIsOpen(true))}>+ Add Subject</button>
+                </div>
+                <div className="w-1/2 flex flex-col justify-center items-center">
+                    {!loading ? (
+                        <Table 
+                            data={subjectData} 
+                            columns={subjectColumns} 
+                            setSelectedData={setSelectedSubjectData} 
+                            setIsOpenEditModal={setIsOpenEditModal}
+                            setIsOpenDeleteModal={setIsOpenDeleteModal}
+                        />
+                    ) : (<MoonLoader color="blue" loading={true} size={80} />)
+                    }
+                </div>
+
+
+                {/* Add Modal */}
+                <Modal isOpen= {isOpen} onClose= {() => setIsOpen(false)} title="Add Subject" panelStyle = {panelStyleAdd}>
+                    <AddSubject
+                        onSuccess={() => {
+                            getSubjects();
+                            setIsOpen(false);
+                        }}
+                        onClose={() => setIsOpen(false)}
                     />
-                ) : (<MoonLoader color="blue" loading={true} size={80} />)
-                }
+                </Modal>
+
+                {/* Edit Modal */}
+
+                <Modal isOpen={isOpenEditModal} onClose= {() => setIsOpenEditModal(false)} title="Edit Subject" panelStyle = {panelStyleAdd}>
+                    <EditSubject
+                        subject_id={selectedSubjectData?.id}
+                        onSuccess={ () => {
+                            getSubjects();
+                            setIsOpenEditModal(false);
+                        }
+                            
+                        }
+                        onClose={() => setIsOpenEditModal(false)}
+                    />
+                </Modal>
+                
+                
+                {/* Delete Modal */}
+
+                <Modal isOpen={isOpenDeleteModal} onClose={() => setIsOpenDeleteModal(false)} title="Delete Subject" panelStyle={panelStyleDelete}>
+                    <DeleteSubject 
+                        subject_id={selectedSubjectData?.id}
+                        onSuccess={() => {
+                            getSubjects();
+                            setIsOpenDeleteModal(false);
+                        }}
+                        onClose={() => setIsOpenDeleteModal(false)}
+                    />
+                </Modal>
             </div>
-
-
-            {/* Add Modal */}
-            <Modal isOpen= {isOpen} onClose= {() => setIsOpen(false)} title="Add Subject" panelStyle = {panelStyleAdd}>
-                <AddSubject
-                    onSuccess={() => {
-                        getSubjects();
-                        setIsOpen(false);
-                    }}
-                    onClose={() => setIsOpen(false)}
-                />
-            </Modal>
-
-            {/* Edit Modal */}
-
-            <Modal isOpen={isOpenEditModal} onClose= {() => setIsOpenEditModal(false)} title="Edit Subject" panelStyle = {panelStyleAdd}>
-                <EditSubject
-                    subject_id={selectedSubjectData?.id}
-                    onSuccess={ () => {
-                        getSubjects();
-                        setIsOpenEditModal(false);
-                    }
-                        
-                    }
-                    onClose={() => setIsOpenEditModal(false)}
-                />
-            </Modal>
-            
-            
-            {/* Delete Modal */}
-
-            <Modal isOpen={isOpenDeleteModal} onClose={() => setIsOpenDeleteModal(false)} title="Delete Subject" panelStyle={panelStyleDelete}>
-                <DeleteSubject 
-                    subject_id={selectedSubjectData?.id}
-                    onSuccess={() => {
-                        getSubjects();
-                        setIsOpenDeleteModal(false);
-                    }}
-                    onClose={() => setIsOpenDeleteModal(false)}
-                />
-            </Modal>
-        </div>
+        </>
 
     )
 }

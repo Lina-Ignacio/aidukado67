@@ -135,93 +135,101 @@ export default function EnrollmentManagement() {
   const panelStyleDelete = "w-full h-1/3 max-w-lg rounded-xl shadow-xl";
 
   return (
-    <div className="flex flex-col w-full h-screen gap-[2%] p-[2%] items-center text-white">
-      {fetchDataError && <p className="text-red-800">{fetchDataError}</p>}
-      <div className="w-1/2 h-[5%] flex justify-end items-end gap-2">
-        <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by class, name, status"/>
-        <button
-          className=" bg-[#102E50] shadow-md"
-          onClick={() => setIsOpenAddModal(true)}
-        >
-          + Enroll
-        </button>
+    <>
+      <div className="grid lg:hidden justify-items-center w-full h-full px-5">
+          <h1 className="font-extrabold text-xl md:text-3xl text-[#102E50] mt-[150px]">
+            NOT AVAILABLE ON MOBILE AND TABLET!
+          </h1>
       </div>
 
-      <div className="w-1/2 flex flex-col justify-center items-center">
-        {success && <p className="text-green-800">{success}</p>}
-        {fetchingError.studentError && (
-          <p className="text-red-800">{fetchingError.studentError}</p>
-        )}
-        {fetchingError.classesError && (
-          <p className="text-red-800">{fetchingError.classesError}</p>
-        )}
-        
-        {!loading ? (
-          <Table
-            columns={enrollmentColumns}
-            data={transformedData}
-            setSelectedData={setSelectedEnrollmentData}
-            setIsOpenEditModal={setIsOpenEditModal}
-            setIsOpenDeleteModal={setIsOpenDeleteModal}
-          />
-        ) : (
-          <MoonLoader color="blue" loading={true} size={80} />
-        )}
-      </div>
+      <div className="hidden lg:flex flex-col w-full h-screen gap-[2%] p-[2%] items-center text-white">
+        {fetchDataError && <p className="text-red-800">{fetchDataError}</p>}
+        <div className="w-1/2 h-[5%] flex justify-end items-end gap-2">
+          <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by class, name, status"/>
+          <button
+            className=" bg-[#102E50] shadow-md"
+            onClick={() => setIsOpenAddModal(true)}
+          >
+            + Enroll
+          </button>
+        </div>
 
-      <Modal
-        isOpen={isOpenAddModal}
-        onClose={() => setIsOpenAddModal(false)}
-        title="Add Enrollment"
-        panelStyle={panelStyleAdd}
-      >
-        <AddEnrollment
-          studentOptions={studentOptions}
-          classOptions={classOptions}
-          setSuccess={setSuccess}
+        <div className="w-1/2 flex flex-col justify-center items-center">
+          {success && <p className="text-green-800">{success}</p>}
+          {fetchingError.studentError && (
+            <p className="text-red-800">{fetchingError.studentError}</p>
+          )}
+          {fetchingError.classesError && (
+            <p className="text-red-800">{fetchingError.classesError}</p>
+          )}
+          
+          {!loading ? (
+            <Table
+              columns={enrollmentColumns}
+              data={transformedData}
+              setSelectedData={setSelectedEnrollmentData}
+              setIsOpenEditModal={setIsOpenEditModal}
+              setIsOpenDeleteModal={setIsOpenDeleteModal}
+            />
+          ) : (
+            <MoonLoader color="blue" loading={true} size={80} />
+          )}
+        </div>
+
+        <Modal
+          isOpen={isOpenAddModal}
           onClose={() => setIsOpenAddModal(false)}
-          onSuccess={() => {
-            getEnrollment();
-            setIsOpenAddModal(false);
-          }}
-        />
-      </Modal>
+          title="Add Enrollment"
+          panelStyle={panelStyleAdd}
+        >
+          <AddEnrollment
+            studentOptions={studentOptions}
+            classOptions={classOptions}
+            setSuccess={setSuccess}
+            onClose={() => setIsOpenAddModal(false)}
+            onSuccess={() => {
+              getEnrollment();
+              setIsOpenAddModal(false);
+            }}
+          />
+        </Modal>
 
-      <Modal
-        isOpen={isOpenEditModal}
-        onClose={() => setIsOpenEditModal(false)}
-        title="Edit Enrollment"
-        panelStyle={panelStyleEdit}
-      >
-        <EditEnrollment
-          enrollmentId={selectedEnrollmentData?.id}
-          classOptions={classOptions}
-          studentOptions={studentOptions}
-          setSuccess={setSuccess}
+        <Modal
+          isOpen={isOpenEditModal}
           onClose={() => setIsOpenEditModal(false)}
-          onSuccess={() => {
-            getEnrollment();
-            setIsOpenEditModal(false);
-          }}
-        />
-      </Modal>
+          title="Edit Enrollment"
+          panelStyle={panelStyleEdit}
+        >
+          <EditEnrollment
+            enrollmentId={selectedEnrollmentData?.id}
+            classOptions={classOptions}
+            studentOptions={studentOptions}
+            setSuccess={setSuccess}
+            onClose={() => setIsOpenEditModal(false)}
+            onSuccess={() => {
+              getEnrollment();
+              setIsOpenEditModal(false);
+            }}
+          />
+        </Modal>
 
-      <Modal
-        isOpen={isOpenDeleteModal}
-        onClose={() => setIsOpenDeleteModal(false)}
-        title="Delete Enrollment"
-        panelStyle={panelStyleDelete}
-      >
-        <DeleteEnrollment
-          enrollmentId={selectedEnrollmentData?.id}
-          setSuccess={setSuccess}
+        <Modal
+          isOpen={isOpenDeleteModal}
           onClose={() => setIsOpenDeleteModal(false)}
-          onSuccess={() => {
-            getEnrollment();
-            setIsOpenDeleteModal(false);
-          }}
-        />
-      </Modal>
-    </div>
+          title="Delete Enrollment"
+          panelStyle={panelStyleDelete}
+        >
+          <DeleteEnrollment
+            enrollmentId={selectedEnrollmentData?.id}
+            setSuccess={setSuccess}
+            onClose={() => setIsOpenDeleteModal(false)}
+            onSuccess={() => {
+              getEnrollment();
+              setIsOpenDeleteModal(false);
+            }}
+          />
+        </Modal>
+      </div>
+    </>
   );
 }

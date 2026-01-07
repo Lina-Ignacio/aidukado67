@@ -69,63 +69,74 @@ export default function ClassManagement() {
     const panelStyleDelete = "w-full h-1/3 max-w-lg rounded-xl shadow-xl rounded-xl"
 
     return (
-        <div className="flex flex-col w-full h-screen gap-[2%] p-[2%] items-center text-white">
-            <div className="w-1/2 h-[5%] flex justify-end items-end gap-2">
-                <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by Class Name"/>
-                <button className=" bg-[#102E50] shadow-md" onClick={() => (setIsOpenAddModal(true))}>+ Add Class</button>
+        <>
+            <div className="grid grid-rows-2 lg:hidden justify-items-center w-full h-full px-5">
+                <h1 className="font-extrabold text-xl md:text-3xl text-[#102E50] mt-[150px]">
+                    Sorry!
+                </h1>
+                <p className="font-extrabold text-xl md:text-3xl text-[#102E50] mt-[150px]">
+                    NOT AVAILABLE ON MOBILE AND TABLET!
+                </p>
             </div>
-            <div className="w-1/2 flex flex-col justify-center items-center">
-                {error && <p className="text-red-800">{error}</p>}
-                {!loading ? (
-                    <Table 
-                        columns={classesColumns}
-                        data={classesData}
-                        setSelectedData={setSelectedClassData}
-                        setIsOpenEditModal={setIsOpenEditModal}
-                        setIsOpenDeleteModal={setIsOpenDeleteModal}
+
+            <div className="hidden lg:flex flex-col w-full h-screen gap-[2%] p-[2%] items-center text-white">
+                <div className="w-1/2 h-[5%] flex justify-end items-end gap-2">
+                    <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by Class Name"/>
+                    <button className=" bg-[#102E50] shadow-md" onClick={() => (setIsOpenAddModal(true))}>+ Add Class</button>
+                </div>
+                <div className="w-3/5 flex flex-col justify-center items-center bg-red-500 p-5">
+                    {error && <p className="text-red-800">{error}</p>}
+                    {!loading ? (
+                        <Table 
+                            columns={classesColumns}
+                            data={classesData}
+                            setSelectedData={setSelectedClassData}
+                            setIsOpenEditModal={setIsOpenEditModal}
+                            setIsOpenDeleteModal={setIsOpenDeleteModal}
+                        />
+                    ) : (                   
+                        (<MoonLoader color="blue" loading={true} size={80} />)
+                    )}
+                </div>
+
+                {/* Modal for adding a class :> */}
+
+                <Modal isOpen={isOpenAddModal} onClose={() => setIsOpenAddModal(false)} title="Add Class" panelStyle={panelStyleAdd}>
+                    <AddClass 
+                        onClose={() => setIsOpenAddModal(false)}
+                        onSuccess={() => {
+                            getClasses();
+                            setIsOpenAddModal(false);
+                        }}
                     />
-                ) : (                   
-                    (<MoonLoader color="blue" loading={true} size={80} />)
-                )}
+                </Modal>
+
+                {/* Edit */}
+                <Modal isOpen={isOpenEditModal} onClose={() => setIsOpenEditModal(false)} title="Edit Class" panelStyle={panelStyleEdit}>
+                    <EditClass
+                        classId={selectedClassData?.id}
+                        onClose={() => setIsOpenEditModal(false)}
+                        onSuccess={() => {
+                            getClasses();
+                            setIsOpenEditModal(false);
+                        }}
+                    />
+                </Modal>
+                
+                {/* Delete */}
+
+                <Modal isOpen={isOpenDeleteModal} onClose={() => setIsOpenDeleteModal(false)} title="Delete Class" panelStyle={panelStyleDelete}>
+                    <DeleteClass
+                        class_id={selectedClassData?.id}
+                        onClose={() => setIsOpenDeleteModal(false)}
+                        onSuccess={() => {
+                            getClasses();
+                            setIsOpenDeleteModal(false);
+                        }}
+                    />
+                </Modal>
             </div>
-
-            {/* Modal for adding a class :> */}
-
-            <Modal isOpen={isOpenAddModal} onClose={() => setIsOpenAddModal(false)} title="Add Class" panelStyle={panelStyleAdd}>
-                <AddClass 
-                    onClose={() => setIsOpenAddModal(false)}
-                    onSuccess={() => {
-                        getClasses();
-                        setIsOpenAddModal(false);
-                    }}
-                />
-            </Modal>
-
-            {/* Edit */}
-            <Modal isOpen={isOpenEditModal} onClose={() => setIsOpenEditModal(false)} title="Edit Class" panelStyle={panelStyleEdit}>
-                <EditClass
-                    classId={selectedClassData?.id}
-                    onClose={() => setIsOpenEditModal(false)}
-                    onSuccess={() => {
-                        getClasses();
-                        setIsOpenEditModal(false);
-                    }}
-                />
-            </Modal>
-            
-            {/* Delete */}
-
-            <Modal isOpen={isOpenDeleteModal} onClose={() => setIsOpenDeleteModal(false)} title="Delete Class" panelStyle={panelStyleDelete}>
-                <DeleteClass
-                    class_id={selectedClassData?.id}
-                    onClose={() => setIsOpenDeleteModal(false)}
-                    onSuccess={() => {
-                        getClasses();
-                        setIsOpenDeleteModal(false);
-                    }}
-                />
-            </Modal>
-        </div>
+        </>
 
 
         

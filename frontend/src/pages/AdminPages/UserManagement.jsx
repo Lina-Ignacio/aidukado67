@@ -8,7 +8,8 @@ import EditUser from "../Users/EditUser";
 import Table from "../../components/Table"
 import SearchForm from "../../components/SearchForm";
 import { MoonLoader } from "react-spinners";
-
+import { FiUserPlus } from "react-icons/fi";
+import { MdUploadFile } from "react-icons/md";
 
 export default function UserManagement() {
 
@@ -74,20 +75,33 @@ export default function UserManagement() {
     return (
         <>
             <div className="grid lg:hidden justify-items-center w-full h-full px-5">
-                <h1 className="text-black font-extrabold text-xl md:text-3xl text-[#1F4068] mt-[150px]">
+                <h1 className="font-extrabold text-xl md:text-3xl text-[#102E50] mt-[150px]">
                     NOT AVAILABLE ON MOBILE AND TABLET!
                 </h1>
             </div>
 
-            <div className="hidden lg:flex flex-col w-full h-auto min-h-screen gap-[2%] p-[2%] items-center text-white bg-red-500">
-                <div className="w-4/5 h-[5%] flex justify-end items-end gap-2">
-                    
+            <div className="hidden lg:flex flex-col w-full h-auto min-h-screen py-5 px-10 items-center text-white">
+                <div className="w-full h-auto grid grid-cols-[2.5fr_1fr_1fr] gap-2 2xl:w-11/12 self-end">
                     <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by email or name"/>
-                    <button className=" bg-[#102E50] shadow-md" onClick={() => (setIsOpen(true))}>+ Add User</button>
-                    <button className=" bg-[#102E50] shadow-md" onClick={() => (setIsOpenBatchModal(true))}>+ Upload Users</button>
+                    <button 
+                        className="bg-[#102E50] shadow-md lg:text-lg
+                            flex justify-center items-center gap-2 w-3/4 place-self-end" 
+                        onClick={() => (setIsOpen(true))}
+                    >
+                        <FiUserPlus className="text-lg xl:text-2xl 2xl:text-2xl"/>
+                        <span className="text-md xl:text-lg 2xl:text-xxl">Add User</span> 
+                    </button>
+                    <button 
+                        className="bg-[#102E50] shadow-md lg:text-lg
+                            flex justify-center items-center gap-2" 
+                        onClick={() => (setIsOpenBatchModal(true))}
+                    >
+                        <MdUploadFile className="text-lg xl:text-2xl 2xl:text-2xl"/>
+                        <span className="text-md xl:text-lg 2xl:text-xl">Import Users</span> 
+                    </button>
                 </div>
 
-                <div className="overflow-x-auto w-4/5">
+                <div className="overflow-x-auto w-full mt-2">
                     {fetchingError && <p className="text-red-800">{fetchingError}</p>}
                     {!loading ? (
                     <Table
