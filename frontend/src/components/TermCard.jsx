@@ -26,7 +26,7 @@ export default function TermCard({term}) {
             onClick={handleClick}
         >
             <img 
-                src={`../public/${termName}Icon.png`}
+                src={`/${termName}Icon.png`}
                 className="w-[200px] h-[100px] sm:w-[450px] sm:h-[200px] lg:w-[300px] lg:h-[200px]"
             />
             <h2 className="font-bold text-xl sm:text-2xl xl:text-3xl">{termName}</h2>

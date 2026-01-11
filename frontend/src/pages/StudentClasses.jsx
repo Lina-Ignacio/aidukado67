@@ -32,7 +32,7 @@ export default function StudentClasses() {
         <h1 className="text-2xl md:text-3xl 2xl:text-5xl font-bold lg:font-extrabold text-[#102E50] mb-4">All Your Classes in One Place</h1>
           
         {classes.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5 w-full">
               {classes.map((cls) => (
                   <ClassCardStudent
                     key={cls.id}

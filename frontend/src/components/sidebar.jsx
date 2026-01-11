@@ -56,7 +56,10 @@ export default function Sidebar({closeMobile}) {
 
   return (
     //<div className="hidden md:block h-full w-[16%] min-w-[15%] bg-[#F1F2F7]">
-    <div className=" h-full w-full bg-[#F1F2F7] pt-10">
+    <div 
+        className=" h-full w-full bg-[#F1F2F7] pt-10"
+        onClick={handleClick}
+    >
       <div className="flex space-x-3 p-5 justify-center items-center">
         <div className="rounded-full h-[40px] w-[40px] bg-[#102E50] flex justify-center items-center font-extrabold text-white text-2xl md:text[3xl] xl:text[5xl]">
           A
@@ -152,7 +155,7 @@ export default function Sidebar({closeMobile}) {
           <h2 className="font-extrabold text-2xl md:text[3xl] xl:text[4xl]">Help</h2>
         </NavLink>
 
-
+        
 
         <button onClick={() => {handleLogout(); handleClick(); }} className="flex justify-items items-center p-2 gap-2 bg-transparent">
           <IoLogOut className="text-[#102E50] text-3xl md:text[4xl] xl:text[6xl]"/>
@@ -161,5 +164,6 @@ export default function Sidebar({closeMobile}) {
         
       </div>
     </div>
+    
   );
 }

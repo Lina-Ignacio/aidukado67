@@ -88,7 +88,7 @@ export default function Login() {
 
             <div className="hidden lg:grid relative rounded-r-[20%] bg-[#102E50] w-full h-full justify-items-center content-center gap-5 p-[30px]">
                 <div className="bg-white/90 w-[80px] h-[75px] flex rounded-full mb-4">
-                    <h1 className="text-[#102E50] m-auto font-bold">A</h1>
+                    <h1 className="text-[#102E50] m-auto font-bold lg:text-2xl xl:text-4xl 2xl:text-5xl">A</h1>
                 </div>
                 <h1 className="lg:text-[40px] xl:text-[55px] font-bold text-white text-center">
                     WELCOME BACK !
