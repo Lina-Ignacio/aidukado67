@@ -33,13 +33,19 @@ load_dotenv(dotenv_path=env_path, override=True)
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI()
 
-# ✅ 1. Add CORS middleware FIRST
+
+origins = [
+    "http://localhost:5173",          
+    "https://aidukado.vercel.app",    
+]
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # your frontend URL
+    allow_origins=origins,            
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],               
+    allow_headers=["*"],               
 )
 
 # ✅ 2. Add rate limiting setup AFTER CORS
