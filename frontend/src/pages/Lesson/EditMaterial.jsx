@@ -132,10 +132,10 @@ export default function EditMaterial({materialId, setEditMaterialOpen, setSucces
       
       
             <div className="flex gap-2">
-              <button onClick={() => setEditMaterialOpen(false)} className="bg-[#9BA4B4] w-1/2" type="button">
+              <button onClick={() => setEditMaterialOpen(false)} className="bg-[#9BA4B4] w-1/2 xl:text-lg p-2" type="button">
                 CANCEL
               </button>
-              <button className="bg-[#102E50] w-1/2" onClick={handleUpdate}>
+              <button className="bg-[#102E50] w-1/2 xl:text-lg p-2" onClick={handleUpdate}>
                 UPDATE
               </button>
             </div>

@@ -42,7 +42,7 @@ export default function DeleteUser({ userId, onClose, onSuccess}) {
                     <button
                         type="submit"
                         className="w-full mt-1 bg-[#8E1616] text-white transition-transform duration-200 
-                            hover:scale-95 shadow-md rounded-2xl mb-5"
+                            hover:scale-95 shadow-md rounded-2xl mb-5 xl:text-lg p-3"
                     >
                         Archive User
                     </button>

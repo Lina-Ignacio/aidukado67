@@ -144,7 +144,7 @@ export default function Submissions() {
 
               <button
                 onClick={handleSubmitGrade}
-                className="px-6 py-2 bg-[#102E50]/90 text-white rounded font-bold transition-opacity hover:opacity-90"
+                className="xl:text-lg p-2 bg-[#102E50]/90 text-white rounded font-bold transition-opacity hover:opacity-90"
               >
                 {isGraded ? "UPDATE" : "SUBMIT"}
               </button>

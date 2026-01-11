@@ -46,7 +46,7 @@ export default function DeleteClass({class_id, onClose, onSuccess}) {
                     <button
                         type="submit"
                         className="w-full bg-[#8E1616] text-white transition-transform duration-200 
-                            hover:scale-95 shadow-md rounded-xl"
+                            hover:scale-95 shadow-md rounded-xl xl:text-lg p-2"
                     >
                         Confirm
                     </button>

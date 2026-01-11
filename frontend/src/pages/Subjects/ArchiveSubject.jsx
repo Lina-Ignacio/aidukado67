@@ -44,7 +44,8 @@ export default function DeleteSubject({ subject_id, onClose, onSuccess}) {
                 <div className="w-full flex gap-2 my-2">
                     <button
                         type="submit"
-                        className="w-full mt-[1%] bg-[#8E1616] text-white transition-transform duration-200 hover:scale-95 shadow-md"
+                        className="w-full mt-[1%] bg-[#8E1616] text-white transition-transform duration-200 
+                            hover:scale-95 shadow-md xl:text-lg p-2"
                     >
                         Archive Subject
                     </button>

@@ -43,7 +43,7 @@ export default function DeleteEnrollment({enrollmentId, setSuccess, onClose, onS
                     <button
                         type="submit"
                         className="w-full mt-[1%] bg-[#8E1616] text-white transition-transform 
-                            duration-200 hover:scale-95 shadow-md mb-3 rounded-xl"
+                            duration-200 hover:scale-95 shadow-md mb-3 rounded-xl xl:text-lg p-2"
                     >
                         Archive Enrollment
                     </button>

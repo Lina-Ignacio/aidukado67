@@ -141,14 +141,15 @@ export default function TOSForm({ lessons, onClose, onSuccess }) {
       <div className="w-full gap-2 flex">
         <button
           onClick={onClose}
-          className="w-1/2 bg-[#F3C623] text-white p-3 rounded font-bold hover:bg-[#15426f] transition-colors"
+          className="w-1/2 bg-[#F3C623] text-white xl:text-lg p-2 rounded font-bold 
+              hover:bg-[#15426f] transition-colors"
         >
           Close
         </button>
         <button
           onClick={handleSubmit}
           disabled={isGenerateDisabled}
-          className={`w-1/2 p-3 rounded font-bold transition-colors ${
+          className={`w-1/2 xl:text-lg p-2 rounded font-bold transition-colors ${
             isGenerateDisabled
               ? "bg-gray-400 text-gray-200 cursor-not-allowed"
               : "bg-[#102E50] text-white hover:bg-[#15426f]"

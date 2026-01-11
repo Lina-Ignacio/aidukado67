@@ -148,10 +148,10 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
 
 
       <div className="flex gap-2">
-        <button onClick={() => setIsOpen(false)} className="bg-[#9BA4B4] w-1/2" type="button">
+        <button onClick={() => setIsOpen(false)} className="bg-[#9BA4B4] w-1/2 xl:text-lg p-2" type="button">
           CANCEL
         </button>
-        <button className="bg-[#102E50] w-1/2" onClick={handleUpload}>
+        <button className="bg-[#102E50] w-1/2 xl:text-lg p-2" onClick={handleUpload}>
           UPLOAD
         </button>
       </div>

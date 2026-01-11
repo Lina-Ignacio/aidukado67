@@ -281,7 +281,7 @@ export default function StudentTest() {
           <div className="flex justify-center mt-6">
             <button
               onClick={() => handleSubmit()}
-              className="px-8 py-3 bg-[#424874] text-white font-semibold rounded-lg hover:bg-[#2f355d] transition"
+              className="xl:text-lg p-2 bg-[#424874] text-white font-semibold rounded-lg hover:bg-[#2f355d] transition"
             >
               Submit Answers
             </button>
@@ -295,7 +295,7 @@ export default function StudentTest() {
             </p>
 
             <button
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              className="xl:text-lg p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
               onClick={() => navigate(-1)}
             >
               Back

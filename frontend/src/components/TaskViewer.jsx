@@ -175,7 +175,7 @@ export default function TaskViewer({
         <div className="flex justify-end mt-3">
           <button
             onClick={() => setViewSubmittedFile(false)}
-            className="bg-[#102E50] text-white px-4 py-2 rounded-md hover:bg-[#1b3a63]"
+            className="bg-[#102E50] text-white px-4 py-2 rounded-md hover:bg-[#1b3a63] xl:text-lg p-2"
           >
             Close File
           </button>
@@ -224,7 +224,7 @@ return (
           <button
             onClick={() => setIsVisible(true)}
             className="w-full md:w-1/2 bg-[#E78B48]/90 hover:bg-[#0B2239] flex justify-center items-center
-              rounded-lg transition-colors duration-200 gap-2 text-white py-2"
+              rounded-lg transition-colors duration-200 gap-2 text-white xl:text-lg p-2 "
           >
             <MdMenuBook className="text-lg lg:text-xl xl:text-2xl text-white"/>
             <span className="text-md md:text-lg">Open</span>
@@ -235,7 +235,7 @@ return (
             <div className="grid grid-cols-1 md:grid-cols-2 items-end justify-end self-end gap-2  
                     w-full mt-2 md:mt-0">
               <button
-                className="rounded-lg flex items-center justify-center py-3
+                className="rounded-lg flex items-center justify-center xl:text-lg p-2
                     bg-[#102E50]/90 gap-1"
                 onClick={() => setEditMaterialOpen(true)}
               >
@@ -245,7 +245,7 @@ return (
 
               <button
                 className="rounded-lg flex items-center justify-center 
-                  gap-2 bg-[#BE3D2A] py-3"
+                  gap-2 bg-[#BE3D2A] xl:text-lg p-2"
                 onClick={() => setArchiveMaterialOpen(true)}
               >
                 <MdArchive className="text-white text-lg md:text-xl" size={24} />
@@ -290,7 +290,7 @@ return (
 
                 <button
                   onClick={handleSubmit}
-                  className="bg-[#102E50] text-white py-2 rounded-md hover:bg-[##0B2239]
+                  className="bg-[#102E50] text-white xl:text-lg p-2 rounded-md hover:bg-[##0B2239]
                       flex justify-center items-center gap-2"
                 >
                   <MdFileUpload className="text-lg lg:text-xl xl:text-2xl text-white"/>
@@ -307,7 +307,7 @@ return (
                 <div className="w-full flex gap-2">
                   <button
                     onClick={() => setViewSubmittedFile(true)}
-                    className="bg-[#102E50] text-white px-4 py-2 rounded-md hover:bg-[#0B2239] 
+                    className="bg-[#102E50] text-white xl:text-lg p-2 rounded-md hover:bg-[#0B2239] 
                       flex items-center justify-items gap-2 transition"
                   >
                     <MdVisibility className="text-lg lg:text-xl xl:text-2xl text-white"/>
@@ -317,7 +317,7 @@ return (
                   <button
                     onClick={handleUnsubmit}
                     className="bg-red-600 text-white rounded-md
-                      flex items-center justify-items gap-2"
+                      flex items-center justify-items gap-2 xl:text-lg p-2"
                   >
                     <MdOutlineCancel className="text-lg lg:text-xl xl:text-2xl text-white" />
                     <span className="text-md lg:text-lg">Unsubmit</span>

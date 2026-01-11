@@ -199,7 +199,8 @@ export default function AddClass({ onClose, onSuccess}) {
                 
                 <div className="flex gap-2 mt-4">
                     <button 
-                        className="w-1/2 mt-[1%] bg-[#EBEBEB] font-bold text-[#102E50] transition-transform duration-200 hover:scale-95 shadow-md"
+                        className="w-1/2 mt-[1%] bg-[#EBEBEB] font-bold text-[#102E50] 
+                            transition-transform duration-200 hover:scale-95 shadow-md xl:text-lg p-2"
                         onClick={onClose}
                         type="button"
                     >CANCEL
@@ -207,7 +208,8 @@ export default function AddClass({ onClose, onSuccess}) {
                     </button>
                     <button
                         type="submit"
-                        className="w-1/2 mt-[1%] bg-[#10375C] text-white transition-transform duration-200 hover:scale-95 shadow-md"
+                        className="w-1/2 mt-[1%] bg-[#10375C] text-white transition-transform duration-200 
+                            hover:scale-95 shadow-md xl:text-lg p-2"
                     >
                         {loading ? "ADDING..." : "ADD CLASS"}
                     </button>

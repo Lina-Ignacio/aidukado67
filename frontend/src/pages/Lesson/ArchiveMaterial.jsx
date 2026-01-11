@@ -28,13 +28,13 @@ export default function ArchiveMaterial ({setArchiveLessonOpen, materialType, ma
             <h2 className="text-black font-bold text-xl w-full">Are you sure you want to archive this {materialType} </h2>
             <div className="flex gap-2 w-full">
                 <button 
-                    className="w-1/2 rounded-md bg-[#102E50]"
+                    className="w-1/2 rounded-md bg-[#102E50] xl:text-lg p-2"
                     onClick={() => setArchiveLessonOpen(false)}
                 >
                     Close
                 </button>
                 <button 
-                    className="w-1/2 rounded-md bg-[#BE3D2A]"
+                    className="w-1/2 rounded-md bg-[#BE3D2A] xl:text-lg p-2"
                     onClick={handleSubmit}
                 >
                     Confirm

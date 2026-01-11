@@ -130,7 +130,7 @@ export default function AddUser({ onSuccess, onClose }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full mt-6 py-3 bg-[#10375C] text-white font-bold transition-all duration-200 
+          className="w-full mt-6 xl:text-lg p-2 bg-[#10375C] text-white font-bold transition-all duration-200 
                      hover:bg-[#0a2642] active:scale-95 shadow-md rounded-xl disabled:opacity-50"
         >
           {loading ? "SUBMITTING..." : "SUBMIT"}

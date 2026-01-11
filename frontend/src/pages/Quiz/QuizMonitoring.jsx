@@ -69,7 +69,7 @@ export default function QuizMonitoring(){
             </div>
             <div className='flex justify-end '>
                 <button onClick={() => navigate(-1)} 
-                    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                    className="bg-blue-600 text-white xl:text-lg p-2 rounded-md hover:bg-blue-700">
                     Back
                 </button>
             </div>

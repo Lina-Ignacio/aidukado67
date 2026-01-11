@@ -76,7 +76,8 @@ export default function LessonViewer({materialData, setIsVisible, isVisible, set
                             <button
                                 onClick={() => setIsVisible(true)}
                                 className="w-full lg:w-4/5 bg-[#102E50] text-white py-2 rounded-md
-                                        hover:bg-[#0B2239] flex items-center justify-center gap-2"
+                                        hover:bg-[#0B2239] flex items-center justify-center gap-2
+                                        xl:text-lg p-2"
                             >
                                 <MdVisibility className="text-lg md:text-2xl" />
                                 <span className="text-md md:text-lg">View Material</span>
@@ -90,7 +91,8 @@ export default function LessonViewer({materialData, setIsVisible, isVisible, set
                             <button
                             onClick={handleClick}
                             className="w-full lg:w-4/5 bg-[#102E50] text-white py-2 rounded-md
-                                        hover:bg-[#0B2239] flex items-center justify-center gap-2"
+                                        hover:bg-[#0B2239] flex items-center justify-center gap-2
+                                        xl:text-lg p-2"
                             >
                             {teacherRole ? <MdAssessment className="text-lg md:text-2xl" /> :
                                             <MdDescription className="text-lg md:text-2xl" />}
@@ -104,7 +106,7 @@ export default function LessonViewer({materialData, setIsVisible, isVisible, set
                                 <button
                                     onClick={() => setEditMaterialOpen(true)}
                                     className="w-full h-[44px] sm:h-[50px] bg-[#102E50] text-white rounded-lg
-                                                flex items-center justify-center gap-2"
+                                                flex items-center justify-center gap-2 xl:text-lg p-2"
                                 >
                                     <MdEdit className="text-lg md:text-2xl" />
                                     <span className="text-md md:text-lg">Edit</span>
@@ -113,7 +115,7 @@ export default function LessonViewer({materialData, setIsVisible, isVisible, set
                                 <button
                                     onClick={() => setArchiveMaterialOpen(true)}
                                     className="w-full h-[44px] sm:h-[50px] bg-[#BE3D2A] text-white rounded-lg
-                                                flex items-center justify-center gap-2"
+                                                flex items-center justify-center gap-2 xl:text-lg p-2"
                                 >
                                     <MdArchive className="text-lg md:text-2xl" />
                                     <span className="text-md md:text-lg">Archive</span>

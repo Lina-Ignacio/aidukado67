@@ -146,7 +146,8 @@ export default function Login() {
                     <button 
                         disabled={loading} 
                         className={`p-3 bg-[#102E50] ${loading && "opacity-50"} rounded-lg text-white 
-                        font-bold lg:text-[20px] hover:bg-[#E78B48] focus:outline-none transition duration-200`}
+                        font-bold lg:text-[20px] hover:bg-[#E78B48] focus:outline-none transition duration-200
+                        xl:text-lg p-2`}
                     >
                         {loading ? "Logging in..." : "Login"}
                     </button>

@@ -17,7 +17,7 @@ export default function ClassicButton({
       className={`grid grid-cols-[1fr_2.5fr] shadow-md relative 
                   text-white h-full p-0 m-0 border-none overflow-hidden rounded-2xl
                   transition-all duration-200 ease-in-out
-                  hover:brightness-110 hover:shadow-lg
+                  hover:brightness-110 hover:shadow-lg xl:text-lg p-2
                   active:scale-95 active:brightness-90 ${className}`}
       style={{ backgroundColor: mainColor }}
     >

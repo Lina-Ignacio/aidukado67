@@ -114,7 +114,7 @@ export default function EditUser({ userId, onClose, onSuccess }) {
   const labelClass = "text-[#102E50] font-bold opacity-75";
 
   return (
-    <div className="w-full max-w-lg flex flex-col bg-white p-6 shadow-xl rounded-xl">
+    <div className="w-full max-w-lg flex flex-col bg-white p-6 shadow-xl rounded-xl h-auto">
       {errors.api && <p className="text-red-800">{errors.api}</p>}
       {success && <p className="text-green-800">{success}</p>}
       <div 
@@ -127,7 +127,7 @@ export default function EditUser({ userId, onClose, onSuccess }) {
       <form
         method="post"
         onSubmit={handleSubmit}
-        className="flex flex-col w-full gap-2 text-left"
+        className="flex flex-col h-auto w-full gap-2 text-left"
       >
         <label htmlFor="firstName" className={labelClass}>
           First Name:
@@ -190,7 +190,7 @@ export default function EditUser({ userId, onClose, onSuccess }) {
         <button
           type="submit"
           className="w-full mt-3 bg-[#10375C] text-white transition-all duration-200 
-                     hover:bg-[#0a2642] active:scale-95 shadow-md"
+                     hover:bg-[#0a2642] active:scale-95 shadow-md xl:text-lg p-2"
         >
           {loading ? "SUBMITTING..." : "SUBMIT"}
         </button>

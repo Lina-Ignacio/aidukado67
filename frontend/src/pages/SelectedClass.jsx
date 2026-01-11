@@ -118,7 +118,7 @@ export default function SelectedClass() {
           <div className="flex flex-col md:flex-row w-3/4 sm:w-[80%] h-auto gap-2 mx-auto justify-end mt-3">
             <button 
               onClick={() => setIsOpen(true)} 
-              className="shadow-xl rounded p-3 text-white font-semibold bg-[#102E50] 
+              className="shadow-xl rounded xl:text-lg p-2 text-white font-semibold bg-[#102E50] 
               hover:bg-[#0B2239] hover:text-white transition-transform duration-300 flex justify-center
               items-center gap-1 rounded-lg" 
             > 
@@ -128,7 +128,7 @@ export default function SelectedClass() {
 
             <button
               onClick={() => setIsOpenTOS(true)}
-              className=" p-3 bg-[#E78B48] text-white rounded font-semibold
+              className="xl:text-lg p-2 bg-[#E78B48] text-white rounded font-semibold
               hover:bg-[#D9773A] hover:text-white flex justify-center
               items-center gap-1 rounded-lg"
             >

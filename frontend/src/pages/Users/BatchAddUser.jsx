@@ -89,7 +89,7 @@ export default function BatchAddUser({onClose, onSuccess}) {
             <button
                 onClick={handleUpload}
                 disabled={!rows.length}
-                className={`px-6 py-2 rounded-lg font-medium transition ${
+                className={`xl:text-lg p-2 rounded-lg font-medium transition ${
                     rows.length
                     ? "bg-[#102E50] text-white hover:bg-[#0b223a]"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"

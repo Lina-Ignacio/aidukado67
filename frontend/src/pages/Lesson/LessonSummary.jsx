@@ -65,7 +65,8 @@ export default function Summary() {
         <div className="mt-6 flex justify-end">
           <button
             onClick={handleClick}
-            className="bg-[#333446] hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg shadow transition"
+            className="bg-[#333446] hover:bg-blue-700 text-white font-medium xl:text-lg p-2 
+            rounded-lg shadow transition"
           >
             Back
           </button>

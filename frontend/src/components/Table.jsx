@@ -62,7 +62,7 @@ export default function Table({ columns, data, setSelectedData, setIsOpenEditMod
                                 <td className={tableDataStyle}>
                                     <div className="w-full h-full flex gap-2">
                                         <button
-                                            className="text-sm text-white bg-[#2563EB]/90 p-2"
+                                            className="text-sm text-white bg-[#2563EB]/90 p-2 xl:text-md p-2"
                                             onClick={ () => {
                                                 setSelectedData(row);
                                                 setIsOpenEditModal(true);
@@ -71,7 +71,7 @@ export default function Table({ columns, data, setSelectedData, setIsOpenEditMod
                                             Edit
                                         </button>
                                         <button
-                                            className="text-sm text-white bg-[#8E1616] p-2"
+                                            className="text-sm text-white bg-[#8E1616] p-2 xl:text-md p-2"
                                             onClick={ () => {
                                                 setSelectedData(row);
                                                 setIsOpenDeleteModal(true);
