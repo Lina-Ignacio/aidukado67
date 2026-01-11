@@ -30,7 +30,7 @@ export default function AddClass({ onClose, onSuccess}) {
 
     const getTeachers = async () => {
         try{
-            const response = await axios.get("http://localhost:8000/user/get_teachers")
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/user/get_teachers`)
 
             setTeachers(response.data)
         } catch(err) {
@@ -44,7 +44,7 @@ export default function AddClass({ onClose, onSuccess}) {
 
     const getSubjects = async () => {
         try {
-            const response = await axios.get("http://localhost:8000/subject/get")
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/subject/get`)
 
             setSubjects(response.data)
         } catch(err) {
@@ -103,7 +103,7 @@ export default function AddClass({ onClose, onSuccess}) {
 
 
         try {
-            const response = await axios.post("http://localhost:8000/classes/create", formData, 
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/classes/create`, formData, 
                 {headers: {'Content-Type' : 'application/json'}}
             )
 

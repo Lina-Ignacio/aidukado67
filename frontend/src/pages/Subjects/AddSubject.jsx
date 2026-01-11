@@ -46,7 +46,7 @@ export default function AddSubject({ onSuccess, onClose}) {
 
 
         try {
-            const response = await axios.post("http://localhost:8000/subject/create", formData, 
+            const response = await axios.post(`${import.meta.env.VITE_API_URL}/subject/create`, formData, 
                 {headers: {'Content-Type' : 'application/json'}
             });
 

@@ -41,7 +41,7 @@ export default function Sidebar({closeMobile}) {
     useTermStore.getState().clearTerm();
     useLessonStore.getState().clearLessonId();
     try {
-      const response = await axios.post("http://localhost:8000/logout",
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/logout`,
       {},
       {withCredentials: true}
     )

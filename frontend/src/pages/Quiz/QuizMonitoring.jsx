@@ -14,7 +14,7 @@ export default function QuizMonitoring(){
 
     useEffect (() => {
         const fetchScores = async () => {
-            const res = await axios.get(`http://localhost:8000/quizMonitoring/${quizId}`);
+            const res = await axios.get(`${import.meta.env.VITE_API_URL}/quizMonitoring/${quizId}`);
             setQuizTitle(res.data.quizTitle)
             setLessonTitle(res.data.lessonTitle)
             setData(res.data.scores);

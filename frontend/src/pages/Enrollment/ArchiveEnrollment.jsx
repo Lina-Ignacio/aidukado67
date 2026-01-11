@@ -9,7 +9,7 @@ export default function DeleteEnrollment({enrollmentId, setSuccess, onClose, onS
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.delete(`http://localhost:8000/enrollment/delete/${enrollmentId}`)
+            const response = await axios.delete(`${import.meta.env.VITE_API_URL}/enrollment/delete/${enrollmentId}`)
             setSuccess(response.data.message);
 
             if (onSuccess) onSuccess();

@@ -11,7 +11,7 @@ export default function DeleteSubject({ subject_id, onClose, onSuccess}) {
         e.preventDefault()
 
         try {
-            await axios.delete(`http://localhost:8000/subject/delete/${subject_id}`)
+            await axios.delete(`${import.meta.env.VITE_API_URL}/subject/delete/${subject_id}`)
 
             if(onSuccess) onSuccess();
         } catch (err) {

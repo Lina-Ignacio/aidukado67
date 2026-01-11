@@ -16,7 +16,7 @@ export default function StudentClasses() {
 
     const getClasses = async () => {
       try{
-        const response = await axios.get(`http://localhost:8000/enrollment/getByUserId/${userId}`)
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/enrollment/getByUserId/${userId}`)
         setClasses(response.data);
         console.log(response.data)
       }catch(error){

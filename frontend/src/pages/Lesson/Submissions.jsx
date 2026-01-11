@@ -16,7 +16,7 @@ export default function Submissions() {
   const fetchSubmissions = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/student_submission/material/${materialId}`
+        `${import.meta.env.VITE_API_URL}/student_submission/material/${materialId}`
       );
       setSubmissions(response.data);
       setCurrentPage(1); // reset to first page when loading new records
@@ -45,7 +45,7 @@ export default function Submissions() {
     setSelectedSubmission(submission);
     try {
       const response = await axios.get(
-        `http://localhost:8000/student_submission/get_url/${submission.id}`
+        `${import.meta.env.VITE_API_URL}/student_submission/get_url/${submission.id}`
       );
       setFileUrl(response.data.url);
       setOpenFile(true);
@@ -85,7 +85,7 @@ export default function Submissions() {
       };
 
       await axios.patch(
-        `http://localhost:8000/student_submission/update_score/${selectedSubmission.id}`,
+        `${import.meta.env.VITE_API_URL}/student_submission/update_score/${selectedSubmission.id}`,
         payload
       );
 

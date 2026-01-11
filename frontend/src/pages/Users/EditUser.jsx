@@ -14,7 +14,7 @@ export default function EditUser({ userId, onClose, onSuccess }) {
 
   const getUser = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/user/getById/${userId}`);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/user/getById/${userId}`);
       setFormData({
         email: response.data.email,
         role: response.data.role,
@@ -79,7 +79,7 @@ export default function EditUser({ userId, onClose, onSuccess }) {
     setLoading(true);
 
     try {
-      const res = await axios.patch(`http://localhost:8000/user/patch/${userId}`, {
+      const res = await axios.patch(`${import.meta.env.VITE_API_URL}/user/patch/${userId}`, {
         email: formData.email,
         role: formData.role,
         firstName: formData.firstName,

@@ -42,7 +42,7 @@ export default function TaskViewer({
   const checkSubmission = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/student_submission/check/${materialData.materialId}/${userId}`
+        `${import.meta.env.VITE_API_URL}/student_submission/check/${materialData.materialId}/${userId}`
       );
 
       if (response.data) {
@@ -61,7 +61,7 @@ export default function TaskViewer({
   const fetchSubmissionStats = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:8000/student_submission/stats/${materialData.materialId}`
+        `${import.meta.env.VITE_API_URL}/student_submission/stats/${materialData.materialId}`
       );
 
       if (response.data) {
@@ -122,7 +122,7 @@ export default function TaskViewer({
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/student_submission/upload",
+        `${import.meta.env.VITE_API_URL}/student_submission/upload`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
@@ -140,7 +140,7 @@ export default function TaskViewer({
     if (!submissionData) return;
     try {
       await axios.patch(
-        `http://localhost:8000/student_submission/unsubmit/${submissionData.id}`
+        `${import.meta.env.VITE_API_URL}/student_submission/unsubmit/${submissionData.id}`
       );
       setSuccessMessage("Submission removed successfully.");
       setSubmissionData(null);

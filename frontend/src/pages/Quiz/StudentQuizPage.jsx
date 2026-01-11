@@ -27,7 +27,7 @@ export default function StudentTest() {
     const fetchUserAnswer = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8000/getUserAnswers/${quizId}/${student_id}`
+          `${import.meta.env.VITE_API_URL}/getUserAnswers/${quizId}/${student_id}`
         );
 
         if (res.data.taken) {
@@ -57,7 +57,7 @@ export default function StudentTest() {
     const fetchQuiz = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:8000/getQuiz/${quizId}`
+          `${import.meta.env.VITE_API_URL}/getQuiz/${quizId}`
         );
         setQuiz(res.data);
         quizRef.current = res.data;
@@ -76,7 +76,7 @@ export default function StudentTest() {
       try {
         const data = { quiz_id: quizId, student_id };
         const response = await axios.post(
-          "http://localhost:8000/saveStartTime",
+          `${import.meta.env.VITE_API_URL}/saveStartTime`,
           data,
           { headers: { "Content-Type": "application/json" } }
         );
@@ -185,7 +185,7 @@ export default function StudentTest() {
     };
 
     try {
-      await axios.post("http://localhost:8000/saveScore", saveScore);
+      await axios.post(`${import.meta.env.VITE_API_URL}/saveScore`, saveScore);
     } catch (error) {
       console.error("Error saving score:", error);
     }

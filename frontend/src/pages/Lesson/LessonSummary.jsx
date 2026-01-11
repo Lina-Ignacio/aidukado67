@@ -14,20 +14,20 @@ export default function Summary() {
     const fetchSummary = async () => {
       try {
 
-        const res = await axios.get(`http://localhost:8000/getLesson/${materialId}`);
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/getLesson/${materialId}`);
         console.log(res.data)
         const formData = new FormData();
         formData.append('id', res.data.id);
         formData.append('lesson', res.data.extracted_content);
 
-        await axios.post("http://localhost:8000/class_material/generateSummary", formData, {
+        await axios.post(`${import.meta.env.VITE_API_URL}/class_material/generateSummary`, formData, {
           headers: {
           "Content-Type": "multipart/form-data",
           }
         }
          );
         
-        const response = await axios.get(`http://localhost:8000/class_material/getSummary/${res.data.id}`)
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/class_material/getSummary/${res.data.id}`)
         console.log(response.data)
         setSummary(response.data.summary)
         

@@ -25,7 +25,7 @@ export default function AIQuiz() {
     setLoading(true);
 
     try {
-      const res = await axios.get(`http://localhost:8000/getLesson/${materialId}`);
+      const res = await axios.get(`${import.meta.env.VITE_API_URL}/getLesson/${materialId}`);
       setLessonId(res.data.id)
 
       const formData = new FormData();
@@ -34,7 +34,7 @@ export default function AIQuiz() {
       formData.append("type", quizType);
       
 
-      const response = await axios.post("http://localhost:8000/getQuiz", formData, {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/getQuiz`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         }

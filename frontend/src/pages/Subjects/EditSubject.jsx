@@ -18,7 +18,7 @@ export default function EditSubject({ subject_id, onClose, onSuccess }) {
 
     const getSubjects = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/subject/getById/${subject_id}`, {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/subject/getById/${subject_id}`, {
                 params: {query : subject_id}
             })
             setFormData({
@@ -68,7 +68,7 @@ export default function EditSubject({ subject_id, onClose, onSuccess }) {
         setLoading(true)
 
         try {
-            const response = await axios.patch(`http://localhost:8000/subject/update/${subject_id}`, {
+            const response = await axios.patch(`${import.meta.env.VITE_API_URL}/subject/update/${subject_id}`, {
                 name: formData.name,
                 description: formData.description
             })

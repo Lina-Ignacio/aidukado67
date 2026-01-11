@@ -23,7 +23,7 @@ export default function Questions({questions = [], title = "", total_points = 0,
   useEffect(() => {
     const fetchStudents = async () => {
       try{
-        const getStudents = await axios.get(`http://localhost:8000/getStudentsByClass/${class_id}`);
+        const getStudents = await axios.get(`${import.meta.env.VITE_API_URL}/getStudentsByClass/${class_id}`);
         setStudents(getStudents.data || []);
         console.log("Students", getStudents.data )
       } catch(error){
@@ -132,7 +132,7 @@ export default function Questions({questions = [], title = "", total_points = 0,
 
       console.log("📦 Sending quiz data:", quizData);
 
-      const saveQuiz = await axios.post("http://localhost:8000/assignQuiz", quizData,{
+      const saveQuiz = await axios.post(`${import.meta.env.VITE_API_URL}/assignQuiz`, quizData,{
          headers: { 
             "Content-Type": "application/json" 
         }}

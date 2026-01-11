@@ -51,7 +51,7 @@ export default function EnrollmentManagement() {
 
   const getStudents = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/user/get_students");
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/user/get_students`);
       setStudents(response.data);
     } catch (err) {
       if (err.response?.data?.detail) {
@@ -70,7 +70,7 @@ export default function EnrollmentManagement() {
 
   const getClasses = async () => {
     try {
-      const response = await axios.get("http://localhost:8000/classes/get");
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/classes/get`);
       setClasses(response.data);
     } catch (err) {
       if (err.response?.data?.detail) {
@@ -90,7 +90,7 @@ export default function EnrollmentManagement() {
   const getEnrollment = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:8000/enrollment/get", {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/enrollment/get`, {
         params: query.trim() !== "" ? { query } : {}
       });
 

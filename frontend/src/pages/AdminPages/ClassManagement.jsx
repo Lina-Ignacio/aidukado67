@@ -35,7 +35,7 @@ export default function ClassManagement() {
     const getClasses = async () => {
         try {
             setLoading(true);
-            const response = await axios.get("http://localhost:8000/classes/get", {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/classes/get`, {
                 params : query.trim() !== "" ? {query} : {}
             })
             console.log(response.data);

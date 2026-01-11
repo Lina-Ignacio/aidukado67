@@ -50,7 +50,7 @@ export default function SelectedClass() {
 
   const getLessons = async() => {
     try {
-        const response = await axios.get(`http://localhost:8000/class_material/getByClassId/${classId}`)
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/class_material/getByClassId/${classId}`)
         setMaterials(response.data)
         console.log(response.data)
     } catch(err) {
@@ -72,7 +72,7 @@ export default function SelectedClass() {
 
   const getQuizzes = async() => {
     try{
-      const response = await axios.get(`http://localhost:8000/getQuizzes/${classId}`, {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/getQuizzes/${classId}`, {
         params: {term}
       })
       console.log(response.data);

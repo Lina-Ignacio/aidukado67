@@ -60,7 +60,7 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
     formData.append("file", file);
 
     try {
-      const baseUrl = "http://localhost:8000";
+      const baseUrl = `${import.meta.env.VITE_API_URL}`;
       const url = `${baseUrl}/class_material/upload`;
 
       const response = await axios.post(url, formData, {

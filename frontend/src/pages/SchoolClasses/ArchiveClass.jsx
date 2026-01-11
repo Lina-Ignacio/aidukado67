@@ -11,7 +11,7 @@ export default function DeleteClass({class_id, onClose, onSuccess}) {
         e.preventDefault();
 
         try {
-            await axios.delete(`http://localhost:8000/classes/delete/${class_id}`)
+            await axios.delete(`${import.meta.env.VITE_API_URL}/classes/delete/${class_id}`)
 
             if (onSuccess) onSuccess
         } catch(err) {

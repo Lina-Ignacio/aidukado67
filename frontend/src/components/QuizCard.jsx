@@ -10,7 +10,7 @@ export default function QuizCard({ quizId, lessonTitle, quizTitle, createdAt, on
   const handleArchive = async (e) => {
     e.stopPropagation(); // prevent navigation on click
     try {
-      await axios.put(`http://localhost:8000/archiveQuiz/${quizId}`);
+      await axios.put(`${import.meta.env.VITE_API_URL}/archiveQuiz/${quizId}`);
       console.log("Quiz archived successfully");
       if (onArchive) onArchive(quizId);
     } catch (error) {

@@ -46,7 +46,7 @@ export default function BatchAddUser({onClose, onSuccess}) {
             console.log(transformedData);
             
             const response = await axios.post(
-                "http://localhost:8000/user/batch_create", 
+                `${import.meta.env.VITE_API_URL}/user/batch_create`, 
                 transformedData,
                 {
                     headers: {"Content-Type": "application/json"}

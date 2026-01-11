@@ -14,7 +14,7 @@ export default function PostTest() {
         setLoading(true);
         const fetchPostTest = async () =>{
             try {
-                const response = await axios.post("http://localhost:8000/post_test", { generatedLesson: lesson, origFile: origFile});
+                const response = await axios.post(`${import.meta.env.VITE_API_URL}/post_test`, { generatedLesson: lesson, origFile: origFile});
                 setQuestions(response.data.questions)
             } catch(error) {
                 console.error("Post failed", error)

@@ -40,7 +40,7 @@ export default function SelectedLesson() {
 
     const getMaterial = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/class_material/getMaterialById/${materialId}`)
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/class_material/getMaterialById/${materialId}`)
 
             setMaterial(response.data);
             console.log("ge", response.data)

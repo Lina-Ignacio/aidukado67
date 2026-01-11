@@ -34,7 +34,7 @@ export default function EditClass({classId, onClose, onSuccess}) {
     // Getting List of Teachers
     const getTeachers = async () => {
         try{
-            const response = await axios.get("http://localhost:8000/user/get_teachers")
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/user/get_teachers`)
             setTeachers(response.data)
             
         } catch(err) {
@@ -50,7 +50,7 @@ export default function EditClass({classId, onClose, onSuccess}) {
 
     const getSubjects = async () => {
         try {
-            const response = await axios.get("http://localhost:8000/subject/get")
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/subject/get`)
 
             setSubjects(response.data)
         } catch(err) {
@@ -66,7 +66,7 @@ export default function EditClass({classId, onClose, onSuccess}) {
 
     const getClass = async () => {
         try {
-            const response = await axios.get(`http://localhost:8000/classes/getById/${classId}`)
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/classes/getById/${classId}`)
             console.log(response.data)
             setFormData({
                 subjectId: response.data.subject.id,
@@ -124,7 +124,7 @@ export default function EditClass({classId, onClose, onSuccess}) {
 
         try {
             setLoading(true);
-            const response = await axios.patch(`http://localhost:8000/classes/patch/${classId}`, {
+            const response = await axios.patch(`${import.meta.env.VITE_API_URL}/classes/patch/${classId}`, {
                 subject_id: formData.subjectId,
                 teacher_id: formData.teacherId,
                 name: formData.name

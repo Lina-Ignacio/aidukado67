@@ -9,7 +9,7 @@ export default function DeleteUser({ userId, onClose, onSuccess}) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await axios.patch(`http://localhost:8000/user/archive/${userId}`, )
+            await axios.patch(`${import.meta.env.VITE_API_URL}/user/archive/${userId}`, )
             if(onSuccess) onSuccess();
         } catch (err) {
             if (err.response?.data?.detail) {

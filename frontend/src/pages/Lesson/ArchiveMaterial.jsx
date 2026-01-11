@@ -7,7 +7,7 @@ export default function ArchiveMaterial ({setArchiveLessonOpen, materialType, ma
         e.preventDefault();
         
         try {
-            const response = await axios.patch(`http://localhost:8000/class_material/toggleArchive/${materialId}`);
+            const response = await axios.patch(`${import.meta.env.VITE_API_URL}/class_material/toggleArchive/${materialId}`);
     
             setSuccessMessage(response.data.message);
             setArchiveError("");

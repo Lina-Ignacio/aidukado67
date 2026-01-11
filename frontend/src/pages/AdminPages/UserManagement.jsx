@@ -42,7 +42,7 @@ export default function UserManagement() {
     const getUsers = async() => {
         try {
             setLoading(true)
-            const response = await axios.get("http://localhost:8000/user/get", {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/user/get`, {
                 params : query.trim() !== "" ? { query } : {}
             })
             setUsers(response.data)

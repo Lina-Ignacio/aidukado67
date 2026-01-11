@@ -49,7 +49,7 @@ export default function AddEnrollment({ studentOptions, classOptions, setSuccess
 
     try {
       const response = await axios.post(
-        "http://localhost:8000/enrollment/create",
+        `${import.meta.env.VITE_API_URL}/enrollment/create`,
         formData,
         { headers: { "Content-Type": "application/json" } }
       );

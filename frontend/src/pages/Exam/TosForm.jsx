@@ -39,7 +39,7 @@ export default function TOSForm({ lessons, onClose, onSuccess }) {
       };
 
       const response = await axios.post(
-        "http://localhost:8000/exam/compute_tos",
+        `${import.meta.env.VITE_API_URL}/exam/compute_tos`,
         payload
       );
       console.log(response.data)

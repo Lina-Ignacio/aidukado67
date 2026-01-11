@@ -15,7 +15,7 @@ export default function EditMaterial({materialId, setEditMaterialOpen, setSucces
 
   const getMaterialInfo = async() => {
     try {
-      const response = await axios.get(`http://localhost:8000/class_material/getMaterialById/${materialId}`)
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/class_material/getMaterialById/${materialId}`)
       setMetaData(response.data);
       setFetchError("");
     }catch(err) {
@@ -47,7 +47,7 @@ export default function EditMaterial({materialId, setEditMaterialOpen, setSucces
       const formData = new FormData();
       formData.append("metadata", JSON.stringify(metaData));
       if (file) formData.append("file", file); 
-      const response = await axios.patch(`http://localhost:8000/class_material/updateMaterial/${materialId}`, formData, {
+      const response = await axios.patch(`${import.meta.env.VITE_API_URL}/class_material/updateMaterial/${materialId}`, formData, {
         headers : {"Content-Type" : "multipart/form-data"}
       })
 

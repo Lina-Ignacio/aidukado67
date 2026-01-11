@@ -37,7 +37,7 @@ export default function EditEnrollment({ enrollmentId, classOptions, studentOpti
 
   const getEnrollmentData = async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/enrollment/getById/${enrollmentId}`);
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/enrollment/getById/${enrollmentId}`);
       setFormData({
         classId: response.data.classId,   
         studentId: response.data.studentId,
@@ -86,7 +86,7 @@ export default function EditEnrollment({ enrollmentId, classOptions, studentOpti
     try {
       setLoading(true);
 
-      const response = await axios.patch(`http://localhost:8000/enrollment/patch/${enrollmentId}`,
+      const response = await axios.patch(`${import.meta.env.VITE_API_URL}/enrollment/patch/${enrollmentId}`,
         {
           class_id: formData.classId,     
           student_id: formData.studentId,

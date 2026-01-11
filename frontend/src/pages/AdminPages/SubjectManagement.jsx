@@ -32,7 +32,7 @@ export default function SubjectManagement() {
     const getSubjects = async () => {
         try {
             setLoading(true)
-            const response = await axios.get("http://localhost:8000/subject/get", {
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/subject/get`, {
                 params: query.trim() !== "" ? {query} : {}
             })
             setSubjectData(response.data);
