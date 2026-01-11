@@ -3,20 +3,17 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "r
 //import Sidebar from '../components/sidebar';
 import AIPretest from "./pages/AIPretest";
 //import Dashboard from "./pages/Dashboard";
-import Lesson from './pages/Lesson';
 import PostTest from './pages/PostTest';
 import Login from "./components/Login";
 import Signup from "./pages/Users/AddUser";
 import StudentArea from './pages/StudentArea';
 
 import RoleProtectedRoute from './components/RoleProtectedRoute';
-import AdminDashboard from './pages/AdminDashboard';
 import UserManagement from './pages/AdminPages/UserManagement';
 import ClassManagement from './pages/AdminPages/ClassManagement';
 import SubjectManagement from './pages/AdminPages/SubjectManagement';
 import EnrollmentManagement from './pages/AdminPages/EnrollmentManagement';
 import AboutPage from './pages/About';
-import Settings from './pages/Settings';
 import StudentClasses from './pages/StudentClasses';
 import TeacherClasses from './pages/TeacherClasses';
 import SelectedClass from './pages/SelectedClass';
@@ -77,7 +74,7 @@ function AppContent() {
             />
 
             <Route 
-              path="subjects" 
+              path="/subjects" 
               element={
                 <RoleProtectedRoute allowed_roles={["student"]}>
                   <StudentArea />
@@ -94,33 +91,107 @@ function AppContent() {
               }
             />
 
-            <Route path="/lesson" element={<Lesson/>}/>
             <Route path="/postTest" element={<PostTest/>}/>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
-            <Route path='/studentClasses' element={<StudentClasses />}/>
-            <Route path="/teacherClasses" element={<TeacherClasses />} />
+            <Route 
+              path="/studentClasses" 
+              element={
+                <RoleProtectedRoute allowed_roles={"student"}>
+                  <StudentClasses/>
+                </RoleProtectedRoute>
+              }
+            />
 
-            <Route path='/selectedClass/:classId/:term' element={<SelectedClass />}/>
-            <Route path='/selectedLesson/:materialId/:materialType' element={<SelectedLesson />} />
-            <Route path='/termPage' element={<TermPage />} />
-            <Route path='/fileView' element={<FileView />} />
+            <Route 
+              path="/teacherClasses" 
+              element={
+                <RoleProtectedRoute allowed_roles={"teacher"}>
+                  <TeacherClasses/>
+                </RoleProtectedRoute>
+              }
+            />
 
-            <Route path='/createQuiz/:classId/:materialId' element={<CreateQuiz />} />
-            <Route path='/studentQuizPage/:quizId' element={<StudentQuizPage />} />
-            <Route path='/lessonSummary/:materialId' element={<LessonSummary />} />
-            <Route path='/quizMonitoring/:quizId' element={<QuizMonitoring/>} />
+            <Route 
+              path="/selectedClass/:classId/:term" 
+              element={
+                <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
+                  <SelectedClass/>
+                </RoleProtectedRoute>
+              }
+            />
+
+            <Route 
+              path="/selectedLesson/:materialId/:materialType" 
+              element={
+                <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
+                  <SelectedLesson/>
+                </RoleProtectedRoute>
+              }
+            />
+
+            <Route 
+              path="/termPage" 
+              element={
+                <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
+                  <TermPage/>
+                </RoleProtectedRoute>
+              }
+            />
+
+            <Route 
+              path="/fileView" 
+              element={
+                <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
+                  <FileView/>
+                </RoleProtectedRoute>
+              }
+            />
+
+            <Route 
+              path="/createQuiz/:classId/:materialId" 
+              element={
+                <RoleProtectedRoute allowed_roles={["teacher"]}>
+                  <CreateQuiz/>
+                </RoleProtectedRoute>
+              }
+            />
+            
+            <Route 
+              path="/studentQuizPage/:quizId" 
+              element={
+                <RoleProtectedRoute allowed_roles={["student"]}>
+                  <StudentQuizPage/>
+                </RoleProtectedRoute>
+              }
+            />
+
+            <Route 
+              path="/lessonSummary/:materialId" 
+              element={
+                <RoleProtectedRoute allowed_roles={["student"]}>
+                  <LessonSummary/>
+                </RoleProtectedRoute>
+              }
+            />
+
+            <Route 
+              path="/quizMonitoring/:quizId" 
+              element={
+                <RoleProtectedRoute allowed_roles={["teacher"]}>
+                  <QuizMonitoring/>
+                </RoleProtectedRoute>
+              }
+            />
             
             <Route path='/userManagement' element={<UserManagement/>}/>
             <Route path='/classManagement' element={<ClassManagement/>}/>
             <Route path='/subjectManagement' element={<SubjectManagement/>} />
             <Route path="/enrollmentManagement" element={<EnrollmentManagement />} />
-            <Route path="/admin" element={<AdminDashboard />}/>
-            <Route path='/settings' element={<Settings/>}/>
             <Route path='/help' element={<AboutPage/>}/>
 
-            <Route path="*" element={<h1>404 - Page Not Found</h1>} />
+            <Route path="*" element={<h1 className='text-black'>404 - Page Not Found</h1>} />
           </Routes>
           
         </Layout>

@@ -66,14 +66,14 @@ export default function BatchAddUser({onClose, onSuccess}) {
     };
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-white p-6 rounded-2xl shadow-xl space-y-4 relative">
+        <div className="w-full h--auto flex flex-col items-center justify-center bg-white p-6 rounded-2xl shadow-xl space-y-4 relative">
             
-            <MdClose
-                size={24}
-                color="#102E50"
-                className="absolute top-4 right-4 cursor-pointer hover:scale-110 transition-transform"
-                onClick={onClose}
-            />
+            <div 
+                className="self-end cursor-pointer bg-[#EBECF1] rounded-full p-1
+                    transition-transform duration-300 hover:scale-110" 
+                onClick={onClose}>
+                <MdClose className="text-[#393E46] text-2xl" />
+            </div>
 
             
             {uploadError && <p className="text-red-600 font-medium">{uploadError}</p>}

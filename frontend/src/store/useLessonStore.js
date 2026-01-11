@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
-const createLessonStore = create(
+const useLessonStore = create(
   persist(
     (set) => ({
       lessonId: null,
@@ -16,4 +16,4 @@ const createLessonStore = create(
   )
 );
 
-export default createLessonStore;
+export default useLessonStore;

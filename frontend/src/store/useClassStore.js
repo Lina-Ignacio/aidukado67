@@ -8,7 +8,7 @@ const useClassStore = create(
       className: "",
 
       storeClassDetail: (id, name) => set({ classId: id, className: name }),
-      clearClassId: () => set({ classId: null, className: "" }),
+      clearClassDetail: () => set({ classId: null, className: "" }),
     }),
     {
       name: "class-storage",

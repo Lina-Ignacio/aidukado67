@@ -23,6 +23,7 @@ export default function EditEnrollment({ enrollmentId, classOptions, studentOpti
   const customStyles = {
     option: (provided, state) => ({
       ...provided,
+      fontSize: "14px",
       color: state.isSelected ? "white" : "#102E50",
       backgroundColor: state.isSelected
         ? "#102E50"
@@ -109,13 +110,15 @@ export default function EditEnrollment({ enrollmentId, classOptions, studentOpti
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-center items-center bg-white p-[4%] shadow-xl">
+    <div className="w-full h-auto flex flex-col justify-center items-center bg-white 
+            py-6 px-4 shadow-xl rounded-xl" 
+    >
       {fetchError && <p className="text-red-800">{fetchError}</p>}
       {submitError && <p className="text-red-800">{submitError}</p>}
       <form
         method="post"
         onSubmit={handleSubmit}
-        className="flex flex-col w-full h-full gap-[2%] text-left rounded-2xl"
+        className="flex flex-col w-full h-auto gap-3 text-left rounded-2xl"
       >
         <label className={labelClass}>Class Name</label>
         <Select
@@ -145,16 +148,17 @@ export default function EditEnrollment({ enrollmentId, classOptions, studentOpti
           name="status"
           value={formData.status}
           onChange={handleChange}
-          className="w-full h-[15%] bg-gray-700 rounded-md p-2"
+          className="w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+              focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200"
         >
-          <option value="">select a status</option>
+          <option value="">Select a Status</option>
           <option value="enrolled">Enrolled</option>
           <option value="dropped">Dropped</option>
           <option value="finished">Finished</option>
         </select>
         {formError.statusError && <p className="text-red-800">{formError.statusError}</p>}
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 my-4">
           <button
             className="w-1/2 mt-[1%] bg-[#EBEBEB] font-bold text-[#102E50] transition-transform duration-200 hover:scale-95 shadow-md"
             onClick={onClose}

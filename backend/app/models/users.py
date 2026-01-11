@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, func
+from sqlalchemy import Column, Integer, String, TIMESTAMP, func, Boolean
 from sqlalchemy.orm import relationship
 from app.database import Base
 from app import models
@@ -15,6 +15,7 @@ class Users(Base):
     last_name = Column(String(100))
     middle_name = Column(String(100))
     created_at = Column(TIMESTAMP, server_default=func.now())
+    is_archive = Column(Boolean, default=False, nullable=False)
     
     
     classes_ = relationship("Classes", back_populates="user_teacher") 

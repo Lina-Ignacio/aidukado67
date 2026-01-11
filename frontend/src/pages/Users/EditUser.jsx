@@ -109,24 +109,25 @@ export default function EditUser({ userId, onClose, onSuccess }) {
     }
   };
 
-  const inputClass =
-    "w-full h-[8%] border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-[1%] rounded-md shadow-md";
+  const inputClass =`w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+            focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200`;
   const labelClass = "text-[#102E50] font-bold opacity-75";
 
   return (
-    <div className="w-full h-full flex flex-col justify-center items-center bg-white p-[4%] shadow-xl">
+    <div className="w-full max-w-lg flex flex-col bg-white p-6 shadow-xl rounded-xl">
       {errors.api && <p className="text-red-800">{errors.api}</p>}
       {success && <p className="text-green-800">{success}</p>}
-      <MdClose
-        size={24}
-        color="#102E50"
-        className="self-end"
-        onClick={onClose}
-      />
+      <div 
+          className="self-end cursor-pointer bg-[#EBECF1] rounded-full p-1 
+              transition-transform duration-300 hover:scale-110" 
+          onClick={onClose}
+      >
+        <MdClose className="text-[#393E46] text-2xl" />
+      </div>
       <form
         method="post"
         onSubmit={handleSubmit}
-        className="flex flex-col w-full h-full gap-[2%] text-left rounded-2xl"
+        className="flex flex-col w-full gap-2 text-left"
       >
         <label htmlFor="firstName" className={labelClass}>
           First Name:
@@ -188,7 +189,8 @@ export default function EditUser({ userId, onClose, onSuccess }) {
 
         <button
           type="submit"
-          className="w-full mt-[1%] bg-[#10375C] text-white transition-transform duration-200 hover:scale-95 shadow-md"
+          className="w-full mt-3 bg-[#10375C] text-white transition-all duration-200 
+                     hover:bg-[#0a2642] active:scale-95 shadow-md"
         >
           {loading ? "SUBMITTING..." : "SUBMIT"}
         </button>

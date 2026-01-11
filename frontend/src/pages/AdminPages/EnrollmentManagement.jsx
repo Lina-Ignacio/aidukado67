@@ -4,9 +4,11 @@ import SearchForm from "../../components/SearchForm";
 import { MoonLoader } from "react-spinners";
 import AddEnrollment from "../Enrollment/AddEnrollment";
 import EditEnrollment from "../Enrollment/EditEnrollment";
-import DeleteEnrollment from "../Enrollment/DeleteEnrollment";
+import ArchiveEnrollment from "../Enrollment/ArchiveEnrollment";
 import Modal from "../../components/Modal";
 import Table from "../../components/Table";
+import ClassicButton from "../../components/classicButton";
+import { LuUserPlus } from "react-icons/lu"
 
 export default function EnrollmentManagement() {
   const enrollmentColumns = [
@@ -38,7 +40,7 @@ export default function EnrollmentManagement() {
 
   const [isOpenAddModal, setIsOpenAddModal] = useState(false);
   const [isOpenEditModal, setIsOpenEditModal] = useState(false);
-  const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
+  const [isOpenArchiveModal, setIsOpenArchiveModal] = useState(false);
 
   const [fetchDataError, setFetchDataError] = useState("");
 
@@ -118,7 +120,7 @@ export default function EnrollmentManagement() {
     getClasses();
   }, []);
 
-  const transformedData = enrollmentData.map((data) => {
+    const transformedData = enrollmentData.map((data) => {
     const className = classes.find((c) => c.id === data.classId)?.name || "";
     const student = students.find((s) => s.id === data.studentId);
     const fullName = student ? `${student.firstName} ${student.lastName}` : "";
@@ -130,10 +132,10 @@ export default function EnrollmentManagement() {
     };
   });
 
-  const panelStyleAdd = "w-full h-2/5 max-w-lg rounded-xl shadow-xl";
-  const panelStyleEdit = "w-full h-2/5 max-w-lg rounded-xl shadow-xl";
-  const panelStyleDelete = "w-full h-1/3 max-w-lg rounded-xl shadow-xl";
-
+  const panelStyleAdd = "w-full h-auto max-w-lg rounded-xl shadow-xl";
+  const panelStyleEdit = "w-full h-auto max-w-lg rounded-xl shadow-xl";
+  const panelStyleDelete = "w-full h-auto max-w-lg rounded-xl shadow-xl";
+  const pagination = [10, 12]
   return (
     <>
       <div className="grid lg:hidden justify-items-center w-full h-full px-5">
@@ -142,19 +144,23 @@ export default function EnrollmentManagement() {
           </h1>
       </div>
 
-      <div className="hidden lg:flex flex-col w-full h-screen gap-[2%] p-[2%] items-center text-white">
+      <div className="hidden lg:flex flex-col w-full h-auto min-h-screen py-5 px-10 items-center text-white">
         {fetchDataError && <p className="text-red-800">{fetchDataError}</p>}
-        <div className="w-1/2 h-[5%] flex justify-end items-end gap-2">
+        <div className="w-4/5 h-auto grid grid-cols-[3fr_1fr] gap-2 
+                        lg:h-11 xl:h-12 2xl:h-15 mt-3">
           <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by class, name, status"/>
-          <button
-            className=" bg-[#102E50] shadow-md"
+          <ClassicButton 
+            buttonName="Enroll"
+            className=" bg-[#102E50] shadow-md w-3/4 place-self-end"
             onClick={() => setIsOpenAddModal(true)}
-          >
-            + Enroll
-          </button>
+            mainColor="#E78B48" 
+            darkColor="#B9652B"
+            icon={LuUserPlus}
+          />
+          
         </div>
 
-        <div className="w-1/2 flex flex-col justify-center items-center">
+        <div className="overflow-x-auto w-4/5 mt-[20px]">
           {success && <p className="text-green-800">{success}</p>}
           {fetchingError.studentError && (
             <p className="text-red-800">{fetchingError.studentError}</p>
@@ -169,7 +175,8 @@ export default function EnrollmentManagement() {
               data={transformedData}
               setSelectedData={setSelectedEnrollmentData}
               setIsOpenEditModal={setIsOpenEditModal}
-              setIsOpenDeleteModal={setIsOpenDeleteModal}
+              setIsOpenDeleteModal={setIsOpenArchiveModal}
+              pagination={pagination}
             />
           ) : (
             <MoonLoader color="blue" loading={true} size={80} />
@@ -214,18 +221,18 @@ export default function EnrollmentManagement() {
         </Modal>
 
         <Modal
-          isOpen={isOpenDeleteModal}
-          onClose={() => setIsOpenDeleteModal(false)}
-          title="Delete Enrollment"
+          isOpen={isOpenArchiveModal}
+          onClose={() => setIsOpenArchiveModal(false)}
+          title="Archive Enrollment"
           panelStyle={panelStyleDelete}
         >
-          <DeleteEnrollment
+          <ArchiveEnrollment
             enrollmentId={selectedEnrollmentData?.id}
             setSuccess={setSuccess}
-            onClose={() => setIsOpenDeleteModal(false)}
+            onClose={() => setIsOpenArchiveModal(false)}
             onSuccess={() => {
               getEnrollment();
-              setIsOpenDeleteModal(false);
+              setIsOpenArchiveModal(false);
             }}
           />
         </Modal>

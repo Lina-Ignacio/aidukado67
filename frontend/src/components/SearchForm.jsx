@@ -24,8 +24,8 @@ export default function SearchForm({query, setQuery, inputPlaceholder}) {
                 <input
                 type="search"
                 className="w-full h-full pl-10 text-sm md:text-base
-                    bg-white border border-gray-300 rounded-xl
-                    focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    bg-white border border-2 border-[#EBECF1] rounded-xl text-[#102E50]
+                    focus:ring-2 focus:ring[#EBECF1]/90 focus:border-[#EBECF1]"
                 placeholder={inputPlaceholder}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}

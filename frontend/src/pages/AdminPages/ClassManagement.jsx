@@ -6,9 +6,10 @@ import axios from "axios";
 import Modal from "../../components/Modal";
 import AddClass from "../SchoolClasses/AddClass";
 import EditClass from "../SchoolClasses/EditClass";
-import DeleteClass from "../SchoolClasses/DeleteClass";
+import ArchiveClass from "../SchoolClasses/ArchiveClass";
 import { MoonLoader } from "react-spinners";
- 
+import ClassicButton from "../../components/classicButton";
+import { LuPlus } from "react-icons/lu";
 
 export default function ClassManagement() {
 
@@ -28,7 +29,7 @@ export default function ClassManagement() {
     const [selectedClassData, setSelectedClassData] = useState(null);
     const [isOpenAddModal, setIsOpenAddModal] = useState(false);
     const [isOpenEditModal, setIsOpenEditModal] = useState(false);
-    const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
+    const [isOpenArchiveModal, setIsOpenArchiveModal] = useState(false);
 
 
     const getClasses = async () => {
@@ -64,10 +65,10 @@ export default function ClassManagement() {
     }, [query])
 
     
-    const panelStyleAdd = "w-full h-2/5 max-w-lg rounded-xl shadow-xl"
-    const panelStyleEdit = "w-full h-2/5 max-w-lg rounded-xl shadow-xl"
-    const panelStyleDelete = "w-full h-1/3 max-w-lg rounded-xl shadow-xl rounded-xl"
-
+    const panelStyleAdd = "w-full h-auto max-w-lg rounded-xl shadow-xl"
+    const panelStyleEdit = "w-full h-auto max-w-lg rounded-xl shadow-xl"
+    const panelStyleDelete = "w-full h-auto max-w-lg rounded-xl shadow-xl rounded-xl"
+    const pagination = [10, 13]
     return (
         <>
             <div className="grid grid-rows-2 lg:hidden justify-items-center w-full h-full px-5">
@@ -79,12 +80,20 @@ export default function ClassManagement() {
                 </p>
             </div>
 
-            <div className="hidden lg:flex flex-col w-full h-screen gap-[2%] p-[2%] items-center text-white">
-                <div className="w-1/2 h-[5%] flex justify-end items-end gap-2">
+            <div className="hidden lg:flex flex-col w-full h-auto min-h-screen py-5 px-10 items-center text-white">
+                <div className="w-4/5 h-auto grid grid-cols-[2.5fr_1fr] gap-2 
+                        lg:h-11 xl:h-12 2xl:h-15 mt-3">
                     <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by Class Name"/>
-                    <button className=" bg-[#102E50] shadow-md" onClick={() => (setIsOpenAddModal(true))}>+ Add Class</button>
+                    <ClassicButton 
+                        buttonName="Add Class"
+                        icon={LuPlus}
+                        onClick={() => setIsOpenAddModal(true)}
+                        className="xl:w-full 2xl:w-2/3 place-self-end" 
+                        mainColor="#E78B48" 
+                        darkColor="#B9652B"
+                    />
                 </div>
-                <div className="w-3/5 flex flex-col justify-center items-center bg-red-500 p-5">
+                <div className="overflow-x-auto w-4/5 mt-[20px]">
                     {error && <p className="text-red-800">{error}</p>}
                     {!loading ? (
                         <Table 
@@ -92,7 +101,8 @@ export default function ClassManagement() {
                             data={classesData}
                             setSelectedData={setSelectedClassData}
                             setIsOpenEditModal={setIsOpenEditModal}
-                            setIsOpenDeleteModal={setIsOpenDeleteModal}
+                            setIsOpenDeleteModal={setIsOpenArchiveModal}
+                            pagination={pagination}
                         />
                     ) : (                   
                         (<MoonLoader color="blue" loading={true} size={80} />)
@@ -123,15 +133,15 @@ export default function ClassManagement() {
                     />
                 </Modal>
                 
-                {/* Delete */}
+                {/* Archive */}
 
-                <Modal isOpen={isOpenDeleteModal} onClose={() => setIsOpenDeleteModal(false)} title="Delete Class" panelStyle={panelStyleDelete}>
-                    <DeleteClass
+                <Modal isOpen={isOpenArchiveModal} onClose={() => setIsOpenArchiveModal(false)} title="Archive Class" panelStyle={panelStyleDelete}>
+                    <ArchiveClass
                         class_id={selectedClassData?.id}
-                        onClose={() => setIsOpenDeleteModal(false)}
+                        onClose={() => setIsOpenArchiveModal(false)}
                         onSuccess={() => {
                             getClasses();
-                            setIsOpenDeleteModal(false);
+                            setIsOpenArchiveModal(false);
                         }}
                     />
                 </Modal>

@@ -2,27 +2,27 @@ import { useState, useEffect } from "react";
 import { MdDelete, MdEdit } from "react-icons/md";
 import useScreenSize from "../hooks/useScreenSize";
 
-export default function Table({ columns, data, setSelectedData, setIsOpenEditModal, setIsOpenDeleteModal }) {
+export default function Table({ columns, data, setSelectedData, setIsOpenEditModal, setIsOpenDeleteModal, pagination }) {
 
     // For Screen Size
     const { width } = useScreenSize();
 
 
     const columnStyle = "px-4 py-2 text-left text-md xl:text-lg 2xl:text-xl";
-    const tableDataStyle = "text-[#10375C] px-4 py-2 text-left text-md xl:text-lg 2xl:text-xl"
+    const tableDataStyle = "text-[#10375C] px-4 py-2 text-left text-sm xl:text-md 2xl:text-lg"
 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
 
     useEffect(() => {
-         if (width < 1024) {
-            setItemsPerPage(6);       // tablet
-        } else if(width >= 1024 && width <= 1280) {
-            setItemsPerPage(7); 
-        } else if(width >= 1280 && width <= 1536) {
-            setItemsPerPage(12);       // desktop
+        if (width < 1024) {
+            setItemsPerPage(6);   // Tablet
+        } else if (width < 1280) {
+            setItemsPerPage(7);   // Small Desktop / Large Tablet
+        } else if (width < 1536) {
+            setItemsPerPage(pagination[0]);  // Standard Desktop (1366 falls here)
         } else {
-            setItemsPerPage(15);      // desktop
+            setItemsPerPage(pagination[1]);  // Large Display
         }
 
         setCurrentPage(1); // reset page when size changes
@@ -37,7 +37,7 @@ export default function Table({ columns, data, setSelectedData, setIsOpenEditMod
 
     return (
         <>
-            <table className="w-full border border-gray-300 rounded-lg 2xl:mt-8">
+            <table className="w-full border border-gray-300 rounded-lg">
                 <thead className="bg-[#10375C] text-white">
                     <tr>
                         {columns.map((column) => (
@@ -60,24 +60,26 @@ export default function Table({ columns, data, setSelectedData, setIsOpenEditMod
                                     </td>
                                 ))}
                                 <td className={tableDataStyle}>
-                                    <div className="w-full h-full flex">
-                                        <MdEdit
-                                            className="text-xl xl:text-xl 2xl:text-3xl text-[#F5C45E]"
+                                    <div className="w-full h-full flex gap-2">
+                                        <button
+                                            className="text-sm text-white bg-[#2563EB]/90 p-2"
                                             onClick={ () => {
                                                 setSelectedData(row);
                                                 setIsOpenEditModal(true);
                                             }}
-                                
-                                        />
-                                        <MdDelete 
-                                            className="text-xl xl:text-xl 2xl:text-3xl text-red-500"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            className="text-sm text-white bg-[#8E1616] p-2"
                                             onClick={ () => {
                                                 setSelectedData(row);
                                                 setIsOpenDeleteModal(true);
                                                 }
                                             }
-                                        />
-                                                                        
+                                        >
+                                            Archive
+                                        </button>                            
                                     </div>
                                 </td>
                             </tr>
@@ -96,7 +98,7 @@ export default function Table({ columns, data, setSelectedData, setIsOpenEditMod
                 <button
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
-                    className={`px-3 py-1 border rounded ${currentPage === i + 1 ? "bg-[#F3C623] text-white" : "bg-[#10375C]"}`}
+                    className={`px-3 py-1 border rounded ${currentPage === i + 1 ? "bg-[#B9652B] text-white" : "bg-[#102E50]"}`}
                 >
                     {i + 1}
                 </button>

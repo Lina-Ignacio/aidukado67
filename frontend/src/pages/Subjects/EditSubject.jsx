@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import axios from "axios";
-import { MdClose } from "react-icons/md";
+
 
 
 export default function EditSubject({ subject_id, onClose, onSuccess }) {
@@ -92,14 +92,16 @@ export default function EditSubject({ subject_id, onClose, onSuccess }) {
     const labelClass = "text-[#102E50] font-bold opacity-75"
 
     return (
-        <div className="w-full h-full flex flex-col justify-center items-center bg-white p-[4%] shadow-xl">
+        <div className="w-full h-auto flex flex-col justify-center items-center bg-white py-4 px-6 
+                shadow-xl rounded-xl"
+        >
             {errors.api && (<p>{errors.api}</p>)}
             {success && (<p>{success}</p>)}
-            <MdClose size={24} color="#102E50"  className="self-end" onClick={onClose}/>
+            
             <form 
                 method="post"
                 onSubmit={handleSubmit}
-                className="flex flex-col w-full h-full gap-[2%] text-left rounded-2xl"
+                className="flex flex-col w-full h-auto gap-2 text-left rounded-2xl mt-2"
             >
 
                 <label className={labelClass}>Subject Name:</label>
@@ -108,7 +110,8 @@ export default function EditSubject({ subject_id, onClose, onSuccess }) {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full h-[15%] border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-[1%] rounded-md shadow-md"
+                    className="w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+                        focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200"
                 />
 
                 <label className={labelClass}>Description:</label>
@@ -117,17 +120,27 @@ export default function EditSubject({ subject_id, onClose, onSuccess }) {
                     name="description"
                     value={formData.description}
                     onChange={handleChange}
-                    className="w-full h-[40%] border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-[1%] rounded-md shadow-md"
+                    className="w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+                        focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200"
                     rows="5"
                     cols="5"
                 />
-
-                <button
-                  type="submit"
-                  className="w-full mt-[1%] bg-[#10375C] text-white transition-transform duration-200 hover:scale-95 shadow-md"
-                  >
-                  {loading ? "SUBMITTING..." : "SUBMIT"}
-                </button>
+                <div className="flex gap-2 my-4">
+                    <button 
+                        className="w-1/2 mt-[1%] bg-[#EBEBEB] font-bold text-[#102E50] transition-transform duration-200 hover:scale-95 shadow-md"
+                        onClick={onClose}
+                        type="button"
+                    >CANCEL
+                        
+                    </button>
+                    <button
+                        type="submit"
+                        className="w-1/2 mt-[1%] bg-[#10375C] text-white transition-transform duration-200 hover:scale-95 shadow-md"
+                        >
+                        {loading ? "SUBMITTING..." : "SUBMIT"}
+                    </button>
+                </div>
+                
             </form>
         </div>
     )

@@ -128,7 +128,9 @@ export default function AddClass({ onClose, onSuccess}) {
 
 
     return (
-        <div className="w-full h-full flex flex-col justify-center items-center bg-white p-[4%] shadow-2xl rounded-lg">
+        <div className="w-full h-auto flex flex-col justify-center items-center bg-white 
+                py-6 px-4 shadow-2xl rounded-lg"
+        >
             {inputErrors.name && <p className="text-red-800">{inputErrors.name}</p>}
             {inputErrors.subject_id && <p className="text-red-800">{inputErrors.subject_id}</p>}
             {inputErrors.teacher_id && <p className="text-red-800">{inputErrors.teacher_id}</p>}
@@ -144,7 +146,7 @@ export default function AddClass({ onClose, onSuccess}) {
             <form
                 method="post"
                 onSubmit={handleSubmit}
-                className="flex flex-col w-full h-full gap-[2%] text-left rounded-2xl"
+                className="flex flex-col w-full h-auto gap-3 text-left rounded-2xl"
             >
 
                 <label htmlFor="name" className={labelClass}>Class Name:</label>
@@ -154,19 +156,40 @@ export default function AddClass({ onClose, onSuccess}) {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full h-[15%] border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-[1%] rounded-md shadow-md"
+                    className="w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+                        focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200"
                 />
 
                 <label htmlFor="subject_id" className={labelClass}>Subject:</label>
-                <select id="subject_id" name="subject_id" value={formData.subject_id} onChange={handleChange} className="w-full h-[15%] bg-gray-700 rounded-md text-white">
-                    <option value="">select a subject</option>
+                <select 
+                    id="subject_id" 
+                    name="subject_id" 
+                    value={formData.subject_id} 
+                    onChange={handleChange} 
+                    className="w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+                            focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200"
+                >
+                    <option 
+                        value=""
+                        className="w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+                            focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200"
+                        >
+                        select a subject
+                    </option>
                     {subjects.length > 0 ? (
                         subjects.map((subject) => <option value={subject.id} key={subject.id}>{subject.name}</option>)
                     ) : (<option disabled>Error fetching subjects</option>)}
                 </select>
 
                 <label htmlFor="teacher_id" className={labelClass}>Teacher:</label>
-                <select id="teacher_id" name="teacher_id" value={formData.teacher_id} onChange={handleChange} className="w-full h-[15%] bg-gray-700 rounded-md text-white">
+                <select 
+                    id="teacher_id" 
+                    name="teacher_id" 
+                    value={formData.teacher_id} 
+                    onChange={handleChange} 
+                    className="w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+                            focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200"
+                >
                     <option value="">select a teacher</option>
                     {teachers.length > 0 ? (
                         teachers.map((teacher) => <option value={teacher.id} key={teacher.id}>{teacher.firstName} {teacher.lastName}</option>)
@@ -186,7 +209,7 @@ export default function AddClass({ onClose, onSuccess}) {
                         type="submit"
                         className="w-1/2 mt-[1%] bg-[#10375C] text-white transition-transform duration-200 hover:scale-95 shadow-md"
                     >
-                        {loading ? "SUBMITTING..." : "SUBMIT"}
+                        {loading ? "ADDING..." : "ADD CLASS"}
                     </button>
                 </div>
                 

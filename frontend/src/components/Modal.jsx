@@ -9,7 +9,7 @@ export default function Modal({ isOpen, onClose, title, children, panelStyle }) 
         {/* Overlay */}
         <DialogBackdrop
           transition
-          className="fixed inset-0 bg-black/50 transition-opacity duration-100 ease-out"
+          className="fixed inset-0 bg-[#102E50]/60 transition-opacity duration-100 ease-out"
         />
 
         {/* Modal box */}
@@ -21,10 +21,10 @@ export default function Modal({ isOpen, onClose, title, children, panelStyle }) 
             leave="ease-in duration-150"
             leaveFrom="opacity-100 scale-100"
             leaveTo="opacity-0 scale-95"
-            className = "rounded-2xl"
+            className = "rounded-2xl bg-none h-auto"
           >
             <DialogPanel className={panelStyle}>
-              <DialogTitle className="text-lg font-bold">{title}</DialogTitle>
+              <DialogTitle className="lg:text-xl font-bold ml-5 text-white">{title}</DialogTitle>
               <div className="mt-2 w-full h-full">{children}</div>
             </DialogPanel>
           </TransitionChild>

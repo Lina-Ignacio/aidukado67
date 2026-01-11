@@ -15,7 +15,7 @@ export default function Layout({ children }) {
 
       {/* MOBILE & TABLET SIDEBAR (drawer) */}
       <div
-        className={`fixed top-0 left-0 h-full w-3/4 md:w-80 bg-white shadow-md z-50 transform 
+        className={`fixed top-0 left-0 h-full w-full md:w-80 bg-white shadow-md z-50 transform 
           ${isOpen ? "translate-x-0" : "-translate-x-full"} 
           transition-transform duration-300 xl:hidden`}
       >

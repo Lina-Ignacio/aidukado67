@@ -73,40 +73,42 @@ export default function AddSubject({ onSuccess, onClose}) {
 
 
 
-    const labelClass = "text-[#102E50] font-bold opacity-75"
+    const labelClass = "text-[#102E50] font-bold opacity-75 mt-2"
     
     return (
-        <div className="w-full h-full flex flex-col justify-center items-center bg-white p-[4%] shadow-2xl rounded-lg">
+        <div className="w-full h-auto flex flex-col justify-center items-center bg-white px-6 py-4 shadow-2xl rounded-lg">
             {errors.api && <p className="text-red-800">{errors.api}</p>}
             {success && <p className="text-green-800">{success}</p>}
 
             <form
                 method="post"
                 onSubmit={handleSubmit}
-                className="flex flex-col w-full h-full gap-[2%] text-left rounded-2xl"
+                className="flex flex-col w-full h-auto gap-2 text-left rounded-2xl"
             >
                 
                 <label className={labelClass}>Subject Name:</label>
                 <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full h-[15%] border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-[1%] rounded-md shadow-md"
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    className="w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+                        focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200"
                 />
 
                 <label className={labelClass}>Description:</label>
                 <textarea
-                type="text"
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                className="w-full h-[40%] border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-[1%] rounded-md shadow-md"
-                rows="5"
-                cols="5"
+                    type="text"
+                    name="description"
+                    value={formData.description}
+                    onChange={handleChange}
+                    className="w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+                        focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200"
+                    rows="5"
+                    cols="5"
                 />
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 my-4">
                     <button 
                         className="w-1/2 mt-[1%] bg-[#EBEBEB] font-bold text-[#102E50] transition-transform duration-200 hover:scale-95 shadow-md"
                         onClick={onClose}

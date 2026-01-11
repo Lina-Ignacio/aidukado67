@@ -11,6 +11,8 @@ import { IoLogOut, IoHelpCircle, IoLibrary, IoSchool, IoPeople, IoClipboard } fr
 import { NavLink, useNavigate } from "react-router-dom";
 import useUserStore from "../store/useUserStore";
 import useClassStore from "../store/useClassStore";
+import useTermStore from "../store/useTermStore";
+import useLessonStore from "../store/useLessonStore";
 import axios from "axios";
 
 
@@ -33,9 +35,11 @@ export default function Sidebar({closeMobile}) {
 
   const handleLogout = async () => {
     useClassStore.persist.clearStorage(); 
-    useClassStore.getState().clearClassId();
+    useClassStore.getState().clearClassDetail();
     useUserStore.persist.clearStorage();
     useUserStore.getState().clearUser();
+    useTermStore.getState().clearTerm();
+    useLessonStore.getState().clearLessonId();
     try {
       const response = await axios.post("http://localhost:8000/logout",
       {},

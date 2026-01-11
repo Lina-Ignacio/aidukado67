@@ -149,7 +149,9 @@ export default function EditClass({classId, onClose, onSuccess}) {
     const labelClass = "text-[#102E50] font-bold opacity-75"
 
     return (
-        <div className="w-full h-full flex flex-col justify-center items-center bg-white p-[4%] shadow-xl">
+        <div className="w-full h-auto flex flex-col justify-center items-center 
+                bg-white px-4 py-6 shadow-xl rounded-xl"
+        >
 
             {success && <p className="text-green-800">{success}</p>}
             {fetchError && <p className="text-red-800">{fetchError} 1</p>}
@@ -159,7 +161,7 @@ export default function EditClass({classId, onClose, onSuccess}) {
             <form 
                 method="post"
                 onSubmit={handleSubmit}
-                className="flex flex-col w-full h-full gap-[2%] text-left rounded-2xl"
+                className="flex flex-col w-full h-auto gap-1 text-left rounded-2xl"
             >
                 <label htmlFor="name" className={labelClass}>Class Name:</label>
                 <input
@@ -168,14 +170,22 @@ export default function EditClass({classId, onClose, onSuccess}) {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full h-[15%] border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-[1%] rounded-md shadow-md"
+                    className="w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+                        focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200"
                 />
                 {formError && <span className="text-red-800">{formError.name}</span>}
 
 
                 {errors && <span className="text-red-800">{errors.subjectError}</span>}
                 <label htmlFor="subjectId" className={labelClass}>Subject:</label>
-                <select id="subjectId" name="subjectId" value={formData.subjectId} onChange={handleChange} className="w-full h-[15%] bg-gray-700 rounded-md">
+                <select 
+                    id="subjectId" 
+                    name="subjectId" 
+                    value={formData.subjectId} 
+                    onChange={handleChange} 
+                    className="w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+                        focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200"
+                >
                     <option value="">select a subject</option>
                     {subjects.length > 0 ? (
                         subjects.map((subject) => <option value={subject.id} key={subject.id}>{subject.name}</option>)
@@ -185,7 +195,14 @@ export default function EditClass({classId, onClose, onSuccess}) {
 
                 {errors && <span className="text-red-800">{errors.teacherError}</span>}
                 <label htmlFor="teacherId" className={labelClass}>Teacher:</label>
-                <select id="teacherId" name="teacherId" value={formData.teacherId} onChange={handleChange} className="w-full h-[15%] bg-gray-700 rounded-md">
+                <select 
+                    id="teacherId" 
+                    name="teacherId" 
+                    value={formData.teacherId} 
+                    onChange={handleChange} 
+                    className="w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+                        focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200"
+                >
                     <option value="">select a teacher</option>
                     {teachers.length > 0 ? (
                         teachers.map((teacher) => (

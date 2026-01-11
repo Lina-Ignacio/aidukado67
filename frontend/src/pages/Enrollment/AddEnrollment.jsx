@@ -67,10 +67,12 @@ export default function AddEnrollment({ studentOptions, classOptions, setSuccess
     }
   };
 
-  const labelClass = "text-[#102E50] font-bold opacity-75";
+  const labelClass = "text-[#102E50] font-bold opacity-75 text-md";
+  const optionClass = "text-md"
   const customStyles = {
     option: (provided, state) => ({
       ...provided,
+      fontSize: "14px",
       color: state.isSelected ? "white" : "#102E50",
       backgroundColor: state.isSelected
         ? "#102E50"
@@ -83,13 +85,13 @@ export default function AddEnrollment({ studentOptions, classOptions, setSuccess
   };
 
   return (
-    <div className="w-full h-full flex flex-col justify-center items-center bg-white p-[4%] shadow-2xl rounded-lg">
+    <div className="w-full h-auto flex flex-col justify-center items-center bg-white p-[4%] shadow-2xl rounded-lg">
       {submitError && <p className="text-red-800">{submitError}</p>}
 
       <form
         method="post"
         onSubmit={handleSubmit}
-        className="flex flex-col w-full h-full gap-[2%] text-left rounded-2xl"
+        className="flex flex-col w-full h-full gap-3 text-left rounded-2xl"
       >
         <label className={labelClass}>Class Name</label>
         <Select
@@ -115,16 +117,16 @@ export default function AddEnrollment({ studentOptions, classOptions, setSuccess
           name="status"
           value={formData.status}
           onChange={handleChange}
-          className="w-full h-[15%] bg-gray-700 rounded-md p-2"
+          className="w-full h-auto bg-[#102E50]/80 rounded-md p-2"
         >
-          <option value="">select a status</option>
-          <option value="enrolled">Enrolled</option>
-          <option value="dropped">Dropped</option>
-          <option value="finished">Finished</option>
+          <option value="" className={optionClass}>select a status</option>
+          <option value="enrolled" className={optionClass}>Enrolled</option>
+          <option value="dropped" className={optionClass}>Dropped</option>
+          <option value="finished" className={optionClass}>Finished</option>
         </select>
         {formError.statusError && <p className="text-red-800">{formError.statusError}</p>}
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 mt-2">
           <button
             className="w-1/2 mt-[1%] bg-[#EBEBEB] font-bold text-[#102E50] transition-transform duration-200 hover:scale-95 shadow-md"
             onClick={onClose}

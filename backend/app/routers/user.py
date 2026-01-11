@@ -19,7 +19,7 @@ def get_db():
 @router.get("/get", response_model=list[UserOut])
 def get_users(query: str | None = None, db: Session = Depends(get_db)):
     
-    users_query = db.query(Users)
+    users_query = db.query(Users).filter(Users.is_archive == False)
     
     if query:
         users_query = users_query.filter(
@@ -113,7 +113,7 @@ def patch_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get_
 
     return {"message" : f"user with {user_id} updated successfully"}
 
-@router.delete("/delete/{user_id}")
+@router.patch("/archive/{user_id}")
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(Users).filter(Users.id == user_id).first()
 
@@ -125,11 +125,12 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     if existing_enrollments:
         raise HTTPException(
             status_code=400,
-            detail="Cannot delete user: existing enrollments found."
+            detail="Cannot archive user: existing enrollments found."
         )
 
-    db.delete(user)
+    user.is_archive = True
     db.commit()
-    return {"message": f"User with ID {user_id} deleted successfully"}
+    db.refresh(user)
+    return {"message": f"User with ID {user_id} archived successfully"}
 
 

@@ -3,13 +3,14 @@ import axios from "axios";
 import Modal from "../../components/Modal";
 import AddUser from "../Users/AddUser";
 import BatchAddUser from "../Users/BatchAddUser";
-import DeleteUser from "../Users/DeleteUser";
+import ArchiveUser from "../Users/ArchiveUser";
 import EditUser from "../Users/EditUser";
 import Table from "../../components/Table"
 import SearchForm from "../../components/SearchForm";
 import { MoonLoader } from "react-spinners";
 import { FiUserPlus } from "react-icons/fi";
 import { MdUploadFile } from "react-icons/md";
+import ClassicButton from "../../components/classicButton";
 
 export default function UserManagement() {
 
@@ -34,7 +35,7 @@ export default function UserManagement() {
 
     const [isOpen, setIsOpen] = useState(false);
     const [isOpenEditModal, setIsOpenEditModal]  = useState(false)
-    const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
+    const [isOpenArchiveModal, setIsOpenArchiveModal] = useState(false);
     const [isOpenBatchModal, setIsOpenBatchModal] = useState(false);
     const [selectedUserData, setSelectedUserData] = useState(null);
 
@@ -67,11 +68,11 @@ export default function UserManagement() {
 
     
 
-    const panelStyleAdd = "w-full h-2/3 max-w-lg rounded-xl shadow-xl"
-    const panelStyleDelete = "w-full h-1/3 max-w-lg rounded-xl shadow-xl"
-    const panelStyleEdit = "w-full h-2/3 max-w-lg rounded-xl shadow-xl"
-    const panelStyleAddBatch = "w-full h-1/3 max-w-lg rounded-xl shadow-xl"
-
+    const panelStyleAdd = "w-full h-auto max-w-lg rounded-2xl shadow-xl"
+    const panelStyleArchive = "w-full h-auto max-w-lg rounded-xl shadow-xl"
+    const panelStyleEdit = "w-full h-auto max-w-lg rounded-xl shadow-xl"
+    const panelStyleAddBatch = "w-full h-auto max-w-lg rounded-xl shadow-xl"
+    const pagination = [10, 12]
     return (
         <>
             <div className="grid lg:hidden justify-items-center w-full h-full px-5">
@@ -81,27 +82,31 @@ export default function UserManagement() {
             </div>
 
             <div className="hidden lg:flex flex-col w-full h-auto min-h-screen py-5 px-10 items-center text-white">
-                <div className="w-full h-auto grid grid-cols-[2.5fr_1fr_1fr] gap-2 2xl:w-11/12 self-end">
+                <div className="w-full h-auto grid grid-cols-[2.5fr_1fr_1fr] gap-2 self-end 
+                        lg:h-11 xl:h-12 2xl:h-15 mt-3"
+                >
+                    
                     <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by email or name"/>
-                    <button 
-                        className="bg-[#102E50] shadow-md lg:text-lg
-                            flex justify-center items-center gap-2 w-3/4 place-self-end" 
-                        onClick={() => (setIsOpen(true))}
-                    >
-                        <FiUserPlus className="text-lg xl:text-2xl 2xl:text-2xl"/>
-                        <span className="text-md xl:text-lg 2xl:text-xxl">Add User</span> 
-                    </button>
-                    <button 
-                        className="bg-[#102E50] shadow-md lg:text-lg
-                            flex justify-center items-center gap-2" 
-                        onClick={() => (setIsOpenBatchModal(true))}
-                    >
-                        <MdUploadFile className="text-lg xl:text-2xl 2xl:text-2xl"/>
-                        <span className="text-md xl:text-lg 2xl:text-xl">Import Users</span> 
-                    </button>
+                    <ClassicButton 
+                        buttonName="Add User"
+                        icon={FiUserPlus}
+                        onClick={() => setIsOpen(true)}
+                        
+                        className="w-3/4 place-self-end" 
+                        mainColor="#E78B48" 
+                        darkColor="#B9652B"
+                    />
+                    <ClassicButton
+                        buttonName="Import Users"
+                        icon={MdUploadFile}
+                        onClick={() => setIsOpenBatchModal(true)}
+                        className="w-full"
+                        mainColor="#183D65" 
+                        darkColor="#102E50"
+                    />
                 </div>
 
-                <div className="overflow-x-auto w-full mt-2">
+                <div className="overflow-x-auto w-full mt-[20px]">
                     {fetchingError && <p className="text-red-800">{fetchingError}</p>}
                     {!loading ? (
                     <Table
@@ -109,7 +114,8 @@ export default function UserManagement() {
                         data={users}
                         setSelectedData={setSelectedUserData}
                         setIsOpenEditModal={setIsOpenEditModal}
-                        setIsOpenDeleteModal={setIsOpenDeleteModal}
+                        setIsOpenDeleteModal={setIsOpenArchiveModal}
+                        pagination={pagination}
                     />
                     ) : (
                     <MoonLoader color="blue" loading={true} size={80} />
@@ -142,13 +148,13 @@ export default function UserManagement() {
 
                 {/* Modal for deleting a user */}
 
-                <Modal isOpen={isOpenDeleteModal} onClose={() => setIsOpenDeleteModal(false)} panelStyle={panelStyleDelete}>
-                    <DeleteUser 
+                <Modal isOpen={isOpenArchiveModal} onClose={() => setIsOpenArchiveModal(false)} panelStyle={panelStyleArchive}>
+                    <ArchiveUser 
                         userId = {selectedUserData?.id}
-                        onClose={() => setIsOpenDeleteModal(false)}
+                        onClose={() => setIsOpenArchiveModal(false)}
                         onSuccess={() => {
                             getUsers();
-                            setIsOpenDeleteModal(false);
+                            setIsOpenArchiveModal(false);
                         }
                             
                         }

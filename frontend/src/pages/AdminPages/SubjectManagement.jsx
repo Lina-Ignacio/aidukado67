@@ -6,10 +6,10 @@ import Modal from "../../components/Modal";
 import SearchForm from "../../components/SearchForm";
 import AddSubject from "../Subjects/AddSubject";
 import EditSubject from "../Subjects/EditSubject";
-import DeleteSubject from "../Subjects/DeleteSubject";
+import ArchiveSubject from "../Subjects/ArchiveSubject";
 import MoonLoader from "react-spinners/MoonLoader";
-
-
+import ClassicButton from "../../components/classicButton";
+import { LuPlus } from "react-icons/lu";
 
 export default function SubjectManagement() {
     
@@ -25,7 +25,7 @@ export default function SubjectManagement() {
 
     const [isOpen, setIsOpen] = useState(false);
     const [isOpenEditModal, setIsOpenEditModal] = useState(false);
-    const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
+    const [isOpenArchiveModal, setIsOpenArchiveModal] = useState(false);
     const [selectedSubjectData, setSelectedSubjectData] = useState(null);
 
 
@@ -51,8 +51,9 @@ export default function SubjectManagement() {
     }, [query])
 
 
-    const panelStyleAdd = "w-full h-1/3 max-w-lg rounded-xl shadow-xl"
-    const panelStyleDelete = "w-full h-1/3 max-w-lg rounded-xl shadow-xl"
+    const panelStyleAdd = "w-full h-auto max-w-lg rounded-xl shadow-xl"
+    const panelStyleDelete = "w-full h-auto max-w-lg rounded-xl shadow-xl"
+    const pagination = [4, 6]
 
     return (
         <>
@@ -62,19 +63,29 @@ export default function SubjectManagement() {
                 </h1>
             </div>
 
-            <div className="hidden lg:flex flex-col w-full h-screen gap-[2%] p-[2%] items-center text-white">
-                <div className="w-1/2 h-[5%] flex justify-end items-end gap-2">
+            <div className="hidden lg:flex flex-col w-full h-auto min-h-screen py-5 px-10 text-white items-center">
+                <div className="w-4/5 h-auto grid grid-cols-[2.5fr_1fr] gap-2  
+                        lg:h-11 xl:h-12 2xl:h-15 mt-3">
                     <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by subject name"/>
-                    <button className=" bg-[#102E50] shadow-md" onClick={() => (setIsOpen(true))}>+ Add Subject</button>
+                    <ClassicButton 
+                        buttonName="Add Subject"
+                        icon={LuPlus}
+                        onClick={() => setIsOpen(true)}
+                                            
+                        className="w-3/4 place-self-end" 
+                        mainColor="#E78B48" 
+                        darkColor="#B9652B"
+                                        />
                 </div>
-                <div className="w-1/2 flex flex-col justify-center items-center">
+                <div className="overflow-x-auto w-4/5 mt-[20px]">
                     {!loading ? (
                         <Table 
                             data={subjectData} 
                             columns={subjectColumns} 
                             setSelectedData={setSelectedSubjectData} 
                             setIsOpenEditModal={setIsOpenEditModal}
-                            setIsOpenDeleteModal={setIsOpenDeleteModal}
+                            setIsOpenDeleteModal={setIsOpenArchiveModal}
+                            pagination={pagination}
                         />
                     ) : (<MoonLoader color="blue" loading={true} size={80} />)
                     }
@@ -110,14 +121,14 @@ export default function SubjectManagement() {
                 
                 {/* Delete Modal */}
 
-                <Modal isOpen={isOpenDeleteModal} onClose={() => setIsOpenDeleteModal(false)} title="Delete Subject" panelStyle={panelStyleDelete}>
-                    <DeleteSubject 
+                <Modal isOpen={isOpenArchiveModal} onClose={() => setIsOpenArchiveModal(false)} title="Archive Subject" panelStyle={panelStyleDelete}>
+                    <ArchiveSubject 
                         subject_id={selectedSubjectData?.id}
                         onSuccess={() => {
                             getSubjects();
-                            setIsOpenDeleteModal(false);
+                            setIsOpenArchiveModal(false);
                         }}
-                        onClose={() => setIsOpenDeleteModal(false)}
+                        onClose={() => setIsOpenArchiveModal(false)}
                     />
                 </Modal>
             </div>
