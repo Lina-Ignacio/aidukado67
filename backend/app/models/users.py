@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, TIMESTAMP, func, Boolean
+from sqlalchemy import Column, Integer, String, TIMESTAMP, func, Boolean, Index
 from sqlalchemy.orm import relationship
 from app.database import Base
 from app import models
@@ -17,10 +17,19 @@ class Users(Base):
     created_at = Column(TIMESTAMP, server_default=func.now())
     is_archive = Column(Boolean, default=False, nullable=False)
     
-    
+    # For relationships
     classes_ = relationship("Classes", back_populates="user_teacher") 
     class_enrollments = relationship("ClassEnrollment", back_populates="student")
     activity_progress = relationship("StudentActivityProgress", back_populates="student")
     submissions = relationship("StudentSubmission", back_populates="student", cascade="all, delete")
     
     quiz_progress = relationship("StudentQuizProgress", back_populates="student")
+    
+    # For index
+    __table_args__ = (
+        Index(
+            "idx_users_active", 
+            "is_archive", 
+            postgresql_where=(is_archive == False)
+        ),
+    )

@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.schemas.subject import SubjectCreate, SubjectOut, SubjectUpdate
 from app.models.subject import Subject
+from app.models.classes import Classes
 
 
 router = APIRouter(prefix="/subject", tags=["subject"])
@@ -20,7 +21,7 @@ def get_db():
 @router.get("/get", response_model=list[SubjectOut])
 def get_subjects(query: str | None = None, db: Session = Depends(get_db)):
     
-    subjects = db.query(Subject)
+    subjects = db.query(Subject).filter(Subject.is_archive == False)
     
     if query:
         subjects = subjects.filter(
@@ -72,15 +73,28 @@ def patch_subject(subject_id: int, subject_update: SubjectUpdate, db: Session = 
     return {"message" : f"Subject with {subject_id} has been updated."}
         
     
-@router.delete("/delete/{subject_id}")
-def delete_subject(subject_id: int, db: Session = Depends(get_db)):
+@router.patch("/archive/{subject_id}")
+def archive_subject(subject_id: int, db: Session = Depends(get_db)):
     
     subject = db.query(Subject).filter(Subject.id == subject_id).first()
     
     if not subject:
         raise HTTPException(status_code=404, detail="Subject not found")
-
-    db.delete(subject)
-    db.commit()
     
-    return {"message" : f"subject with {subject_id} has been updated"}
+    existing_classes = db.query(Classes).filter(
+        Classes.subject_id == subject_id, 
+        Classes.is_archive == False
+    ).first()
+    
+    if existing_classes:
+        raise HTTPException(
+                status_code=400,
+                detail="Cannot archive subject: existing classes bound to this subject found."
+            )
+       
+
+    subject.is_archive = True
+    db.commit()
+    db.refresh(subject)
+    
+    return {"message" : f"subject with {subject_id} has been archived"}

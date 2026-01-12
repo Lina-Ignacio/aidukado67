@@ -4,6 +4,7 @@ from sqlalchemy import or_
 from app.database import SessionLocal
 from app.models.classes import Classes
 from app.models.subject import Subject
+from app.models.class_enrollment import ClassEnrollment
 from app.schemas.classes import ClassCreate, ClassUpdate, ClassOut, ClassWithTeacherOut
 
 router = APIRouter(prefix="/classes", tags=["classes"])
@@ -25,7 +26,7 @@ def get_classes(query: str | None = None, db: Session = Depends(get_db)):
         .options(
             joinedload(Classes.subject),
             joinedload(Classes.user_teacher)
-        )
+        ).filter(Classes.is_archive == False)
     )
     
     if query:
@@ -117,15 +118,29 @@ def patch_class(class_id : int, class_update: ClassUpdate, db: Session = Depends
     
     return {"message" : f"Class with id ${class_id} has been updated successfully"}
 
-@router.delete("/delete/{class_id}")
-def delete_class(class_id : int, db: Session = Depends(get_db)):
+@router.patch("/archive/{class_id}")
+def archive(class_id : int, db: Session = Depends(get_db)):
     classes = db.query(Classes).filter(Classes.id == class_id).first() 
-    
     
     if not classes:
         raise HTTPException(status_code=404, detail="Class not Existing")
     
-    db.delete(classes)
+    existing_enrollments = db.query(ClassEnrollment).filter(
+        ClassEnrollment.class_id == class_id,
+        ClassEnrollment.is_archive == False
+    ).first()
+    
+    if existing_enrollments:
+        raise HTTPException(
+                status_code=400,
+                detail="Cannot archive class: existing enrollments bound to this class is found."
+            )
+        
+        
+    classes.is_archive = True
+    
     db.commit()
-    return {"message" : f"user with {class_id} deleted successfully"}
+    db.refresh(classes)
+    
+    return {"message" : f"class with {class_id} archived successfully"}
 

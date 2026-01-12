@@ -1,5 +1,5 @@
 
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Index
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -11,6 +11,7 @@ class Classes(Base):
     subject_id = Column(Integer, ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False)
     teacher_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     name = Column(String, nullable=False)
+    is_archive = Column(Boolean, nullable=False, default=False)
 
     
     subject = relationship("Subject", back_populates="classes")
@@ -19,3 +20,12 @@ class Classes(Base):
     class_students = relationship("ClassEnrollment", back_populates="enrolled_class")
     materials = relationship("ClassMaterial", back_populates="class_")
     quiz = relationship("Quiz", back_populates="classes" )
+    
+    
+    __table_args__ = (
+        Index(
+            "idx_classes_active", 
+            "is_archive", 
+            postgresql_where=(is_archive == False)
+        ),
+    )

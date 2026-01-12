@@ -11,9 +11,9 @@ export default function DeleteClass({class_id, onClose, onSuccess}) {
         e.preventDefault();
 
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/classes/delete/${class_id}`)
+            await axios.patch(`${import.meta.env.VITE_API_URL}/classes/archive/${class_id}`)
 
-            if (onSuccess) onSuccess
+            if (onSuccess) onSuccess();
         } catch(err) {
             if (err.response?.data?.detail) {
                 setError(err.response.data.detail);
@@ -28,7 +28,7 @@ export default function DeleteClass({class_id, onClose, onSuccess}) {
         <div className="w-full h-auto flex flex-col justify-center items-center bg-white 
                 px-6 py-4 shadow-xl rounded-xl"
         >
-            {error && (<p>{error}</p>)}
+            {error && (<p className="text-sm text-[#8E1616]/80">{error}</p>)}
             <div 
                 className="self-end cursor-pointer bg-[#EBECF1] rounded-full p-1 
                     transition-transform duration-300 hover:scale-110 mt-3 mb-6" 

@@ -21,13 +21,16 @@ def get_enrollments(query: str | None = None, db: Session = Depends(get_db)):
     
     enrollments = (
         db.query(ClassEnrollment)
-        .join(ClassEnrollment.student)
-        .join(ClassEnrollment.enrolled_class)
+        .options(
+            joinedload(ClassEnrollment.student),
+            joinedload(ClassEnrollment.enrolled_class)
+        )
+        .filter(ClassEnrollment.is_archive == False)
     )
     
     if query:
         q = f"%{query}%"
-        enrollments = enrollments.filter(
+        enrollments = enrollments.join(Users).join(Classes).filter(
             or_(
                 Users.first_name.ilike(q),
                 Users.last_name.ilike(q),
@@ -59,6 +62,7 @@ def get_classes_by_user(user_id: int, db: Session= Depends(get_db)):
         )
         .filter(ClassEnrollment.student_id == user_id)
         .filter(ClassEnrollment.status == "enrolled")
+        .filter(ClassEnrollment.is_archive == False)
         .all()
     )
     
@@ -96,15 +100,23 @@ def patch_enrollment(enrollment_id: int, enrollment_update: EnrollmentUpdate, db
     
     return {"message" : f"EnrollmentData with id {enrollment_id} has been updated successfully"}
 
-@router.delete("/delete/{enrollment_id}")
-def delete_enrollment(enrollment_id: int, db: Session = Depends(get_db)):
-    print(1)
-    delete_enrollment = db.query(ClassEnrollment).filter(ClassEnrollment.id == enrollment_id).first()
+@router.patch("/archive/{enrollment_id}")
+def archive_enrollment(enrollment_id: int, db: Session = Depends(get_db)):
     
-    if not delete_enrollment:
+    enrollment = db.query(ClassEnrollment).filter(ClassEnrollment.id == enrollment_id).first()
+    
+    if not enrollment:
         raise HTTPException(status_code=404, detail="Enrollment Data not Existing")
     
-    db.delete(delete_enrollment)
-    db.commit()  
+    if enrollment.status == "enrolled":
+        raise HTTPException(
+                status_code=400,
+                detail="Cannot Archive: student is still currently enrolled."
+            )
+        
     
-    return {"message" : f"Enrollment Data with id: {enrollment_id} has been Deleted"}
+    enrollment.is_archive= True
+    db.commit()  
+    db.refresh(enrollment)
+    
+    return {"message" : f"Enrollment Data with id: {enrollment_id} has been archived"}

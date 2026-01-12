@@ -11,7 +11,7 @@ export default function DeleteSubject({ subject_id, onClose, onSuccess}) {
         e.preventDefault()
 
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL}/subject/delete/${subject_id}`)
+            await axios.patch(`${import.meta.env.VITE_API_URL}/subject/archive/${subject_id}`)
 
             if(onSuccess) onSuccess();
         } catch (err) {
@@ -27,7 +27,7 @@ export default function DeleteSubject({ subject_id, onClose, onSuccess}) {
 
     return (
         <div className="w-full h-auto flex flex-col justify-center items-center bg-white px-6 py-4 shadow-xl rounded-2xl">
-            {error && (<p>{error}</p>)}
+            {error && (<p className="text-sm text-[#8E1616]/80">{error}</p>)}
             <div 
                 className="self-end cursor-pointer bg-[#EBECF1] rounded-full p-1 
                     transition-transform duration-300 hover:scale-110 mt-3 mb-6" 
