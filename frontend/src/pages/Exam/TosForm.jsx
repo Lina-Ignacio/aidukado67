@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import axios from "axios";
-import AssignExam from '../../components/AssignQuiz';
+import AssignQuiz from "../../components/AssignQuiz/AssignQuiz";
 
 export default function TOSForm({ lessons, onClose, onSuccess }) {
   const [hours, setHours] = useState({});
@@ -54,9 +54,11 @@ export default function TOSForm({ lessons, onClose, onSuccess }) {
   };
 
   const isGenerateDisabled = filteredLessons.length === 0;
-
+  const inputStyle = `w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+              focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200 mb-2`
+  const labelClass = `block font-semibold text-[#102E50] mb-1`
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg min-w-[500px] max-w-3xl mx-auto">
+    <div className="bg-white px-6 py-8 rounded-2xl shadow-lg w-full xl:w-[500px] h-auto">
       {loading && (
         <div className="flex flex-col items-center gap-4 text-white">
         <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -65,44 +67,44 @@ export default function TOSForm({ lessons, onClose, onSuccess }) {
       )}
       {!loading && questions.length === 0 &&(
         <>
-      <h2 className="text-2xl font-bold text-[#102E50] mb-4">
+      <h2 className="text-2xl font-bold text-[#102E50] mb-8 uppercase">
         Table of Specifications
       </h2>
 
       {/*Total Items */}
-      <div className="mb-4">
+      <div className="mb-4 flex flex-col">
 
-        <label className="block font-semibold text-[#102E50] mb-2">Term Period</label>
+        {/* <label className={labelClass}>Term Period</label>
         <select
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full p-2 rounded border border-[#102E50] bg-[#F4F6FF] text-[#102E50] focus:outline-none focus:ring-2 focus:ring-[#102E50] font-bold"
+          className={inputStyle}
         >
           <option value="" disabled>Select Term Period</option>
           <option value="Prelim Exam">Prelim</option>
           <option value="Midterm Exam">Midterm</option>
           <option value="Final Exam">Final</option>
-        </select>
+        </select> */}
 
-        <label className="block font-semibold text-[#102E50] mb-2">Instruction </label>
+        <label className={labelClass}>Instruction </label>
         <input
           value={instruction}
           onChange={(e) => setInstruction(e.target.value)}
           type="text"
           placeholder="Enter exam instruction"
-          className="w-full p-2 rounded border border-[#102E50] bg-[#F4F6FF] text-[#102E50] focus:outline-none focus:ring-2 focus:ring-[#102E50] font-bold"
+          className={inputStyle}
         />
 
-        <label className="block font-semibold text-[#102E50] mb-2">Set Exam Duration </label>
+        <label className={labelClass}>Set Exam Duration (minutes) </label>
         <input
           value={duration}
           onChange={(e) => setDuration(e.target.value)}
           type="number"
           placeholder="Set assessment timer"
-          className="w-full p-2 rounded border border-[#102E50] bg-[#F4F6FF] text-[#102E50] focus:outline-none focus:ring-2 focus:ring-[#102E50] font-bold"
+          className={inputStyle}
         />
 
-        <label className="block font-semibold text-[#102E50] mb-2">
+        <label className={labelClass}>
           Total Number of Items
         </label>
         <input
@@ -110,13 +112,13 @@ export default function TOSForm({ lessons, onClose, onSuccess }) {
           min="1"
           value={totalItems}
           onChange={(e) => setTotalItems(e.target.value)}
-          className="w-full p-2 rounded border border-[#102E50] bg-[#F4F6FF] text-[#102E50] focus:outline-none focus:ring-2 focus:ring-[#102E50] font-bold"
+          className={inputStyle}
         />
       </div>
 
       {/*Lessons Hours*/}
       <div className="mb-4">
-        <h3 className="font-semibold text-[#F5C45E] mb-3">Hours Per Lesson</h3>
+        <h3 className="font-semibold text-[#E78B48] mb-4 uppercase">Hours Per Lesson</h3>
         <div className="flex flex-col gap-3">
           {filteredLessons.length > 0 ? (
             filteredLessons.map((lesson) => (
@@ -128,7 +130,7 @@ export default function TOSForm({ lessons, onClose, onSuccess }) {
                   placeholder="Hours"
                   value={hours[lesson.id] || ""}
                   onChange={(e) => handleHoursChange(lesson.id, e.target.value)}
-                  className="border border-[#102E50] p-2 rounded w-[30%] bg-[#F4F6FF] text-[#102E50] focus:outline-none focus:ring-2 focus:ring-[#102E50]"
+                  className={inputStyle}
                 />
               </div>
             ))
@@ -141,18 +143,19 @@ export default function TOSForm({ lessons, onClose, onSuccess }) {
       <div className="w-full gap-2 flex">
         <button
           onClick={onClose}
-          className="w-1/2 bg-[#F3C623] text-white xl:text-lg p-2 rounded font-bold 
-              hover:bg-[#15426f] transition-colors"
+          className="w-1/2 mt-3 bg-[#10375C] text-white transition-transform duration-200 
+              hover:scale-95 shadow-md xl:text-lg p-2"
         >
           Close
         </button>
         <button
           onClick={handleSubmit}
           disabled={isGenerateDisabled}
-          className={`w-1/2 xl:text-lg p-2 rounded font-bold transition-colors ${
+          className={`w-1/2 mt-3 transition-transform duration-200 
+              hover:scale-95 shadow-md xl:text-lg p-2 ${
             isGenerateDisabled
               ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-              : "bg-[#102E50] text-white hover:bg-[#15426f]"
+              : "bg-[#E78B48]/90 text-white"
           }`}
         >
           Generate Exam

@@ -17,7 +17,7 @@ p {
 } 
 
 
-.background {
+.material-background {
   --bg-image: url("https://images.pexels.com/photos/13807427/pexels-photo-13807427.jpeg");
   --bg-image-opacity: .1;
   background-color: rgba(158, 198, 243, 0.2);
@@ -25,7 +25,26 @@ p {
   isolation: isolate;
 }
 
-.background::before {
+.material-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: var(--bg-image);
+  opacity: var(--bg-image-opacity);
+}
+
+.assessment-background {
+  --bg-image: url("https://images.pexels.com/photos/1266808/pexels-photo-1266808.jpeg");
+  --bg-image-opacity: .05;
+  background-color: rgba(231, 139, 72, 0.5);
+  position: relative;
+  isolation: isolate;
+}
+
+.assessment-background::before {
   content: "";
   position: absolute;
   inset: 0;

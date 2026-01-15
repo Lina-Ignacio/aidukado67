@@ -69,6 +69,7 @@ export default function Login() {
             const role = response.data.role;
             
             storeUser(id, role);
+            sessionStorage.clear();
 
             navigate("/dashboard")
         } catch (err) {

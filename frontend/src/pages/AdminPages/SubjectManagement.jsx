@@ -72,7 +72,7 @@ export default function SubjectManagement() {
                         icon={LuPlus}
                         onClick={() => setIsOpen(true)}
                                             
-                        className="w-3/4 place-self-end" 
+                        className="w-full 2xl:w-3/4 place-self-end" 
                         mainColor="#E78B48" 
                         darkColor="#B9652B"
                                         />

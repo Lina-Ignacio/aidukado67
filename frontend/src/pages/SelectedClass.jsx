@@ -12,7 +12,8 @@ import useClassStore from "../store/useClassStore";
 import QuizCard from "../components/QuizCard";
 import TOSForm from "./Exam/TosForm";
 import { FiPlus } from "react-icons/fi";
-import { GiMagicBroom } from "react-icons/gi";
+import { LuWand, LuUpload } from "react-icons/lu";
+import ClassicButton from "../components/classicButton";
 //import termStore from "../store/useTermStore";
 
 export default function SelectedClass() {
@@ -39,11 +40,20 @@ export default function SelectedClass() {
 
   const [fetchMaterialsError, setFetchMaterialsError] = useState("");
 
-  const [quiz, setQuiz] = useState([])
-  const handleArchiveQuiz = (quizId) => {
-    setQuiz((prev) => prev.filter((quiz) => quiz.id !== quizId));
+  const [quizzes, setQuizzes] = useState([])
+
+  const handleArchiveQuiz = async (quizId) => {
+    try {
+      
+      await axios.patch(`${import.meta.env.VITE_API_URL}/archiveQuiz/${quizId}`);
+      
+      alert("Quiz archived successfully!");
+    } catch (error) {
+      console.error("Failed to archive:", error);
+      alert("Could not archive quiz. Please try again.");
+    }
   };
-  
+    
   const { classId, term } = useParams();
   const userRole = useUserStore((state) => state.userRole);
   const className = useClassStore((state) => state.className);
@@ -52,7 +62,7 @@ export default function SelectedClass() {
     try {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/class_material/getByClassId/${classId}`)
         setMaterials(response.data)
-        console.log(response.data)
+        
     } catch(err) {
         if(err.response?.data?.detail) {
             setFetchMaterialsError(err.response.data.detail)
@@ -62,34 +72,31 @@ export default function SelectedClass() {
     } 
   }
 
-  const location = useLocation();
-  useEffect(() => {
-    if (location.state?.refresh) {
-      getLessons();
-      navigate(location.pathname, { replace: true });
-    }
-  }, [location.state]);
-
   const getQuizzes = async() => {
     try{
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/getQuizzes/${classId}`, {
         params: {term}
       })
-      console.log(response.data);
-      setQuiz(response.data);
+      setQuizzes(response.data);
     }
     catch(error){
       console.log("Error: ", error)
     }
-  }  
+  } 
 
-  useEffect(() => {
-    if(classId){
-      getLessons();
-      getQuizzes();
-    }
-    console.log("Class ID changed:", classId);
-  }, [classId])
+  const location = useLocation();
+useEffect(() => {
+  if (classId) {
+    getLessons();
+    getQuizzes();
+  }
+
+  if (location.state?.refresh) {
+   
+    navigate(location.pathname, { replace: true, state: {} });
+  }
+  
+}, [classId, term, location.state?.refresh]);
 
 
   const filteredMaterials = useMemo(() => {
@@ -100,52 +107,45 @@ export default function SelectedClass() {
   let termName = getTermName(Number(term));
 
   return (
-    <div className="flex flex-col w-full h-auto min-h-screen py-5 gap-8 items-center">
+    <div className="flex flex-col w-full h-auto min-h-screen py-8 gap-8 items-center">
         <div
-            className="flex flex-col w-3/4 sm:w-[80%] min-h-[150px] h-auto         
-              p-2 truncate bg-[#FDFAF6] rounded-tl-3xl rounded-br-3xl"
+            className="flex flex items-center w-3/4 sm:w-[70%] min-h-[100px] lg:min-h-[120px] h-auto         
+              truncate bg-[#102E50] rounded-2xl relative p-5"
         >
-            <div 
-                className="flex flex-col flex-grow-[8] p-4 justify-center
-                bg-[#102E50] rounded-tl-3xl rounded-br-3xl"
-            >
-                <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white">{className}</p>
-            </div>
-            
+            <div className="absolute h-[8%] w-full bg-black/20 bottom-0 left-0"></div>
+            <p className="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold text-white truncate">{className}</p>
         </div>
 
         {userRole == "teacher" && (
-          <div className="flex flex-col md:flex-row w-3/4 sm:w-[80%] h-auto gap-2 mx-auto justify-end mt-3">
-            <button 
-              onClick={() => setIsOpen(true)} 
-              className="shadow-xl rounded xl:text-lg p-2 text-white font-semibold bg-[#102E50] 
-              hover:bg-[#0B2239] hover:text-white transition-transform duration-300 flex justify-center
-              items-center gap-1 rounded-lg" 
-            > 
-              <FiPlus className="text-lg xl:text-2xl"/>
-              <span className="text-md xl:text-lg">Upload Material</span> 
-            </button>
+          <div className="flex flex-col md:flex-row w-3/4 sm:w-[70%] h-auto gap-2 mx-auto justify-end mt-3">
+            <ClassicButton 
+              buttonName="Upload Material"
+              className=" bg-[#102E50] shadow-md place-self-end w-full md:w-1/3 2xl:w-1/4"
+              onClick={() => setIsOpen(true)}
+              mainColor="#183D65" 
+              darkColor="#102E50"
+              icon={LuUpload}
+            />
 
-            <button
+            <ClassicButton 
+              buttonName="Generate Exam"
+              className="shadow-md place-self-end w-full md:w-1/3 2xl:w-1/4"
               onClick={() => setIsOpenTOS(true)}
-              className="xl:text-lg p-2 bg-[#E78B48] text-white rounded font-semibold
-              hover:bg-[#D9773A] hover:text-white flex justify-center
-              items-center gap-1 rounded-lg"
-            >
-              <GiMagicBroom className="text-lg xl:text-2xl"/>
-              <span className="text-md xl:text-lg">Generate Exam</span> 
-            </button>
+              mainColor="#E78B48" 
+              darkColor="#B9652B"
+              icon={LuWand}
+            />
 
             {successMessage && (<p className="text-green-800 self-end">{successMessage}</p>)}
           </div>
         )}
         
 
-        <div className="w-3/4 sm:w-[80%] mt-4 h-auto">
+        <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
           <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Materials</h2>
         </div>
         
-        <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[80%]">
+        <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%]">
           
           {filteredMaterials.length > 0 ? (
             filteredMaterials.map((lesson) => (
@@ -165,25 +165,26 @@ export default function SelectedClass() {
           )}
         </div>
         
-        <div className="w-3/4 sm:w-[80%] mt-10">
+        <div className="w-3/4 sm:w-[70%] mt-10">
           <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Quizzes</h2>
         </div>
 
-        <div className="flex flex-wrap justify-start w-3/4 sm:w-[80%] gap-[5%]">
-          {materials.length > 0 && quiz.length > 0 ? (
-            quiz.map((quiz) => {
+        <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%]">
+          {materials.length > 0 && quizzes.length > 0 ? (
+            quizzes.map((quiz) => {
               const lesson = materials.find((m) => m.id === quiz.lesson_id);
               const lessonTitle = lesson ? lesson.title : "Unknown Lesson";
               console.log(lessonTitle)
               return(
                 <QuizCard 
-                key={quiz.id} 
-                quizId={quiz.id} 
-                lessonTitle={lessonTitle}
-                quizTitle={quiz.title} 
-                createdAt={quiz.created_at}
-                onArchive={handleArchiveQuiz} 
-              />
+                  key={quiz.id} 
+                  quizId={quiz.id} 
+                  lessonTitle={lessonTitle}
+                  quizTitle={quiz.title} 
+                  createdAt={quiz.created_at}
+                  onArchive={handleArchiveQuiz} 
+                  assessmentType={quiz.assessment_type}
+                />
               )
             })
           ) : (

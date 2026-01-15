@@ -1,15 +1,10 @@
-import { useState, useEffect } from "react";
 import { MdEdit, MdDelete, MdRemoveRedEye, MdVisibilityOff, MdArchive, MdOutlinePreview, 
 MdOutlineCancel, MdVisibility, MdDescription, MdAssessment } from "react-icons/md";
 import FileView from "../pages/Lesson/FileView";
 import {useNavigate } from 'react-router-dom';
 import userRole from '../store/useUserStore'
 import useClassStore from "../store/useClassStore";
-import { useParams } from "react-router-dom";
-import Modal from "./Modal";
-import ArchiveMaterial from "../pages/Lesson/ArchiveMaterial";
-import EditMaterial from "../pages/Lesson/EditMaterial";
-import axios from "axios";
+import ClassicButton from "./classicButton";
 
 
 export default function LessonViewer({materialData, setIsVisible, isVisible, setArchiveMaterialOpen, setEditMaterialOpen}) {
@@ -23,7 +18,7 @@ export default function LessonViewer({materialData, setIsVisible, isVisible, set
 
     const handleClick = () => {
         if(usersRole.toLowerCase() === "teacher"){
-            navigate(`/createQuiz/${classId}/${materialData.materialId}`);
+            navigate(`/AIQuiz/${materialData.materialId}`);
         }
         else if(usersRole.toLowerCase() === "student"){
             navigate(`/lessonSummary/${materialData.materialId}`)
@@ -53,77 +48,76 @@ export default function LessonViewer({materialData, setIsVisible, isVisible, set
                 </div>
             ) : (
                 
-                    <div className="w-[90%] sm:w-[95%] md:w-3/4 2xl:w-3/5 min-h-[250px]
-                            flex flex-col gap-3 rounded-2xl p-4 sm:p-6
-                            bg-[#F4F6FF] shadow-md mx-auto mt-6">
+                    <div className="w-[90%] sm:w-[95%] md:w-3/5 lg:w-4/5 xl:w-3/5 min-h-[250px]
+                            flex flex-col rounded-2xl p-4 sm:p-6 pb-12 relative
+                            bg-[#F4F6FF] shadow-md mx-auto mt-6 overflow-hidden
+                            transition-all duration-200 ease-in-out">
 
-                        <h2 className="font-bold text-2xl md:text-4xl text-[#102E50]">
+                    
+                    <div className="absolute h-[2%] w-full bg-black/10 bottom-0 left-0"></div>
+
+                    {/* CONTENT SECTION */}
+                    <div className="relative z-10">
+                        <h2 className="font-bold text-2xl md:text-4xl text-[#102E50] mb-1">
                             {materialData.title}
                         </h2>
 
-                        <p className="text-md md:text-xl text-[#102E50]/80">
+                        <p className="text-md md:text-xl text-[#102E50]/70 mb-8 lg:mb-12">
                             {materialData.description}
                         </p>
 
-                        <p className="text-sm md:text-lg font-semibold text-[#E78B48]/90 self-end">
+                        <p className="text-sm md:text-lg text-[#E78B48]/90 self-end mb-2">
                             {formattedDate}
                         </p>
 
-                        <hr className="h-px bg-[#102E50] border-0" />
+                        <hr className="h-px bg-[#102E50]/50 border-0 mb-8" />
 
-                        {/* View Button */}
-                        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr_1fr] w-full gap-2">
-                            <button
+                        {/* View Button Group */}
+                        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr_1fr] w-full gap-2 mb-4">
+                            <ClassicButton 
+                                buttonName="View Material"
                                 onClick={() => setIsVisible(true)}
-                                className="w-full lg:w-4/5 bg-[#102E50] text-white py-2 rounded-md
-                                        hover:bg-[#0B2239] flex items-center justify-center gap-2
-                                        xl:text-lg p-2"
-                            >
-                                <MdVisibility className="text-lg md:text-2xl" />
-                                <span className="text-md md:text-lg">View Material</span>
-                            </button>
+                                className="w-full lg:w-4/5 shadow-md xl:text-lg"
+                                mainColor="#102E50" 
+                                darkColor="#0B2239"
+                                icon={MdVisibility}
+                            />
                         </div>
-                        
 
-                        {/* Action Buttons */}
-                        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr_1fr] w-full gap-2">
-
-                            <button
-                            onClick={handleClick}
-                            className="w-full lg:w-4/5 bg-[#102E50] text-white py-2 rounded-md
-                                        hover:bg-[#0B2239] flex items-center justify-center gap-2
-                                        xl:text-lg p-2"
-                            >
-                            {teacherRole ? <MdAssessment className="text-lg md:text-2xl" /> :
-                                            <MdDescription className="text-lg md:text-2xl" />}
-                            <span className="text-md md:text-lg">
-                                {teacherRole ? "Generate Quiz AI" : "Lesson Summary"}
-                            </span>
-                            </button>
+                        {/* Action Buttons Group */}
+                        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr_1fr] w-full gap-2 mb-3">
+                            <ClassicButton 
+                                buttonName={teacherRole ? "Generate Assessment" : "Lesson Summary"}
+                                onClick={handleClick}
+                                className="w-full lg:w-4/5 shadow-md"
+                                mainColor="#102E50" 
+                                darkColor="#0B2239"
+                                icon={teacherRole ? MdAssessment : MdDescription}
+                            />
 
                             {usersRole === "teacher" && (
-                            <>
-                                <button
-                                    onClick={() => setEditMaterialOpen(true)}
-                                    className="w-full h-[44px] sm:h-[50px] bg-[#102E50] text-white rounded-lg
-                                                flex items-center justify-center gap-2 xl:text-lg p-2"
-                                >
-                                    <MdEdit className="text-lg md:text-2xl" />
-                                    <span className="text-md md:text-lg">Edit</span>
-                                </button>
-
-                                <button
-                                    onClick={() => setArchiveMaterialOpen(true)}
-                                    className="w-full h-[44px] sm:h-[50px] bg-[#BE3D2A] text-white rounded-lg
-                                                flex items-center justify-center gap-2 xl:text-lg p-2"
-                                >
-                                    <MdArchive className="text-lg md:text-2xl" />
-                                    <span className="text-md md:text-lg">Archive</span>
-                                </button>
-                            </>
+                                <>
+                                    <ClassicButton 
+                                        buttonName="Edit"
+                                        className="shadow-md w-full text-md"
+                                        onClick={() => setEditMaterialOpen(true)}
+                                        mainColor="#E78B48" 
+                                        darkColor="#B9652B"
+                                        icon={MdEdit}
+                                    />
+                                    <ClassicButton 
+                                        buttonName="Archive"
+                                        className="shadow-md w-full text-md"
+                                        onClick={() => setArchiveMaterialOpen(true)}
+                                        mainColor="#8E1616"
+                                        darkColor="#660F0F" 
+                                        icon={MdArchive}
+                                    />
+                                </>
                             )}
                         </div>
-                        </div>
+                    </div>
+                </div>
 
                 
             )}

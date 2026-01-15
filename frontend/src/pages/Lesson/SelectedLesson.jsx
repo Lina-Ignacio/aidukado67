@@ -89,7 +89,7 @@ export default function SelectedLesson() {
     }
 
     return (
-        <div className="w-full h-auto min-h-screen flex flex-col gap-[2%] items-center px-[10px] md:px-[15px] py-[40px] bg-white">
+        <div className="w-full h-auto min-h-screen flex flex-col gap-[2%] items-center px-[10px] md:px-[50px] py-[40px]">
             {isVisible && (
                 <div className="w-[30px] h-[30px] bg-[#BE3D2A] flex mt-2" onClick={() => setIsVisible(false)}>
                     <MdClose size={24} className="text-white font-bold m-auto" />

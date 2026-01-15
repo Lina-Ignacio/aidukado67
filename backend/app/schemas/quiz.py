@@ -11,8 +11,8 @@ class CreateQuiz(BaseModel):
     #start_time: datetime
     duration: int
     class_id: int
-    archived: bool
-    type:str
+    is_archive: bool
+    assessment_type:str
     term_id:int
 
 class QuizOut(BaseModel):
@@ -26,6 +26,6 @@ class QuizOut(BaseModel):
     duration: int
     created_at: datetime
     class_id: int
-    archived:bool
-    type:str
+    is_archive:bool
+    assessment_type:str
     term_id:int

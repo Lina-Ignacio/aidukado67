@@ -78,12 +78,14 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
     }
   };
 
-  const inputClass ="w-full sm:h-[6%] border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-[1%] rounded-md shadow-md";
+  const inputClass =`w-full p-2 rounded-lg border border-gray-300 bg-gray-100 text-md text-[#102E50] 
+            focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200`;
   const labelClass = "text-[#102E50] font-bold opacity-75";
 
   return (
     <form
-      className="flex flex-col justify-center w-full h-full gap-[2%] text-left rounded-2xl bg-[#F4F6FF] p-4 shadow-2xl"
+      className="flex flex-col justify-center w-full h-auto gap-3
+       text-left rounded-2xl bg-[#F4F6FF] px-4 py-8 shadow-2xl"
     >
       {uploadError && <p className="text-red-800">{uploadError}</p>}
       <FileUploader type=".pdf, .doc, .docx" handleFileChange={handleFileChange} />
@@ -115,7 +117,7 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
         value={metaData.description}
         onChange={(e) => setMetaData((prev) => ({ ...prev, description: e.target.value }))}
         placeholder="Describe this material"
-        rows={2}
+        rows={3}
         cols={5}
       />
 
@@ -147,14 +149,27 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
       )}
 
 
-      <div className="flex gap-2">
-        <button onClick={() => setIsOpen(false)} className="bg-[#9BA4B4] w-1/2 xl:text-lg p-2" type="button">
+      <div className="flex gap-2 mt-4">
+        <button 
+          onClick={() => setIsOpen(false)} 
+          className="w-1/2 mt-[1%] bg-[#EBEBEB] font-bold text-[#102E50] transition-transform duration-200 
+                hover:scale-95 shadow-md text-md xl:text-lg p-2" 
+          type="button"
+        >
           CANCEL
         </button>
-        <button className="bg-[#102E50] w-1/2 xl:text-lg p-2" onClick={handleUpload}>
+        <button 
+          className="w-1/2 mt-[1%] bg-[#10375C] text-white transition-transform duration-200 
+              hover:scale-95 shadow-md text-md xl:text-lg p-2" 
+          onClick={handleUpload}
+        >
           UPLOAD
         </button>
       </div>
     </form>
   );
 }
+
+
+
+

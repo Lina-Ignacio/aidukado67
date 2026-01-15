@@ -16,8 +16,8 @@ class Quiz(Base):
     #start_time = Column(DateTime)
     duration = Column(Integer)
     class_id = Column(Integer, ForeignKey("classes.id", ondelete="CASCADE" ))
-    archived = Column(Boolean, default=False)
-    type = Column(String(50))
+    is_archive = Column(Boolean, default=False)
+    assessment_type = Column(String(255), nullable=False)
     term_id = Column(Integer, ForeignKey("terms.id", ondelete="CASCADE"))
 
     material = relationship("ClassMaterial", back_populates="quizzes")

@@ -1,13 +1,13 @@
+import React from 'react';
 import './App.css';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
-//import Sidebar from '../components/sidebar';
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+
+// Page & Component Imports
 import AIPretest from "./pages/AIPretest";
-//import Dashboard from "./pages/Dashboard";
 import PostTest from './pages/PostTest';
 import Login from "./components/Login";
 import Signup from "./pages/Users/AddUser";
 import StudentArea from './pages/StudentArea';
-
 import RoleProtectedRoute from './components/RoleProtectedRoute';
 import UserManagement from './pages/AdminPages/UserManagement';
 import ClassManagement from './pages/AdminPages/ClassManagement';
@@ -21,185 +21,173 @@ import SelectedLesson from './pages/Lesson/SelectedLesson';
 import TermPage from './pages/TermPage';
 import FileView from './pages/Lesson/FileView';
 import Submissions from './pages/Lesson/Submissions';
-
-import CreateQuiz from './pages/Quiz/CreateQuiz';
-import StudentQuizPage from './pages/Quiz/StudentQuizPage';
+import AIQuiz from './pages/AIQuiz/AIQuiz'; 
+import StudentQuizPage from './pages/AIQuiz/StudentQuizPage';
 import LessonSummary from './pages/Lesson/LessonSummary';
-import QuizMonitoring from './pages/Quiz/QuizMonitoring';
+import QuizMonitoring from './pages/AIQuiz/QuizMonitoring';
 import Layout from './components/Layout';
 
+// Store
 import useUserStore from './store/useUserStore';
 
 function AppContent() {
-  const location = useLocation();
-  const hideSidebar =
-    location.pathname === "/login" ||
-    location.pathname.startsWith("/submissions/");
-
-  const role = useUserStore((state) => state.userRole)
+  const role = useUserStore((state) => state.userRole);
 
   return (
-    <div className="flex h-full w-full bg-white overflow-hidden">
+    <div className="h-screen w-full bg-white overflow-y-auto">
+      <Routes>
+        {/* ==========================================
+            GROUP 1: FULLSCREEN ROUTES (No Sidebar)
+           ========================================== */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        
+        
+        <Route path="/submissions/:materialId" element={<Submissions />} />
+        
+        
+        <Route 
+          path="/AIQuiz/:materialId" 
+          element={
+            <RoleProtectedRoute allowed_roles={["teacher"]}>
+              <AIQuiz />
+            </RoleProtectedRoute>
+          } 
+        />
 
-      {hideSidebar ? (
-        // NO SIDEBAR MODE
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/submissions/:materialId" element={<Submissions />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<Navigate to="/login" replace />} />
-          </Routes>
-        </main>
-      ) : (
-        // WITH SIDEBAR MODE
-        <main className="flex-grow">
-        <Layout>
+        <Route 
+            path="/quizMonitoring/:quizId" 
+            element={
+              <RoleProtectedRoute allowed_roles={["teacher"]}>
+                <QuizMonitoring />
+              </RoleProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/selectedClass/:classId/:term" 
+            element={
+              <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
+                <SelectedClass />
+              </RoleProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/studentQuizPage/:quizId" 
+            element={
+              <RoleProtectedRoute allowed_roles={["student"]}>
+                <StudentQuizPage />
+              </RoleProtectedRoute>
+            } 
+          />
+
+        {/* ==========================================
+            GROUP 2: DASHBOARD ROUTES (Wrapped in Layout)
+           ========================================== */}
+        <Route element={<Layout />}>
           
-          <Routes>
+          {/* Smart Redirect for Dashboard */}
+          <Route 
+            path="/dashboard" 
+            element={
+              role === "student" ? <Navigate to="/studentClasses" replace /> :
+              role === "teacher" ? <Navigate to="/teacherClasses" replace /> :
+              role === "admin" ? <Navigate to="/userManagement" replace /> :
+              <Navigate to="/login" replace />
+            }
+          />
 
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route 
-              path="/dashboard" 
-              element={
-                role === "student" ? (
-                  <Navigate to="/studentClasses" replace />
-                ) : role === "teacher" ? (
-                  <Navigate to="/teacherClasses" replace />
-                ) : role === "admin" ? (
-                  <Navigate to="/userManagement" replace />
-                ) : (
-                  <Navigate to="/login" replace />
-                )
-              }
-            />
+          {/* Admin Management */}
+          <Route path='/userManagement' element={<UserManagement />} />
+          <Route path='/classManagement' element={<ClassManagement />} />
+          <Route path='/subjectManagement' element={<SubjectManagement />} />
+          <Route path="/enrollmentManagement" element={<EnrollmentManagement />} />
 
-            <Route 
-              path="/subjects" 
-              element={
-                <RoleProtectedRoute allowed_roles={["student"]}>
-                  <StudentArea />
-                </RoleProtectedRoute>
-              }
-            />
-
-            <Route 
-              path="/aipretest" 
-              element={
-                <RoleProtectedRoute allowed_roles={"teacher"}>
-                  <AIPretest />
-                </RoleProtectedRoute>
-              }
-            />
-
-            <Route path="/postTest" element={<PostTest/>}/>
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-
-            <Route 
-              path="/studentClasses" 
-              element={
-                <RoleProtectedRoute allowed_roles={"student"}>
-                  <StudentClasses/>
-                </RoleProtectedRoute>
-              }
-            />
-
-            <Route 
-              path="/teacherClasses" 
-              element={
-                <RoleProtectedRoute allowed_roles={"teacher"}>
-                  <TeacherClasses/>
-                </RoleProtectedRoute>
-              }
-            />
-
-            <Route 
-              path="/selectedClass/:classId/:term" 
-              element={
-                <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
-                  <SelectedClass/>
-                </RoleProtectedRoute>
-              }
-            />
-
-            <Route 
-              path="/selectedLesson/:materialId/:materialType" 
-              element={
-                <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
-                  <SelectedLesson/>
-                </RoleProtectedRoute>
-              }
-            />
-
-            <Route 
-              path="/termPage" 
-              element={
-                <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
-                  <TermPage/>
-                </RoleProtectedRoute>
-              }
-            />
-
-            <Route 
-              path="/fileView" 
-              element={
-                <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
-                  <FileView/>
-                </RoleProtectedRoute>
-              }
-            />
-
-            <Route 
-              path="/createQuiz/:classId/:materialId" 
-              element={
-                <RoleProtectedRoute allowed_roles={["teacher"]}>
-                  <CreateQuiz/>
-                </RoleProtectedRoute>
-              }
-            />
-            
-            <Route 
-              path="/studentQuizPage/:quizId" 
-              element={
-                <RoleProtectedRoute allowed_roles={["student"]}>
-                  <StudentQuizPage/>
-                </RoleProtectedRoute>
-              }
-            />
-
-            <Route 
-              path="/lessonSummary/:materialId" 
-              element={
-                <RoleProtectedRoute allowed_roles={["student"]}>
-                  <LessonSummary/>
-                </RoleProtectedRoute>
-              }
-            />
-
-            <Route 
-              path="/quizMonitoring/:quizId" 
-              element={
-                <RoleProtectedRoute allowed_roles={["teacher"]}>
-                  <QuizMonitoring/>
-                </RoleProtectedRoute>
-              }
-            />
-            
-            <Route path='/userManagement' element={<UserManagement/>}/>
-            <Route path='/classManagement' element={<ClassManagement/>}/>
-            <Route path='/subjectManagement' element={<SubjectManagement/>} />
-            <Route path="/enrollmentManagement" element={<EnrollmentManagement />} />
-            <Route path='/help' element={<AboutPage/>}/>
-
-            <Route path="*" element={<h1 className='text-black'>404 - Page Not Found</h1>} />
-          </Routes>
+          {/* Classes & Subjects */}
+          <Route 
+            path="/studentClasses" 
+            element={
+              <RoleProtectedRoute allowed_roles={["student"]}>
+                <StudentClasses />
+              </RoleProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/teacherClasses" 
+            element={
+              <RoleProtectedRoute allowed_roles={["teacher"]}>
+                <TeacherClasses />
+              </RoleProtectedRoute>
+            } 
+          />
           
-        </Layout>
-        </main>
-      )}
 
+          <Route 
+            path="/selectedLesson/:materialId/:materialType" 
+            element={
+              <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
+                <SelectedLesson />
+              </RoleProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/subjects" 
+            element={
+              <RoleProtectedRoute allowed_roles={["student"]}>
+                <StudentArea />
+              </RoleProtectedRoute>
+            } 
+          />
+
+          {/* Quiz & Testing Logic */}
+          <Route 
+            path="/aipretest" 
+            element={
+              <RoleProtectedRoute allowed_roles={["teacher"]}>
+                <AIPretest />
+              </RoleProtectedRoute>
+            } 
+          />
+          <Route path="/postTest" element={<PostTest />} />
+          
+
+          {/* Lesson Details */}
+          <Route 
+            path="/termPage" 
+            element={
+              <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
+                <TermPage />
+              </RoleProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/fileView" 
+            element={
+              <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
+                <FileView />
+              </RoleProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/lessonSummary/:materialId" 
+            element={
+              <RoleProtectedRoute allowed_roles={["student"]}>
+                <LessonSummary />
+              </RoleProtectedRoute>
+            } 
+          />
+
+          {/* Help/About */}
+          <Route path='/help' element={<AboutPage />} />
+        </Route>
+
+        {/* ==========================================
+            GROUP 3: FALLBACKS
+           ========================================== */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<div className="p-10 text-center"><h1 className='text-black text-2xl'>404 - Page Not Found</h1></div>} />
+      </Routes>
     </div>
-
   );
 }
 
@@ -210,5 +198,3 @@ export default function App() {
     </Router>
   );
 }
-
-

@@ -34,32 +34,47 @@ export default function Sidebar({closeMobile}) {
   const iconClasses = "text-3xl md:text[4xl] xl:text[6xl]"
 
   const handleLogout = async () => {
-    useClassStore.persist.clearStorage(); 
-    useClassStore.getState().clearClassDetail();
-    useUserStore.persist.clearStorage();
-    useUserStore.getState().clearUser();
-    useTermStore.getState().clearTerm();
-    useLessonStore.getState().clearLessonId();
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/logout`,
-      {},
-      {withCredentials: true}
-    )
+  
+  useClassStore.persist.clearStorage(); 
+  useClassStore.getState().clearClassDetail();
+  
+  useUserStore.persist.clearStorage(); 
+  useUserStore.getState().clearUser();
+  
+  useTermStore.getState().clearTerm();
+  useLessonStore.getState().clearLessonId();
 
-      if(response.data.message === "logged out successfully") {
-        navigate("/login")
-      }
-    } catch (err) {
-      console.error("Logout Failed", err)
+  
+  sessionStorage.clear();
+
+  try {
+    
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_URL}/logout`,
+      {},
+      { withCredentials: true }
+    );
+
+    
+    if (response.data.message === "logged out successfully") {
+      navigate("/login");
+    } else {
+      
+      navigate("/login");
     }
+  } catch (err) {
+    console.error("Logout Failed on Server, but local data was cleared", err);
+    navigate("/login");
   }
+};
 
   return (
     //<div className="hidden md:block h-full w-[16%] min-w-[15%] bg-[#F1F2F7]">
     <div 
-        className=" h-full w-full bg-[#F1F2F7] pt-10"
+        className=" h-full w-full bg-[#F1F2F7] pt-10 shadow-r-xl"
         onClick={handleClick}
     >
+  
       <div className="flex space-x-3 p-5 justify-center items-center">
         <div className="rounded-full h-[40px] w-[40px] bg-[#102E50] flex justify-center items-center font-extrabold text-white text-2xl md:text[3xl] xl:text[5xl]">
           A

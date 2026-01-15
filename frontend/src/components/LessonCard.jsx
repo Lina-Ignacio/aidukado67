@@ -60,10 +60,15 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
                     rounded-md cursor-pointer shadow-sm hover:shadow-md
                     transition-all duration-300 ease-in-out
                     hover:scale-[1.01] relative
-                    relative overflow-hidden background
+                    relative overflow-hidden material-background
                     rounded-tr-xl rounded-bl-xl"
             onClick={handleClick}
         >
+            <div 
+                className="absolute h-[3%] w-full bg-[#102E50]/20 bottom-0 left-0
+                    rounded-tr-xl rounded-bl-xl"
+            >
+            </div>
             <h2 className="text-md font-bold text-gray-800">{materialName}</h2>
             
             <p className="w-4/5 text-sm font-semibold text-gray-800">{formattedDate}</p>

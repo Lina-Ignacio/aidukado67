@@ -25,14 +25,14 @@ export default function ClassicButton({
 
       {/* Icon Section */}
       <div 
-        className="h-full flex items-center justify-center p-2" 
+        className="h-full flex items-center justify-center py-3 px-2 xl:py-3" 
         style={{ backgroundColor: darkColor }}
       >
         {Icon && <Icon className="text-lg xl:text-2xl text-white" />}
       </div>
 
       {/* Text Section */}
-      <span className="text-sm xl:text-lg font-semibold h-full flex items-center justify-center px-4 py-2">
+      <span className="text-md xl:text-lg font-semibold h-full flex items-center justify-center py-3 px-4 xl:py-2">
         {buttonName}
       </span>
     </button>

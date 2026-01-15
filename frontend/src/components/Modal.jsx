@@ -25,7 +25,7 @@ export default function Modal({ isOpen, onClose, title, children, panelStyle }) 
           >
             <DialogPanel className={panelStyle}>
               <DialogTitle className="lg:text-xl font-bold ml-5 text-white">{title}</DialogTitle>
-              <div className="mt-2 w-full h-full">{children}</div>
+              <div className="mt-2 h-full">{children}</div>
             </DialogPanel>
           </TransitionChild>
         </div>

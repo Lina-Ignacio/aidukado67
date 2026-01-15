@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { MdEdit, MdArchive, MdFileUpload, MdMenuBook, MdCalendarToday, 
-  MdOutlineComment, MdOutlinePreview, MdOutlineCancel, MdVisibility } from "react-icons/md";
+  MdOutlineComment, MdOutlineCancel, MdVisibility } from "react-icons/md";
+import { LuClipboardCheck } from "react-icons/lu";
 import FileView from "../pages/Lesson/FileView";
 import FileUploader from "./FileUploader";
 import useUserStore from "../store/useUserStore";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ClassicButton from "./classicButton";
 
 export default function TaskViewer({
   materialData,
@@ -196,91 +198,123 @@ export default function TaskViewer({
   });
 
 return (
-  <div className="w-full h-auto grid grid-cols-1 xl:grid-cols-[3fr_2fr] py-[10px] xl:px-[40px]">
+  <div className="w-full h-auto grid grid-cols-1 xl:grid-cols-[3fr_2fr] py-[10px] xl:px-[20px] gap-4">
     {/* Material */}
-    <div className="h-auto xl:max-h-[900px] w-full p-[25px] xl:p-[60px]">
-      <div className="child w-full flex flex-col rounded-2xl bg-[#F4F6FF]
-              gap-8 h-auto p-[25px] bg-white border border-[#102E50]/40 shadow-lg"
+    
+      <div className="child w-full flex flex-col rounded-2xl bg-[#F4F6FF]/70
+              h-auto p-[25px] pb-12 shadow-lg
+              backdrop-blur-lg relative overflow-hidden"
       >
-        {uploadError && <p className="text-red-800">{uploadError}</p>}
+        
+        <div className="absolute h-[2%] w-full bg-black/10 bottom-0 left-0"></div>
 
-        <h2 className="font-bold text-2xl md:text-4xl text-[#102E50]">
-          {materialData.title}
-        </h2>
+        
+        <div className="relative z-10 flex flex-col h-full">
+          {uploadError && <p className="text-red-800">{uploadError}</p>}
 
-        <p className="text-base md:text-xl text-[#102E50]/80">
-          {materialData.description}
-        </p>
+          <h2 className="font-bold text-2xl md:text-4xl text-[#102E50] truncate mb-1">
+            {materialData.title}
+          </h2>
 
-        <p className="text-[#E78B48]/90 font-bold flex justify-items 
-              items-center gap-2 text-sm md:text-lg self-end"
-        >
-          <MdCalendarToday/> Due: {formattedDue}
-        </p>
+          <p className="text-base md:text-lg leading-tight text-[#102E50]/80 mb-12">
+            {materialData.description}
+          </p>
 
-        <hr className="h-[1px] bg-[#102E50] border-0" />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 w-full">
-          <button
-            onClick={() => setIsVisible(true)}
-            className="w-full md:w-1/2 bg-[#E78B48]/90 hover:bg-[#0B2239] flex justify-center items-center
-              rounded-lg transition-colors duration-200 gap-2 text-white xl:text-lg p-2 "
+          <p className="text-[#E78B48]/90 flex justify-items 
+                        items-center gap-2 text-sm md:text-lg self-end mb-2"
           >
-            <MdMenuBook className="text-lg lg:text-xl xl:text-2xl text-white"/>
-            <span className="text-md md:text-lg">Open</span>
-          </button>
+            <MdCalendarToday/> Due: {formattedDue}
+          </p>
 
-          
-          {userRole === "teacher" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 items-end justify-end self-end gap-2  
-                    w-full mt-2 md:mt-0">
-              <button
-                className="rounded-lg flex items-center justify-center xl:text-lg p-2
-                    bg-[#102E50]/90 gap-1"
-                onClick={() => setEditMaterialOpen(true)}
-              >
-                <MdEdit className="text-white text-lg md:text-xl" size={24} />
-                <span className="text-white text-md md:text-lg">Edit</span>
-              </button>
+          <hr className="h-px bg-[#102E50]/50 border-0 mb-8" />
 
-              <button
-                className="rounded-lg flex items-center justify-center 
-                  gap-2 bg-[#BE3D2A] xl:text-lg p-2"
-                onClick={() => setArchiveMaterialOpen(true)}
-              >
-                <MdArchive className="text-white text-lg md:text-xl" size={24} />
-                <span className="text-white text-md md:text-lg">Archive</span>
-              </button>
-            </div>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 w-full gap-2">
+            <ClassicButton 
+              buttonName="View Material"
+              className="shadow-md w-full 2xl:w-3/4"
+              onClick={() => setIsVisible(true)}
+              mainColor="#E78B48" 
+              darkColor="#B9652B"
+              icon={MdMenuBook}
+            />
+            
+            {userRole === "teacher" && (
+              <div className="w-full grid grid-cols-1 md:grid-cols-2 items-end justify-end self-end gap-2  
+                              mt-2 md:mt-0">
+                <ClassicButton 
+                  buttonName="Edit"
+                  className="shadow-md text-md"
+                  onClick={() => setEditMaterialOpen(true)}
+                  mainColor="#183D65" 
+                  darkColor="#102E50"
+                  icon={MdEdit}
+                />
+
+                <ClassicButton 
+                  buttonName="Archive"
+                  className="shadow-md text-md"
+                  onClick={() => setArchiveMaterialOpen(true)}
+                  mainColor="#C53030" 
+                  darkColor="#8E1616"
+                  icon={MdArchive}
+                />
+              </div>
+            )}
+          </div>
         </div>
-      </div>
     </div>
+    
 
     {/* Submit */}
-    <div className="xl:max-h-[500px] p-[25px] xl:py-[60px]">
+    <div className="xl:max-h-[500px] flex justify-end ">
 
       {userRole === "teacher" && (
-        <div className="child w-full md:w-1/3 xl:w-4/5 h-auto shadow-lg rounded-xl bg-white 
-                border border-[#102E50]/40 flex flex-col p-[20px] gap-1 bg-[#F4F6FF]">
-
-          <h2 className="text-[#E78B48] font-bold text-md xl:text-lg">Submitted: <span className="font-semibold text-[#102E50]/90">{stats.totalSubmissions}</span></h2>
-          <h2 className="text-[#E78B48] font-bold text-md xl:text-lg">Graded: <span className="font-semibold text-[#102E50]/90">{stats.scoredSubmissions}</span></h2>
+        <div className="child w-full md:w-1/2 xl:w-full 2xl:w-4/5 h-auto shadow-lg rounded-xl 
+                        bg-[#F4F6FF] flex flex-col p-[20px] pb-10 gap-0 relative overflow-hidden"
+        >
           
-          <button 
-            className="bg-[#E78B48] text-white py-2 rounded-md hover:bg-[##0B2239]
-                      flex justify-center items-center gap-2 mt-5 w-full 2xl:w-3/4"
-            onClick={() => navigate(`/submissions/${materialData.materialId}`)}
-          >
-            <span className="text-md lg:text-lg">View Submissions</span>
-          </button>
+          <div className="absolute h-[2%] w-full bg-black/10 bottom-0 left-0"></div>
+
+          
+          <div className="relative z-10 flex flex-col">
+            <div className="flex flex-col gap-1 mb-4">
+              <h2 className="text-[#E78B48] font-bold text-md xl:text-lg flex justify-between items-center">
+                Submitted: 
+                <span className="font-semibold text-[#102E50]/90 ">
+                  {stats.totalSubmissions}
+                </span>
+              </h2>
+              
+              <h2 className="text-[#E78B48] font-bold text-md xl:text-lg flex justify-between items-center">
+                Graded: 
+                <span className="font-semibold text-[#102E50]/90">
+                  {stats.scoredSubmissions}
+                </span>
+              </h2>
+            </div>
+
+            <ClassicButton 
+              buttonName="View Submissions"
+              className="shadow-md w-full text-md"
+              onClick={() => navigate(`/submissions/${materialData.materialId}`)}
+              mainColor="#E78B48" 
+              darkColor="#B9652B"
+              icon={LuClipboardCheck}
+            />
+          </div>
         </div>
       )}
 
       {userRole === "student" && (
         <div className="child w-full sm:w-1/2 xl:w-full 2xl:w-4/5 h-auto shadow-md rounded-xl bg-[#F4F6FF] 
-                border border-black/10 flex flex-col p-[15px] 2xl:px-[20px] gap-5"
+                        flex flex-col p-[15px] 2xl:px-[20px] pb-10 gap-5 relative overflow-hidden
+                        "
         >
+          
+          <div className="absolute h-[2%] w-full bg-black/10 bottom-0 left-0"></div>
+
+          
+          <div className="relative z-10 flex flex-col gap-4">
             {!submissionData ? (
               <>
                 <FileUploader
@@ -288,14 +322,14 @@ return (
                   handleFileChange={handleFileChange}
                 />
 
-                <button
+                <ClassicButton 
+                  buttonName="Submit File"
                   onClick={handleSubmit}
-                  className="bg-[#102E50] text-white xl:text-lg p-2 rounded-md hover:bg-[##0B2239]
-                      flex justify-center items-center gap-2"
-                >
-                  <MdFileUpload className="text-lg lg:text-xl xl:text-2xl text-white"/>
-                  <span className="text-md lg:text-lg">Submit File</span>
-                </button>
+                  className="w-full shadow-md"
+                  mainColor="#102E50" 
+                  darkColor="#0B2239"
+                  icon={MdFileUpload}
+                />
               </>
             ) : (
               <>
@@ -305,52 +339,51 @@ return (
                 </p>
 
                 <div className="w-full flex gap-2">
-                  <button
+                  <ClassicButton 
+                    buttonName="View File"
                     onClick={() => setViewSubmittedFile(true)}
-                    className="bg-[#102E50] text-white xl:text-lg p-2 rounded-md hover:bg-[#0B2239] 
-                      flex items-center justify-items gap-2 transition"
-                  >
-                    <MdVisibility className="text-lg lg:text-xl xl:text-2xl text-white"/>
-                    <span className="text-md lg:text-lg">View File</span>
-                  </button>
+                    className="flex-1 shadow-md"
+                    mainColor="#102E50" 
+                    darkColor="#0B2239"
+                    icon={MdVisibility}
+                  />
 
-                  <button
+                  <ClassicButton 
+                    buttonName="Unsubmit"
                     onClick={handleUnsubmit}
-                    className="bg-red-600 text-white rounded-md
-                      flex items-center justify-items gap-2 xl:text-lg p-2"
-                  >
-                    <MdOutlineCancel className="text-lg lg:text-xl xl:text-2xl text-white" />
-                    <span className="text-md lg:text-lg">Unsubmit</span>
-                  </button>
+                    className="flex-1 shadow-md"
+                    mainColor="#8E1616" 
+                    darkColor="#660F0F"
+                    icon={MdOutlineCancel}
+                  />
                 </div>
 
                 {unsubmitError && <p className="text-red-800">{unsubmitError}</p>}
-
                 
-                {submissionData.score != null ? (
-                  <p className="text-[#206A5D] font-semibold">
-                    Score: {submissionData.score}/{materialData.totalScore}
-                  </p>
-                ) : (
-                  <p className="text-[#206A5D] font-semibold">
-                    Total Score: {materialData.totalScore} points
-                  </p>
-                )}
+                <div className="bg-white/50 p-3 rounded-lg border border-[#206A5D]/20">
+                  {submissionData.score != null ? (
+                    <p className="text-[#206A5D] font-bold text-lg">
+                      Score: {submissionData.score} / {materialData.totalScore}
+                    </p>
+                  ) : (
+                    <p className="text-[#206A5D] font-semibold">
+                      Total Score: {materialData.totalScore} points
+                    </p>
+                  )}
+                </div>
               </>
             )}
 
-            
-
-            {submissionData &&
-            submissionData.remarks != null && (
-              <>
-                <h2 className="text-[#102E50] font-bold text-lg self-center flex justify-items items-center gap-1"><MdOutlineComment />Remarks:</h2>
-                <p className="text-[#102E50]/80">{submissionData.remarks}</p>
-              </>
+            {submissionData && submissionData.remarks != null && (
+              <div className="mt-2 p-3 bg-[#102E50]/5 rounded-lg border-l-4 border-[#102E50]">
+                <h2 className="text-[#102E50] font-bold text-lg flex items-center gap-1">
+                  <MdOutlineComment /> Remarks:
+                </h2>
+                <p className="text-[#102E50]/80 italic">"{submissionData.remarks}"</p>
+              </div>
             )}
-          
+          </div>
         </div>
-        
       )}
       
     </div>

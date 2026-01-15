@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import Sidebar from './sidebar'
+import Sidebar from './sidebar';
 import { MdMenu } from "react-icons/md";
+import { Outlet } from "react-router-dom"; // Logic: Required for nested routing
 
-export default function Layout({ children }) {
+export default function Layout() { // Logic: Removed { children } prop
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -42,10 +43,10 @@ export default function Layout({ children }) {
 
         {/* CONTENT */}
         <div className="overflow-auto h-full">
-          {children}
+          {/* Logic: Outlet renders the child route's element */}
+          <Outlet /> 
         </div>
       </div>
     </div>
-
   );
 }
