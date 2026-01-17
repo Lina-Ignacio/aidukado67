@@ -107,7 +107,7 @@ export default function AIQuiz() {
 
   // Render based on state
   return (
-    <div className="h-auto min-h-screen w-full flex bg-white">
+    <div className="h-auto min-h-screen w-full flex items-center bg-white p-4">
       {loading && <LoadingSpinner />}
 
       {!loading && questions.length === 0 && (

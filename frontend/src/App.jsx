@@ -83,6 +83,15 @@ function AppContent() {
             } 
           />
 
+          <Route 
+            path="/selectedLesson/:materialId/:materialType" 
+            element={
+              <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
+                <SelectedLesson />
+              </RoleProtectedRoute>
+            } 
+          />
+
         {/* ==========================================
             GROUP 2: DASHBOARD ROUTES (Wrapped in Layout)
            ========================================== */}
@@ -119,16 +128,6 @@ function AppContent() {
             element={
               <RoleProtectedRoute allowed_roles={["teacher"]}>
                 <TeacherClasses />
-              </RoleProtectedRoute>
-            } 
-          />
-          
-
-          <Route 
-            path="/selectedLesson/:materialId/:materialType" 
-            element={
-              <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
-                <SelectedLesson />
               </RoleProtectedRoute>
             } 
           />

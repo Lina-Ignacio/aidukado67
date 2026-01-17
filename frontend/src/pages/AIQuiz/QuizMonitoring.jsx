@@ -91,14 +91,6 @@ export default function QuizMonitoring() {
             {/* Header */}
             <div className="bg-[#102E50] p-8 text-white relative">
                 <div className="absolute h-[2%] w-full bg-black/20 top-0 left-0"></div>
-                <ClassicButton 
-                    buttonName="Back to Class"
-                    icon={PiKeyReturn}
-                    onClick={() => navigate(-1)}
-                    className="mb-4" 
-                    mainColor="#5C6BC0" 
-                    darkColor="#3949AB"
-                />
 
                 <div className="flex flex-col md:flex-row md:items-end justify-between">
                     <div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { MdEdit, MdArchive, MdFileUpload, MdMenuBook, MdCalendarToday, 
-  MdOutlineComment, MdOutlineCancel, MdVisibility } from "react-icons/md";
+  MdOutlineComment, MdOutlineCancel, MdVisibility, MdPerson } from "react-icons/md";
 import { LuClipboardCheck } from "react-icons/lu";
 import FileView from "../pages/Lesson/FileView";
 import FileUploader from "./FileUploader";
@@ -198,10 +198,12 @@ export default function TaskViewer({
   });
 
 return (
-  <div className="w-full h-auto grid grid-cols-1 xl:grid-cols-[3fr_2fr] py-[10px] xl:px-[20px] gap-4">
+  <div className="w-full h-auto grid grid-cols-1 xl:grid-cols-[3fr_2fr] 
+          py-[10px] xl:px-[20px] gap-4"
+  >
     {/* Material */}
     
-      <div className="child w-full flex flex-col rounded-2xl bg-[#F4F6FF]/70
+      <div className="child w-full flex flex-col rounded-2xl bg-white
               h-auto p-[25px] pb-12 shadow-lg
               backdrop-blur-lg relative overflow-hidden"
       >
@@ -266,41 +268,61 @@ return (
     
 
     {/* Submit */}
-    <div className="xl:max-h-[500px] flex justify-end ">
+    <div className="xl:max-h-[500px] flex 2xl:justify-end ">
 
       {userRole === "teacher" && (
-        <div className="child w-full md:w-1/2 xl:w-full 2xl:w-4/5 h-auto shadow-lg rounded-xl 
-                        bg-[#F4F6FF] flex flex-col p-[20px] pb-10 gap-0 relative overflow-hidden"
+        <div className="child w-full md:w-1/2 xl:w-full 2xl:w-4/5 h-auto shadow-2xl rounded-xl 
+                bg-[#102E50] flex flex-col p-[20px] pb-10 gap-0 relative overflow-hidden"
         >
           
-          <div className="absolute h-[2%] w-full bg-black/10 bottom-0 left-0"></div>
+          <div className="absolute h-[3%] w-full bg-black/10 bottom-0 left-0"></div>
 
           
-          <div className="relative z-10 flex flex-col">
-            <div className="flex flex-col gap-1 mb-4">
-              <h2 className="text-[#E78B48] font-bold text-md xl:text-lg flex justify-between items-center">
-                Submitted: 
-                <span className="font-semibold text-[#102E50]/90 ">
-                  {stats.totalSubmissions}
-                </span>
-              </h2>
-              
-              <h2 className="text-[#E78B48] font-bold text-md xl:text-lg flex justify-between items-center">
-                Graded: 
-                <span className="font-semibold text-[#102E50]/90">
-                  {stats.scoredSubmissions}
-                </span>
-              </h2>
+          <div className="relative z-10 flex flex-col gap-8 h-auto justify-center">
+
+            <div className="w-full flex h-auto">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl py-8 px-4 border border-white/20 flex gap-12 w-full flex-wrap">
+                <div className="flex items-center gap-3">
+                    <div className="bg-[#E78B48] p-2 rounded-lg">
+                      <MdPerson className="text-[#102E50] text-xl" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">----</p>
+                      <p className="text-[10px] uppercase tracking-tighter text-[#EBECF1]">Pending</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="bg-[#E78B48] p-2 rounded-lg">
+                      <MdPerson className="text-[#102E50] text-xl" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{stats.totalSubmissions}</p>
+                      <p className="text-[10px] uppercase tracking-tighter text-[#EBECF1]">Submissions</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <div className="bg-[#E78B48] p-2 rounded-lg">
+                      <MdPerson className="text-[#102E50] text-xl" />
+                    </div>
+                    <div>
+                      <p className="text-2xl font-bold">{stats.scoredSubmissions}</p>
+                      <p className="text-[10px] uppercase tracking-tighter text-[#EBECF1]">Graded</p>
+                    </div>
+                </div>
+                
+              </div>
             </div>
 
             <ClassicButton 
               buttonName="View Submissions"
-              className="shadow-md w-full text-md"
+              className="shadow-md w-full text-md mt-auto"
               onClick={() => navigate(`/submissions/${materialData.materialId}`)}
               mainColor="#E78B48" 
               darkColor="#B9652B"
               icon={LuClipboardCheck}
             />
+
           </div>
         </div>
       )}

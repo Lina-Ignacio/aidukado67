@@ -140,7 +140,7 @@ export default function SelectedClass() {
           <div className="flex flex-col md:flex-row w-3/4 sm:w-[70%] h-auto gap-2 mx-auto justify-end mt-3">
             <ClassicButton 
               buttonName="Upload Material"
-              className=" bg-[#102E50] shadow-md place-self-end w-full md:w-1/3 2xl:w-1/4"
+              className=" bg-[#102E50] shadow-md place-self-end w-full md:w-1/2 lg:w-1/3 2xl:w-1/4"
               onClick={() => setIsOpen(true)}
               mainColor="#183D65" 
               darkColor="#102E50"
@@ -189,7 +189,7 @@ export default function SelectedClass() {
           <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Assessments</h2>
         </div>
 
-        <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] bg-[#EBECF1]/30 rounded-2xl mb-12">
+        <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] bg-[#EBECF1]/30 p-2 rounded-2xl mb-12">
           {materials.length > 0 && quizzes.length > 0 ? (
             quizzes.map((quiz) => {
               const lesson = materials.find((m) => m.id === quiz.lesson_id);
