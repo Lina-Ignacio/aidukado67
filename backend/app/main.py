@@ -71,3 +71,8 @@ app.include_router(student_quiz_progress.router)
 app.include_router(student_submission.router)
 app.include_router(lesson_content.router)
 app.include_router(exam.router)
+
+
+@app.get("/")
+def health():
+    return {"status": "ok"}
