@@ -14,7 +14,7 @@ def get_db():
         yield db
     except Exception as e:
         print(f"Database error: {e}")
-        raise   # 👈 re-raise so FastAPI sees the error
+        raise   
     finally:
         db.close()
 

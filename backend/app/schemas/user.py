@@ -45,6 +45,7 @@ class UserOut(BaseModel):
     first_name: str
     last_name: str
     middle_name: Optional[str] = None
+    must_change_password: bool
     
     model_config = ConfigDict(
         from_attributes=True,
@@ -91,6 +92,23 @@ class UserLogin(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
+
+class AdminPasswordReset(BaseModel):
+    new_password: str
+    
+    # Add this so the admin modal doesn't fail if you send 'newPassword'
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
+    
+class PasswordChangeRequest(BaseModel):
+    new_password: str
 
     model_config = ConfigDict(
         alias_generator=to_camel,

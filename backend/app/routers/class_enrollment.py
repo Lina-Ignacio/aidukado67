@@ -68,10 +68,25 @@ def get_classes_by_user(user_id: int, db: Session= Depends(get_db)):
     
     return enrollments
 
+from fastapi import HTTPException, status
+
 @router.post("/create")
 def create_enrollment(new_enrollment: EnrollmentCreate, db: Session = Depends(get_db)):
     
-    enrollment = ClassEnrollment (
+    
+    existing_enrollment = db.query(ClassEnrollment).filter(
+        ClassEnrollment.class_id == new_enrollment.class_id,
+        ClassEnrollment.student_id == new_enrollment.student_id
+    ).first()
+
+    if existing_enrollment:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Student is already enrolled in this class"
+        )
+    
+    # 2. Proceed with creation if not found
+    enrollment = ClassEnrollment(
         class_id = new_enrollment.class_id,
         student_id = new_enrollment.student_id,
         status = new_enrollment.status
@@ -81,7 +96,7 @@ def create_enrollment(new_enrollment: EnrollmentCreate, db: Session = Depends(ge
     db.commit()
     db.refresh(enrollment)
     
-    return{"message": "Enrolled Successfully"}
+    return {"message": "Enrolled Successfully"}
     
 @router.patch("/patch/{enrollment_id}")
 def patch_enrollment(enrollment_id: int, enrollment_update: EnrollmentUpdate, db: Session = Depends(get_db)):

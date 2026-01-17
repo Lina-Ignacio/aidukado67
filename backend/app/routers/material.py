@@ -62,7 +62,8 @@ async def upload_material(metadata: str = Form(...), file: UploadFile = File(...
             file_url=file_key,
             type=material_data.type,
             total_score=material_data.total_score,
-            due_date=material_data.due_date
+            due_date=material_data.due_date,
+            is_archive=False
         )
 
         db.add(material)

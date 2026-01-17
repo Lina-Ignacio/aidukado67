@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.schemas.subject import SubjectCreate, SubjectOut, SubjectUpdate
@@ -43,7 +43,17 @@ def get_subject_by_id(subject_id : int, db: Session = Depends(get_db)):
     return subject
 
 @router.post("/create")
-def create_subject(subject : SubjectCreate, db: Session = Depends(get_db)):
+def create_subject(subject: SubjectCreate, db: Session = Depends(get_db)):
+    
+    
+    existing_subject = db.query(Subject).filter(Subject.name == subject.name).first()
+    
+    if existing_subject:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Subject '{subject.name}' already exists."
+        )
+
     
     new_subject = Subject(
         name = subject.name,
@@ -54,7 +64,7 @@ def create_subject(subject : SubjectCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_subject)
     
-    return {"message" : "Subject Created Successfully"}
+    return {"message": "Subject Created Successfully", "id": new_subject.id}
 
 @router.patch("/update/{subject_id}")
 def patch_subject(subject_id: int, subject_update: SubjectUpdate, db: Session = Depends(get_db)):

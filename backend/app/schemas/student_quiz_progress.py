@@ -7,7 +7,6 @@ class StartTimeRequest(BaseModel):
     quiz_id: int
     student_id: int
 
-
 class CreateScore(BaseModel):
     student_id: int
     quiz_id: int

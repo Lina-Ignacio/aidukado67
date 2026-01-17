@@ -73,7 +73,7 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
             
             <p className="w-4/5 text-sm font-semibold text-gray-800">{formattedDate}</p>
             <div className={`flex justify-center items-center bg-[#${iconColor}] w-11 h-11 
-                absolute bottom-2 right-5 rounded-full p-3`}>
+                absolute bottom-2 right-2 rounded-full p-3`}>
                 {returnIcon(materialType)}
             </div>
             

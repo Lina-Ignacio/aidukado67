@@ -14,9 +14,13 @@ import TOSForm from "./Exam/TosForm";
 import { FiPlus } from "react-icons/fi";
 import { LuWand, LuUpload } from "react-icons/lu";
 import ClassicButton from "../components/classicButton";
+import { PiKeyReturn } from "react-icons/pi";
+
 //import termStore from "../store/useTermStore";
 
 export default function SelectedClass() {
+ 
+
   const navigate = useNavigate();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -56,6 +60,7 @@ export default function SelectedClass() {
     
   const { classId, term } = useParams();
   const userRole = useUserStore((state) => state.userRole);
+  const userId = useUserStore((state) => state.userId);
   const className = useClassStore((state) => state.className);
 
   const getLessons = async() => {
@@ -72,31 +77,45 @@ export default function SelectedClass() {
     } 
   }
 
-  const getQuizzes = async() => {
-    try{
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/getQuizzes/${classId}`, {
-        params: {term}
-      })
-      setQuizzes(response.data);
+  const getQuizzes = async () => {
+  try {
+    let response;
+
+    if (userRole === "teacher") {
+      response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/getQuizzes/${classId}`,
+        { params: { term } }
+      );
+    } else {
+      
+      response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/student/quizzes/${classId}`,
+        {
+          params: { term, studentId: userId },
+        }
+      );
     }
-    catch(error){
-      console.log("Error: ", error)
-    }
-  } 
+
+    setQuizzes(response.data);
+  } catch (error) {
+    console.log("Error fetching quizzes:", error);
+  }
+};
+
 
   const location = useLocation();
-useEffect(() => {
-  if (classId) {
-    getLessons();
-    getQuizzes();
-  }
+  useEffect(() => {
+    if (classId) {
+      getLessons();
+      getQuizzes();
+    }
 
-  if (location.state?.refresh) {
-   
-    navigate(location.pathname, { replace: true, state: {} });
-  }
-  
-}, [classId, term, location.state?.refresh]);
+    if (location.state?.refresh) {
+    
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+    
+  }, [classId, term, location.state?.refresh]);
 
 
   const filteredMaterials = useMemo(() => {
@@ -107,7 +126,8 @@ useEffect(() => {
   let termName = getTermName(Number(term));
 
   return (
-    <div className="flex flex-col w-full h-auto min-h-screen py-8 gap-8 items-center">
+    <div className="flex flex-col w-full h-auto min-h-screen py-8 gap-8 items-center relative">
+        
         <div
             className="flex flex items-center w-3/4 sm:w-[70%] min-h-[100px] lg:min-h-[120px] h-auto         
               truncate bg-[#102E50] rounded-2xl relative p-5"
@@ -145,7 +165,7 @@ useEffect(() => {
           <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Materials</h2>
         </div>
         
-        <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%]">
+        <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] bg-[#EBECF1]/30 p-2 rounded-2xl">
           
           {filteredMaterials.length > 0 ? (
             filteredMaterials.map((lesson) => (
@@ -166,10 +186,10 @@ useEffect(() => {
         </div>
         
         <div className="w-3/4 sm:w-[70%] mt-10">
-          <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Quizzes</h2>
+          <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Assessments</h2>
         </div>
 
-        <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%]">
+        <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] bg-[#EBECF1]/30 rounded-2xl mb-12">
           {materials.length > 0 && quizzes.length > 0 ? (
             quizzes.map((quiz) => {
               const lesson = materials.find((m) => m.id === quiz.lesson_id);
@@ -192,6 +212,17 @@ useEffect(() => {
               No Quiz available for this term yet
             </div>
           )}
+        </div>
+
+        <div className="w-3/4 sm:w-[70%] h-auto place-items-center">
+          <ClassicButton 
+            buttonName="Back To Classes"
+            icon={PiKeyReturn }
+            onClick={() => navigate(-2)}
+            className="absolute" 
+            mainColor="#E78B48" 
+            darkColor="#B9652B"
+          />
         </div>
 
 

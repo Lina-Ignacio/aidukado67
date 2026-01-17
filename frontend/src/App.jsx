@@ -7,7 +7,6 @@ import AIPretest from "./pages/AIPretest";
 import PostTest from './pages/PostTest';
 import Login from "./components/Login";
 import Signup from "./pages/Users/AddUser";
-import StudentArea from './pages/StudentArea';
 import RoleProtectedRoute from './components/RoleProtectedRoute';
 import UserManagement from './pages/AdminPages/UserManagement';
 import ClassManagement from './pages/AdminPages/ClassManagement';
@@ -26,7 +25,8 @@ import StudentQuizPage from './pages/AIQuiz/StudentQuizPage';
 import LessonSummary from './pages/Lesson/LessonSummary';
 import QuizMonitoring from './pages/AIQuiz/QuizMonitoring';
 import Layout from './components/Layout';
-
+import PasswordResetSearch from './pages/AdminPages/PasswordResetSearch';
+import ForceChangePassword from './pages/PasswordChanging/ForcePasswordChange';
 // Store
 import useUserStore from './store/useUserStore';
 
@@ -34,13 +34,15 @@ function AppContent() {
   const role = useUserStore((state) => state.userRole);
 
   return (
-    <div className="h-screen w-full bg-white overflow-y-auto">
+    <div className="h-screen w-full bg-white overflow-y-auto scrollbar-hide">
       <Routes>
         {/* ==========================================
             GROUP 1: FULLSCREEN ROUTES (No Sidebar)
            ========================================== */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/admin/reset-password" element={<PasswordResetSearch />} />
+        <Route path="/force-change-password" element={<ForceChangePassword />} />
         
         
         <Route path="/submissions/:materialId" element={<Submissions />} />
@@ -127,14 +129,6 @@ function AppContent() {
             element={
               <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
                 <SelectedLesson />
-              </RoleProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/subjects" 
-            element={
-              <RoleProtectedRoute allowed_roles={["student"]}>
-                <StudentArea />
               </RoleProtectedRoute>
             } 
           />

@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, JSON, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, JSON, DateTime, Index
 from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func # Add this for server-side timestamps
+
 from app.database import Base
 
 class StudentQuizProgress(Base):
@@ -9,10 +9,14 @@ class StudentQuizProgress(Base):
     id = Column(Integer, primary_key=True, index=True)
     student_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     quiz_id = Column(Integer, ForeignKey("quizzes.id", ondelete="CASCADE"), nullable=False)
-    status = Column(String(50), nullable=False, default="ongoing") # Defaults to ongoing
+    status = Column(String(50), nullable=False, default="assigned") 
     score = Column(Integer, nullable=True)
     answers = Column(JSON, nullable=True)
-    start_time = Column(DateTime(timezone=True), server_default=func.now())
+    start_time = Column(DateTime(timezone=True))
+    
+    __table_args__ = (
+        Index("idx_quiz_student", "quiz_id", "student_id"),
+    )
 
     # Relationships
     student = relationship("Users", back_populates="quiz_progress")

@@ -180,7 +180,9 @@ export default function StudentTest() {
         <header className="bg-gray-100 p-6 border-b-4 border-[#E78B48] flex justify-between items-center shrink-0">
           <div>
             <h1 className="text-2xl font-extrabold text-[#102E50] uppercase">{quiz.title || "Assessment"}</h1>
-            <p className="text-xs text-gray-400 font-bold mt-1 uppercase">ID: {student_id}</p>
+            <p className="text-sm text-[#102E50] font-bold uppercase">Instruction: {quiz.instructions}</p>
+            <p className="text-xs text-[#E78B48] font-bold mt-1 uppercase">Duration: {quiz.duration} minutes</p>
+            
           </div>
           <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-mono text-2xl font-bold shadow-inner 
             ${timeLeft < 60 && !submitted ? 'bg-red-500 text-white animate-pulse' : 'bg-[#102E50] text-white'}`}>
@@ -195,7 +197,7 @@ export default function StudentTest() {
           </div>
         )}
 
-        <main className="flex-1 overflow-y-auto p-6 md:p-12 space-y-10 bg-[#F8FAFC]">
+        <main className="flex-1 overflow-y-auto scrollbar-hide p-6 md:p-12 space-y-10 bg-[#F8FAFC]">
           {quiz.quiz_content.map((q, index) => {
             const studentSelection = userAnswers[index] || "";
             const isCorrect = submitted && String(studentSelection).toLowerCase() === String(q.answer).toLowerCase();

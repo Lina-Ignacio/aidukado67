@@ -1,5 +1,9 @@
 from pydantic import BaseModel
-from typing import Any
+from typing import Any, List
+from datetime import datetime
+
+from pydantic import BaseModel
+from typing import Any, List, Optional
 from datetime import datetime
 
 class CreateQuiz(BaseModel):
@@ -8,12 +12,13 @@ class CreateQuiz(BaseModel):
     total_points: int
     instructions: str
     quiz_content: Any
-    #start_time: datetime
     duration: int
     class_id: int
     is_archive: bool
-    assessment_type:str
-    term_id:int
+    assessment_type: str
+    term_id: int
+    assigned_students: Optional[List[int]] = []
+
 
 class QuizOut(BaseModel):
     id: int
@@ -22,10 +27,13 @@ class QuizOut(BaseModel):
     total_points: int
     instructions: str
     quiz_content: Any
-    #start_time: datetime
     duration: int
     created_at: datetime
     class_id: int
     is_archive:bool
     assessment_type:str
     term_id:int
+
+class AddStudentsRequest(BaseModel):
+    quiz_id: int
+    student_ids: List[int]

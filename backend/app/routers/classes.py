@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from app.database import SessionLocal
@@ -72,7 +72,15 @@ def get_classes_by_user_id(teacher_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/create")
-def create_class(class_data:ClassCreate, db: Session = Depends(get_db)):
+def create_class(class_data: ClassCreate, db: Session = Depends(get_db)):
+    
+    existing_class = db.query(Classes).filter(Classes.name == class_data.name).first()
+    
+    if existing_class:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"A class named '{class_data.name}' already exists."
+        )
 
     new_class = Classes(
         subject_id = class_data.subject_id,
@@ -84,7 +92,7 @@ def create_class(class_data:ClassCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_class)
     
-    return{"message": "Class Created Successfully"}
+    return {"message": "Class Created Successfully", "class_id": new_class.id}
 
 # @router.put("/update/{class_id}")
 # def update_class(class_id:int, class_data:ClassCreate, db: Session = Depends(get_db)):

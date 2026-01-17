@@ -62,7 +62,7 @@ export default function QuizCard({ quizId, quizTitle, createdAt, onArchive, asse
 
       <div 
           className={`flex justify-center items-center bg-[#102E50] w-11 h-11 text-white text-xl
-            absolute bottom-2 right-5 rounded-full p-3 transition-all duration-200 ease-in-out
+            absolute bottom-2 right-2 rounded-full p-3 transition-all duration-200 ease-in-out
             hover:brightness-110 hover:shadow-lg active:scale-95 active:brightness-90`}>
           {assessmentType == "Quiz" ? <MdQuiz /> : <MdOutlineEditNote />}
       </div>

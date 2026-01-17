@@ -47,43 +47,51 @@ export default function Login() {
         const validationErrors = validate();
 
         if (Object.keys(validationErrors).length > 0) {
-            setErrors(validationErrors)
-            return
+            setErrors(validationErrors);
+            return;
         }
 
         setErrors({});
         setLoading(true);
 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_API_URL}/auth/login`, formData, 
-                {headers : {"Content-Type" : "application/json"} }
+            const response = await axios.post(
+                `${import.meta.env.VITE_API_URL}/auth/login`, 
+                formData, 
+                { 
+                    headers: { "Content-Type": "application/json" },
+                    
+                    withCredentials: true 
+                }
             );
 
-            setSuccess(`User ${response.data.email} authenticated`);
-            setFormData({
-                email: "",
-                password: ""
-            })
-
-            const id = response.data.id;
-            const role = response.data.role;
             
-            storeUser(id, role);
-            sessionStorage.clear();
+            const { id, role, must_change_password, email } = response.data;
+            console.log(must_change_password);
 
-            navigate("/dashboard")
+            setSuccess(`User ${email} authenticated`);
+            setFormData({ email: "", password: "" });
+
+            storeUser(id, role);
+            sessionStorage.clear(); 
+
+            
+            if (must_change_password) {
+                navigate("/force-change-password");
+            } else {
+                navigate("/dashboard");
+            }
+
         } catch (err) {
             if (err.response?.data?.detail) {
-                setErrors({api: err.response.data.detail})
+                setErrors({ api: err.response.data.detail });
             } else {
-                setErrors({api: "Network Error"})
+                setErrors({ api: "Network Error" });
             }
         } finally {
             setLoading(false);
         }
-
-    }
-
+    };
     return (
         <div className="grid grid-cols-1 lg:grid-cols-[4.5fr_5.5fr] h-screen w-screen bg-white">
 

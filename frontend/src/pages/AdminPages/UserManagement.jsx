@@ -1,4 +1,5 @@
 import { useEffect, useState} from "react"
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import Modal from "../../components/Modal";
 import AddUser from "../Users/AddUser";
@@ -9,10 +10,11 @@ import Table from "../../components/Table"
 import SearchForm from "../../components/SearchForm";
 import { MoonLoader } from "react-spinners";
 import { FiUserPlus } from "react-icons/fi";
-import { MdUploadFile } from "react-icons/md";
+import { MdUploadFile, MdVpnKey } from "react-icons/md";
 import ClassicButton from "../../components/classicButton";
 
 export default function UserManagement() {
+    const navigate = useNavigate();
 
     const classesColumns = [
     { id: 1, name: "ID", key: "id" },
@@ -82,17 +84,25 @@ export default function UserManagement() {
             </div>
 
             <div className="hidden lg:flex flex-col w-full h-auto min-h-screen py-5 px-10 items-center text-white">
-                <div className="w-full h-auto grid grid-cols-[2.5fr_1fr_1fr] gap-2 self-end 
+                <div className="w-full h-auto grid grid-cols-[2fr_1fr_1fr_1fr] gap-2 self-end 
                         lg:h-11 xl:h-12 2xl:h-15 mt-3"
                 >
                     
                     <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by email or name"/>
                     <ClassicButton 
+                        buttonName="Reset Pass"
+                        icon={MdVpnKey}
+                        onClick={() => navigate("/admin/reset-password")}
+                        className="w-full" 
+                        mainColor="#5C6BC0" 
+                        darkColor="#3949AB"
+                    />
+                    <ClassicButton 
                         buttonName="Add User"
                         icon={FiUserPlus}
                         onClick={() => setIsOpen(true)}
                         
-                        className="w-3/4 place-self-end" 
+                        className="w-full place-self-end" 
                         mainColor="#E78B48" 
                         darkColor="#B9652B"
                     />

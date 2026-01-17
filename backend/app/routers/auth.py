@@ -41,9 +41,21 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
 
 @router.post("/login")
 def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
-    db_user = db.query(Users).filter(Users.email == user.email).first()
+    db_user = db.query(Users).filter(Users.email == user.email.lower()).first()
 
-    if not db_user or not verify_password(user.password, db_user.password_hash):
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password"
+        )
+        
+    if db_user.is_archive:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This account has been deactivated. Please contact administration."
+        )
+        
+    if not verify_password(user.password, db_user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
@@ -52,7 +64,6 @@ def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
     access_token_expires = timedelta(minutes=30)
     refresh_token_expires = timedelta(days=7)
 
-   
     payload = {
         "sub": str(db_user.id),   
         "role": db_user.role
@@ -62,31 +73,34 @@ def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
     refresh_token = create_access_token(payload, refresh_token_expires)
 
     
-    response_body = {
-        "message": "Login Successful",
-        "id": db_user.id,
-        "role": db_user.role
-    }
-
+    # Don't set domain parameter for localhost development
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,   
-        samesite="Strict",
-        max_age=int(access_token_expires.total_seconds())
+        secure=False,
+        samesite="lax",
+        max_age=3600,
+        path="/",
+        # domain=None  # Don't set domain for localhost
     )
 
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=False,   # ⚠️ set to True in production
-        samesite="Strict",
-        max_age=int(refresh_token_expires.total_seconds())
+        secure=False, 
+        samesite="Lax",
+        max_age=int(refresh_token_expires.total_seconds()),
+        path="/"
     )
 
-    return JSONResponse(content=response_body)
+    return {
+        "message": "Login Successful",
+        "id": db_user.id,
+        "role": db_user.role,
+        "must_change_password": db_user.must_change_password
+    }
 
     
     

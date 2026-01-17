@@ -32,7 +32,7 @@ export default function ClassicButton({
       </div>
 
       {/* Text Section */}
-      <span className="text-md xl:text-lg font-semibold h-full flex items-center justify-center py-3 px-4 xl:py-2">
+      <span className="text-md xl:text-lg font-semibold h-full flex items-center justify-center py-3 px-2 xl:py-2">
         {buttonName}
       </span>
     </button>

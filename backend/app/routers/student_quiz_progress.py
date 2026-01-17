@@ -15,29 +15,29 @@ def get_db():
         db.close()
 
 
-@router.post('/saveStartTime', response_model=StartTimeResponse)
-def save_start_time(req: StartTimeRequest, db: Session = Depends(get_db)):
+
+@router.post("/saveStartTime")
+def save_start_time(data: StartTimeRequest, db: Session = Depends(get_db)):
     
-    progress = db.query(StudentQuizProgress).filter(
-        StudentQuizProgress.student_id == req.student_id,
-        StudentQuizProgress.quiz_id == req.quiz_id
+    progress = db.query(StudentQuizProgress).filter_by(
+        quiz_id=data.quiz_id, 
+        student_id=data.student_id
     ).first()
 
     if not progress:
-        
-        progress = StudentQuizProgress(
-            student_id=req.student_id,
-            quiz_id=req.quiz_id,
-            status="ongoing",
-            start_time=datetime.now(timezone.utc),
-            score=0,
-            answers={}
-        )
-        db.add(progress)
-        db.commit()
-        db.refresh(progress)
+        raise HTTPException(status_code=404, detail="Assignment not found")
 
-    return progress
+    
+    if progress.status == "done":
+        return progress
+    
+    if progress.start_time is None:
+        progress.start_time = datetime.now(timezone.utc)
+        progress.status = "ongoing"
+        db.commit()
+        db.refresh(progress) 
+
+    return progress 
 
 
 @router.post('/saveScore')

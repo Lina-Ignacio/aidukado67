@@ -39,13 +39,13 @@ origins = [
     "https://aidukado.vercel.app",    
 ]
 
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,            
     allow_credentials=True,
     allow_methods=["*"],               
-    allow_headers=["*"],               
+    allow_headers=["*"],
+    expose_headers=["*"],  
 )
 
 # ✅ 2. Add rate limiting setup AFTER CORS

@@ -16,6 +16,7 @@ class Users(Base):
     middle_name = Column(String(100))
     created_at = Column(TIMESTAMP, server_default=func.now())
     is_archive = Column(Boolean, default=False, nullable=False)
+    must_change_password = Column(Boolean, default=False, nullable=False)
     
     # For relationships
     classes_ = relationship("Classes", back_populates="user_teacher") 

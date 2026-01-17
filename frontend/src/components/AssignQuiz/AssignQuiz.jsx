@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import classStore from '../../store/useClassStore';
-import useTermStore from '../../store/useTermStore';
-import QuestionEditor from './QuestionEditor';
-import StudentSelectModal from './StudentSelectModal';
+import classStore from "../../store/useClassStore";
+import useTermStore from "../../store/useTermStore";
+import QuestionEditor from "./QuestionEditor";
+import StudentSelectModal from "./StudentSelectModal";
 import { FiSave, FiEdit, FiUserPlus, FiPrinter } from "react-icons/fi";
 import ClassicButton from "../classicButton";
 
@@ -15,7 +15,7 @@ export default function AssignQuiz({
   lesson_id,
   instructions = "",
   duration = 0,
-  assessment_type = ""
+  assessment_type = "",
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editableQuestions, setEditableQuestions] = useState([]);
@@ -27,59 +27,57 @@ export default function AssignQuiz({
   const term_id = useTermStore((state) => state.termId);
   const navigate = useNavigate();
 
-  const optionLetters = useMemo(() => "ABCD".split(""), []);
+  const optionLetters = useMemo(() => ["A", "B", "C", "D"], []);
 
-  // Fetch students
+  /* =========================
+     Fetch Students
+  ========================== */
   useEffect(() => {
-    const fetchStudents = async () => {
-      if (!class_id) return;
+    if (!class_id) return;
 
+    const fetchStudents = async () => {
       try {
-        const response = await axios.get(
+        const res = await axios.get(
           `${import.meta.env.VITE_API_URL}/getStudentsByClass/${class_id}`
         );
-        setStudents(response.data || []);
-      } catch (error) {
-        console.error("Error fetching students:", error);
+        setStudents(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch students:", err);
       }
     };
 
     fetchStudents();
   }, [class_id]);
 
-  // Add these helper functions at the top of your file or inside the component
-  const stripQuestionPrefix = (text) => text.replace(/^\d+[\s.)-]+\s*/, "");
-  const stripOptionPrefix = (text) => text.replace(/^[A-DA-d][\s.)-]+\s*/, "");
+  /* =========================
+     Normalize Questions
+  ========================== */
+  const stripQuestionPrefix = (text) =>
+    text.replace(/^\d+[\s.)-]+\s*/, "");
 
-  // Update your useEffect inside AssignQuiz
+  const stripOptionPrefix = (text) =>
+    text.replace(/^[A-Da-d][\s.)-]+\s*/, "");
+
   useEffect(() => {
-    const normalized = (questions || []).map((q) => {
-      let normalizedOptions = [];
+    const normalized = (questions || []).map((q) => ({
+      question: stripQuestionPrefix(q.question ?? ""),
+      options: Array.isArray(q.options)
+        ? q.options.map((opt) =>
+            typeof opt === "string"
+              ? { text: stripOptionPrefix(opt), image: null }
+              : { ...opt, text: stripOptionPrefix(opt.text || "") }
+          )
+        : [],
+      answer: q.answer ?? "",
+      questionImage: q.questionImage ?? null,
+    }));
 
-      if (q.options && Array.isArray(q.options)) {
-        normalizedOptions = q.options.map((opt) => {
-          // If it's a string, strip the "A. " or "B. " prefix
-          if (typeof opt === "string") {
-            return { text: stripOptionPrefix(opt), image: null };
-          }
-          // If it's an object, strip the prefix from the text property
-          return { ...opt, text: stripOptionPrefix(opt.text || "") };
-        });
-      }
+    setEditableQuestions(normalized);
+  }, [questions]);
 
-      return {
-        // Strip the "1. " or "2. " prefix from the question
-        question: stripQuestionPrefix(q.question ?? ""),
-        options: normalizedOptions,
-        answer: q.answer ?? "",
-        questionImage: q.questionImage ?? null,
-      };
-  });
-
-  setEditableQuestions(normalized);
-}, [questions]);
-
-  // Handlers
+  /* =========================
+     Handlers
+  ========================== */
   const handleQuestionUpdate = (index, updatedQuestion) => {
     const updated = [...editableQuestions];
     updated[index] = updatedQuestion;
@@ -94,212 +92,127 @@ export default function AssignQuiz({
     );
   };
 
+  /* =========================
+     Assign Quiz
+  ========================== */
   const handleAssign = async () => {
-    // Validation
-    if (!title.trim()) {
-      alert("Please enter a quiz title");
-      return;
-    }
-    if (!lesson_id) {
-      alert("Lesson ID is missing");
-      return;
-    }
-    if (editableQuestions.length === 0) {
-      alert("Please add at least one question");
-      return;
-    }
+    if (!title.trim()) return alert("Quiz title is required");
+    if (!lesson_id) return alert("Lesson ID missing");
+    if (!editableQuestions.length) return alert("No questions added");
+    if (!selectedStudents.length)
+      return alert("Select at least one student");
+
+    const payload = {
+      lesson_id,
+      title,
+      total_points,
+      instructions,
+      quiz_content: editableQuestions,
+      duration,
+      class_id,
+      is_archive: false,
+      assessment_type,
+      term_id,
+      assigned_students: selectedStudents,
+    };
 
     try {
-      const quizData = {
-        lesson_id,
-        title,
-        total_points,
-        instructions,
-        quiz_content: editableQuestions,
-        duration,
-        class_id,
-        is_archive: false,
-        assessment_type,
-        term_id  
-      };
-
-      const response = await axios.post(
+      await axios.post(
         `${import.meta.env.VITE_API_URL}/assignQuiz`,
-        quizData,
+        payload,
         { headers: { "Content-Type": "application/json" } }
       );
 
-      alert(response.data.message || "Quiz assigned successfully!");
-      navigate(-2);
-      console.log("hello",quizData)
-    } catch (error) {
-      console.error("Assignment error:", error);
-      alert(error.response?.data?.detail || "Error assigning quiz");
+      alert("Quiz assigned successfully!");
+      navigate(`/class/${class_id}`);
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.detail || "Assignment failed");
     }
   };
 
+  /* =========================
+     Print Quiz
+  ========================== */
   const handlePrint = () => {
-    const printWindow = window.open("", "_blank", "width=800,height=600");
-    if (!printWindow) {
-      alert("Popup blocked. Please allow popups to print.");
-      return;
-    }
+    const win = window.open("", "_blank");
+    if (!win) return alert("Popup blocked");
 
-    // Generate print HTML inline
-    const questionsHTML = editableQuestions
-      .map((q, idx) => {
-        const isTrueFalse = !q.options || q.options.length === 0;
-        
-        return `
-          <div class="question">
-            <p><strong>${idx + 1}. ${q.question}</strong></p>
-            ${q.questionImage ? `<img src="${q.questionImage}" alt="Question Image" />` : ""}
-            
-            ${isTrueFalse 
-              ? '<p><em>True or False</em></p>' 
-              : `<ul class="options">
-                  ${q.options.map((opt, i) => `
-                    <li>
-                      ${optionLetters[i]}. ${opt.text || ""}
-                      ${opt.image ? `<br><img src="${opt.image}" alt="Option Image" />` : ""}
-                    </li>
-                  `).join("")}
-                </ul>`
-            }
-          </div>
-        `;
-      })
+    const content = editableQuestions
+      .map(
+        (q, i) => `
+        <div>
+          <p><strong>${i + 1}. ${q.question}</strong></p>
+          ${
+            q.options.length
+              ? q.options
+                  .map(
+                    (o, idx) => `<p>${optionLetters[idx]}. ${o.text}</p>`
+                  )
+                  .join("")
+              : "<p><em>True or False</em></p>"
+          }
+        </div>
+      `
+      )
       .join("");
 
-    const htmlContent = `
+    win.document.write(`
       <html>
-        <head>
-          <title>${title}</title>
-          <style>
-            body { 
-              font-family: Arial, sans-serif; 
-              padding: 20px;
-              max-width: 800px;
-              margin: 0 auto;
-            }
-            h1 { 
-              text-align: center;
-              margin-bottom: 10px;
-            }
-            .meta-info {
-              text-align: center;
-              margin-bottom: 20px;
-              padding-bottom: 20px;
-              border-bottom: 2px solid #333;
-            }
-            .meta-info p {
-              margin: 5px 0;
-            }
-            .question { 
-              margin-bottom: 25px; 
-              page-break-inside: avoid; 
-            }
-            .options { 
-              margin-left: 20px; 
-              list-style-type: none;
-              padding-left: 0;
-            }
-            .options li { 
-              margin-bottom: 8px;
-              padding: 5px 0;
-            }
-            img { 
-              max-width: 200px; 
-              margin-top: 10px; 
-              display: block;
-              border: 1px solid #ddd;
-              border-radius: 4px;
-              padding: 5px;
-            }
-            @media print {
-              .question {
-                page-break-inside: avoid;
-              }
-            }
-          </style>
-        </head>
+        <head><title>${title}</title></head>
         <body>
           <h1>${title}</h1>
-          
-          <div class="meta-info">
-            <p><strong>Instructions:</strong> ${instructions || 'N/A'}</p>
-            <p><strong>Total Points:</strong> ${total_points}</p>
-            <p><strong>Duration:</strong> ${duration} minutes</p>
-          </div>
-          
-          ${questionsHTML}
+          ${content}
         </body>
       </html>
-    `;
+    `);
 
-    printWindow.document.open();
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-    
-    printWindow.onload = () => {
-      printWindow.focus();
-      printWindow.print();
-    };
+    win.document.close();
+    win.print();
   };
 
   return (
     <>
-      <div className="flex justify-center items-start min-h-screen overflow-y-auto mb-12 w-full h-auto">
-        <div className="w-full text-white rounded-2xl p-6 sm:p-10 max-h-[90vh]">
-          {/* Action Buttons */}
-          <div className="flex flex-col md:flex-row justify-end gap-3 mb-6">
-            <ClassicButton 
+      <div className="flex justify-center w-full">
+        <div className="w-full max-w-5xl p-6">
+          <div className="flex flex-wrap justify-end gap-3 mb-6">
+            <ClassicButton
               buttonName={isEditing ? "Done Editing" : "Edit Questions"}
-              icon={isEditing ? FiSave : FiEdit} 
+              icon={isEditing ? FiSave : FiEdit}
               onClick={() => setIsEditing(!isEditing)}
-              className="transition" 
               mainColor="#E78B48"
-              darkColor="#B9652B"  
+              darkColor="#B9652B"
             />
-            <ClassicButton 
+            <ClassicButton
               buttonName="Assign"
-              icon={FiUserPlus} 
+              icon={FiUserPlus}
               onClick={() => setShowStudentSelect(true)}
-              mainColor="#183D65" 
+              mainColor="#183D65"
               darkColor="#102E50"
-              className="transition" 
             />
-    
-            <ClassicButton 
+            <ClassicButton
               buttonName="Print"
-              icon={FiPrinter} 
+              icon={FiPrinter}
               onClick={handlePrint}
-              mainColor="#64748B" 
-              darkColor="#475569" 
-              className="transition" 
+              mainColor="#64748B"
+              darkColor="#475569"
             />
           </div>
 
-          {/* Quiz Title */}
-          <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-8 lg:mb-12 text-[#102E50]">
+          <h1 className="text-3xl font-bold text-center mb-8">
             {title || "Untitled Quiz"}
-          </div>
+          </h1>
 
-          {/* Questions List */}
-          {editableQuestions.length === 0 ? (
-            <p className="text-center text-gray-300">No questions available.</p>
-          ) : (
-            editableQuestions.map((question, index) => (
-              <QuestionEditor
-                key={index}
-                question={question}
-                index={index}
-                isEditing={isEditing}
-                onUpdate={handleQuestionUpdate}
-                optionLetters={optionLetters}
-              />
-            ))
-          )}
+          {editableQuestions.map((q, i) => (
+            <QuestionEditor
+              key={i}
+              question={q}
+              index={i}
+              isEditing={isEditing}
+              onUpdate={handleQuestionUpdate}
+              optionLetters={optionLetters}
+            />
+          ))}
         </div>
       </div>
 
@@ -309,10 +222,7 @@ export default function AssignQuiz({
           selectedStudents={selectedStudents}
           onToggle={toggleStudent}
           onConfirm={handleAssign}
-          onCancel={() => {
-            setShowStudentSelect(false);
-            setSelectedStudents([]);
-          }}
+          onCancel={() => setShowStudentSelect(false)}
         />
       )}
     </>
