@@ -66,13 +66,13 @@ export default function Login() {
             );
 
             
-            const { id, role, must_change_password, email } = response.data;
+            const { id, role, must_change_password, email, first_name } = response.data;
             console.log(must_change_password);
 
             setSuccess(`User ${email} authenticated`);
             setFormData({ email: "", password: "" });
 
-            storeUser(id, role);
+            storeUser(id, role, email, first_name);
             sessionStorage.clear(); 
 
             

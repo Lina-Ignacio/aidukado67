@@ -3,14 +3,14 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import useClassStore from "../store/useClassStore";
 
-export default function ClassCardStudent({ subjectName, classId, teacher}) {
+export default function ClassCardStudent({ subjectName, classId, teacher, email}) {
   const navigate = useNavigate();
 
   const storeClassDetail = useClassStore((state) => state.storeClassDetail);
 
   const handleClick = (e) => {
     e.preventDefault();
-    storeClassDetail(classId, subjectName);
+    storeClassDetail(classId, subjectName, email);
 
     navigate(`/termPage`);
   }

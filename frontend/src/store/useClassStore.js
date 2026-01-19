@@ -6,8 +6,9 @@ const useClassStore = create(
     (set) => ({
       classId: null,
       className: "",
+      teacherEmail: "",
 
-      storeClassDetail: (id, name) => set({ classId: id, className: name }),
+      storeClassDetail: (id, name, email) => set({ classId: id, className: name, teacherEmail: email }),
       clearClassDetail: () => set({ classId: null, className: "" }),
     }),
     {

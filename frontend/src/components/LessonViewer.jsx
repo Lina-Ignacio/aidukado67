@@ -40,10 +40,12 @@ export default function LessonViewer({materialData, setIsVisible, isVisible, set
     return (
         <>
             {isVisible ? (
-                <div className="w-full h-auto min-h-screen bg-black p-2">
+                <div className="w-full h-auto min-h-screen">
                     <FileView 
                         fileExtension={materialData.fileExtension}
                         fileUrl={materialData.fileUrl}
+                        isVisible={isVisible}
+                        setIsVisible={setIsVisible}
                     />
                 </div>
             ) : (

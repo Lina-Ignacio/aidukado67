@@ -57,6 +57,7 @@ class TeacherOut(BaseModel):
     id: int
     first_name: str
     last_name: str
+    email: str
     
     model_config = ConfigDict(
         from_attributes=True,

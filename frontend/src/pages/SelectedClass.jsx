@@ -15,7 +15,7 @@ import { FiPlus } from "react-icons/fi";
 import { LuWand, LuUpload } from "react-icons/lu";
 import ClassicButton from "../components/classicButton";
 import { PiKeyReturn } from "react-icons/pi";
-
+import UserDropup from "../components/DropUp/UserDropUp";
 //import termStore from "../store/useTermStore";
 
 export default function SelectedClass() {
@@ -127,6 +127,7 @@ export default function SelectedClass() {
 
   return (
     <div className="flex flex-col w-full h-auto min-h-screen py-8 gap-8 items-center relative">
+        <UserDropup />
         
         <div
             className="flex flex items-center w-3/4 sm:w-[70%] min-h-[100px] lg:min-h-[120px] h-auto         
@@ -194,7 +195,6 @@ export default function SelectedClass() {
             quizzes.map((quiz) => {
               const lesson = materials.find((m) => m.id === quiz.lesson_id);
               const lessonTitle = lesson ? lesson.title : "Unknown Lesson";
-              console.log(lessonTitle)
               return(
                 <QuizCard 
                   key={quiz.id} 

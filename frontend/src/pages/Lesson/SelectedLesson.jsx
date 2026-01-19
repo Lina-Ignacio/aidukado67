@@ -11,8 +11,8 @@ import TaskViewer from "../../components/TaskViewer";
 import Modal from "../../components/Modal";
 import ArchiveMaterial from "./ArchiveMaterial";
 import EditMaterial from "./EditMaterial";
-import { MdArrowBack } from "react-icons/md";
-import ClassicButton from "../../components/classicButton";
+import UserDropup from "../../components/DropUp/UserDropUp";
+
 
 export default function SelectedLesson() {
 
@@ -90,16 +90,10 @@ export default function SelectedLesson() {
     }
 
     return (
-        <div className="w-full h-auto min-h-screen flex flex-col gap-[2%] items-center px-[10px] 
+        <div className="w-full h-auto min-h-screen flex flex-col items-center px-[10px] 
                 md:px-[50px] lg:px-[100px] py-[50px] bg-gray-100 relative">
-
+            <UserDropup />
             
-            
-            {isVisible && (
-                <div className="w-[30px] h-[30px] bg-[#BE3D2A] flex mt-2" onClick={() => setIsVisible(false)}>
-                    <MdClose size={24} className="text-white font-bold m-auto" />
-                </div>
-            )}
             {materialType == "lesson" && (
                 <LessonViewer 
                     materialData={materialData}
@@ -119,18 +113,6 @@ export default function SelectedLesson() {
                 />
             )}
 
-            <div className="block lg:hidden w-full mt-8 ">
-              <ClassicButton 
-                buttonName="Back"
-                className="shadow-md w-1/2 md:w-1/3 text-md"
-                onClick={() => navigate(-1)}
-                mainColor="#102E50" 
-                darkColor="#0B2239"
-                icon={MdArrowBack}
-            />
-            </div>
-
-            
 
             <Modal isOpen={archiveMaterialOpen} onClose={() => setArchiveMaterialOpen(false)} title="Archive Lesson" panelStyle={panelStyleArchive}>
                 <ArchiveMaterial 

@@ -18,7 +18,7 @@ export default function StudentClasses() {
       try{
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/enrollment/getByUserId/${userId}`)
         setClasses(response.data);
-        console.log(response.data)
+        console.log("classes", response.data)
       }catch(error){
         console.error("Error fetching classes ", error)
       }
@@ -42,6 +42,9 @@ export default function StudentClasses() {
                         ? `${cls.enrolledClass.userTeacher.firstName} ${cls.enrolledClass.userTeacher.lastName}`
                         : "Unknown Teacher"
                     }
+                    email={cls.enrolledClass.userTeacher
+                        ? `${cls.enrolledClass.userTeacher.email}`
+                        : "Unknown Teacher"}
                     classId={cls.enrolledClass.id}
                   />
               ))}

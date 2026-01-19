@@ -6,9 +6,11 @@ const useUserStore = create(
     (set) => ({
       userId: null,
       userRole: "",
+      email: "",
+      firstName: "",
 
-      storeUser: (id, role) => set({ userId: id, userRole: role }),
-      clearUser: () => set({ userId: null, userRole: "" }),
+      storeUser: (id, role, userEmail, firstName ) => set({ userId: id, userRole: role, email: userEmail, firstName: firstName }),
+      clearUser: () => set({ userId: null, userRole: "", email: "", first_name: "" }),
     }),
     {
       name: "user-storage", 

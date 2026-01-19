@@ -99,7 +99,9 @@ def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
         "message": "Login Successful",
         "id": db_user.id,
         "role": db_user.role,
-        "must_change_password": db_user.must_change_password
+        "must_change_password": db_user.must_change_password,
+        "email": db_user.email,
+        "first_name": db_user.first_name
     }
 
     
