@@ -2,7 +2,6 @@ from pydantic import BaseModel
 from typing import Dict, Optional
 from datetime import datetime
 
-
 class StartTimeRequest(BaseModel):
     quiz_id: int
     student_id: int

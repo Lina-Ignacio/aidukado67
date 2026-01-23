@@ -28,4 +28,10 @@ class ClassMaterial(Base):
 
     # activities = relationship("Activity", back_populates="lesson", cascade="all, delete")
     quizzes = relationship("Quiz", back_populates="material", cascade="all, delete")
+    exams = relationship(
+        "Exam", 
+        secondary="exam_class_materials", 
+        back_populates="class_materials",
+        cascade="all, delete"
+    )
     

@@ -8,5 +8,8 @@ from .class_material import ClassMaterial
 from .lesson_content import LessonContent
 from .term import Term
 from .quiz import Quiz
+from .exam.exams import Exam
+from .exam.student_exam_progress import StudentExamProgress
+from .exam.association_tables import exam_class_materials
 
 

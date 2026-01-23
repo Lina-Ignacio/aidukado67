@@ -1,37 +1,55 @@
 def compute_tos(lessons: list[dict], total_items: int):
     """
-    lessons = [
-        {"lesson_id": 1, "title": "Lesson 1", "hours": 2},
-        {"lesson_id": 2, "title": "Lesson 2", "hours": 4},
-    ]
+    Fixed version using largest remainder method for fair distribution
     """
-
     total_hours = sum(lesson["hours"] for lesson in lessons)
-
-    results = []
-    remaining_items = total_items  # for rounding adjustments
-
-    for index, lesson in enumerate(lessons):
-
-        # Compute proportion
+    
+    if total_hours == 0:
+        return []
+    
+    # Calculate base allocation and remainders
+    base_allocations = []
+    remainders = []
+    
+    for lesson in lessons:
         proportion = lesson["hours"] / total_hours
-
-        # Compute raw items
-        calculated_items = total_items * proportion
-
-        # Round items (last lesson gets remaining to avoid off-by-1 errors)
-        if index == len(lessons) - 1:
-            items = remaining_items
-        else:
-            items = round(calculated_items)
-            remaining_items -= items
-
+        exact = total_items * proportion
+        base = int(exact)  # Floor value
+        remainder = exact - base  # Decimal part
+        
+        base_allocations.append(base)
+        remainders.append(remainder)
+    
+    # Start with base allocations
+    items_per_lesson = base_allocations.copy()
+    total_allocated = sum(base_allocations)
+    
+    # Distribute remaining items by largest remainder
+    remaining = total_items - total_allocated
+    
+    if remaining > 0:
+        # Sort by remainder (largest first)
+        sorted_indices = sorted(
+            range(len(remainders)), 
+            key=lambda i: remainders[i], 
+            reverse=True
+        )
+        
+        # Give one extra item to lessons with largest remainders
+        for i in range(remaining):
+            idx = sorted_indices[i]
+            items_per_lesson[idx] += 1
+    
+    # Build results
+    results = []
+    for i, lesson in enumerate(lessons):
+        proportion = lesson["hours"] / total_hours
         results.append({
             "lesson_id": lesson["lesson_id"],
             "title": lesson["title"],
             "hours": lesson["hours"],
             "percentage": round(proportion * 100, 2),
-            "items": items
+            "items": items_per_lesson[i]
         })
-
+    
     return results

@@ -29,6 +29,7 @@ import PasswordResetSearch from './pages/AdminPages/PasswordResetSearch';
 import ForceChangePassword from './pages/PasswordChanging/ForcePasswordChange';
 // Store
 import useUserStore from './store/useUserStore';
+import AIExam from './pages/Exam/AIExam';
 
 function AppContent() {
   const role = useUserStore((state) => state.userRole);
@@ -53,6 +54,15 @@ function AppContent() {
           element={
             <RoleProtectedRoute allowed_roles={["teacher"]}>
               <AIQuiz />
+            </RoleProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/exam/generate/:classId/:termId" 
+          element={
+            <RoleProtectedRoute allowed_roles={["teacher"]}>
+              <AIExam />
             </RoleProtectedRoute>
           } 
         />

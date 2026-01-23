@@ -20,7 +20,7 @@ class Classes(Base):
     class_students = relationship("ClassEnrollment", back_populates="enrolled_class")
     materials = relationship("ClassMaterial", back_populates="class_")
     quiz = relationship("Quiz", back_populates="classes" )
-    
+    exams = relationship("Exam", back_populates="classes", cascade="all, delete-orphan")
     
     __table_args__ = (
         Index(

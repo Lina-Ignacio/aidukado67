@@ -15,5 +15,5 @@ def get_gemini_model():
         raise RuntimeError("GEMINI_KEY missing")
 
     genai.configure(api_key=api_key)
-    _model = genai.GenerativeModel("gemini-2.5-flash-lite")
+    _model = genai.GenerativeModel("gemini-1.5-flash")
     return _model

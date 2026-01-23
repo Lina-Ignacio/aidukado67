@@ -7,7 +7,7 @@ import json
 from app.schemas.material import MaterialCreate, MaterialOut, MaterialTitleOut, MaterialUpdate
 from app.utils.r2_helper import upload_file, generate_presigned_url, delete_file
 from app.utils.extract_text_from_file import extract_text_from_file
-from app.models import ClassMaterial, LessonContent, Classes
+from app.models import ClassMaterial, LessonContent, Classes, Term
 from app.models.summary import Summary
 from app.schemas.summary import CreateSummary, SummaryOut
 from ..utils.generate_summary import generate_summary
@@ -94,34 +94,90 @@ async def upload_material(metadata: str = Form(...), file: UploadFile = File(...
 @router.get("/getByClassId/{class_id}", response_model=list[MaterialTitleOut])
 def get_lessons_by_class(class_id: int, db: Session = Depends(get_db)):
 
-    class_exist = db.query(Classes).filter(Classes.id == class_id).first()
+    try:
+        class_exist = db.query(Classes).filter(Classes.id == class_id).first()
     
-    if not class_exist:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Class with ID {class_id} not found."
-        )
+        if not class_exist:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Class with ID {class_id} not found."
+            )
         
-    
-    lessons = (
-        db.query(ClassMaterial)
-        .options(load_only(
-            ClassMaterial.id,
-            ClassMaterial.title,
-            ClassMaterial.term_id,
-            ClassMaterial.type,
-            ClassMaterial.created_at
-        ))
-        .filter(
-            ClassMaterial.class_id == class_id,
-            ClassMaterial.is_archive == False  
+        lessons = (
+            db.query(ClassMaterial)
+            .options(load_only(
+                ClassMaterial.id,
+                ClassMaterial.title,
+                ClassMaterial.term_id,
+                ClassMaterial.type,
+                ClassMaterial.created_at
+            ))
+            .filter(
+                ClassMaterial.class_id == class_id,
+                ClassMaterial.is_archive == False  
+            )
+            .order_by(ClassMaterial.id.desc())
+            .all()
         )
-        .order_by(ClassMaterial.id.desc())
-        .all()
-    )
 
-    return [MaterialTitleOut.model_validate(lesson) for lesson in lessons]
+        return [MaterialTitleOut.model_validate(lesson) for lesson in lessons]
         
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
+        
+@router.get("/getByClassId/{class_id}/term/{term_id}", response_model=list[MaterialTitleOut])
+def get_lessons_by_class_and_term(
+    class_id: int, 
+    term_id: int,
+    db: Session = Depends(get_db)
+):
+    try:
+        
+        class_exist = db.query(Classes).filter(Classes.id == class_id).first()
+        if not class_exist:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Class with ID {class_id} not found."
+            )
+        
+        
+        term_exist = db.query(Term).filter(Term.id == term_id).first()
+        if not term_exist:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Term with ID {term_id} not found."
+            )
+        
+        lessons = (
+            db.query(ClassMaterial)
+            .options(load_only(
+                ClassMaterial.id,
+                ClassMaterial.title,
+                ClassMaterial.term_id,
+                ClassMaterial.type,
+                ClassMaterial.created_at
+            ))
+            .filter(
+                ClassMaterial.class_id == class_id,
+                ClassMaterial.term_id == term_id,  
+                ClassMaterial.is_archive == False  
+            )
+            .order_by(ClassMaterial.id.desc())
+            .all()
+        )
+
+        return [MaterialTitleOut.model_validate(lesson) for lesson in lessons]
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
 
 @router.get("/getMaterialById/{material_id}", response_model=MaterialOut, response_model_by_alias=True)
 def get_lesson_by_id(material_id: int, db: Session = Depends(get_db)):

@@ -33,7 +33,6 @@ load_dotenv(dotenv_path=env_path, override=True)
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI()
 
-
 origins = [
     "http://localhost:5173",          
     "https://aidukado.vercel.app",    
@@ -47,6 +46,7 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],  
 )
+
 
 # ✅ 2. Add rate limiting setup AFTER CORS
 app.state.limiter = limiter
@@ -64,7 +64,6 @@ app.include_router(subject.router)
 app.include_router(classes.router)
 app.include_router(class_enrollment.router)
 app.include_router(material.router)
-#app.include_router(post_test.router)
 app.include_router(logout.router)
 app.include_router(quiz.router)
 app.include_router(student_quiz_progress.router)

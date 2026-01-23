@@ -12,4 +12,5 @@ class Term(Base):
     
     materials = relationship("ClassMaterial", back_populates="term")
     quiz = relationship("Quiz", back_populates="term")
+    exams = relationship("Exam", back_populates="term", cascade="all, delete-orphan")
     

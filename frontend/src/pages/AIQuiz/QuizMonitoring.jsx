@@ -6,6 +6,7 @@ import StudentSelectModal from '../../components/AssignQuiz/StudentSelectModal';
 import useClassStore from '../../store/useClassStore';
 import ClassicButton from '../../components/classicButton';
 import { PiStudent, PiKeyReturn } from "react-icons/pi";
+import UserDropup from '../../components/DropUp/UserDropUp';
 
 export default function QuizMonitoring() {
     const navigate = useNavigate();
@@ -88,6 +89,8 @@ export default function QuizMonitoring() {
     return (
         <div className="w-11/12 lg:w-4/5 mx-auto mt-10 mb-10 bg-white rounded-2xl shadow-xl overflow-hidden font-sans border border-[#EBECF1] ">
             
+            <UserDropup />
+
             {/* Header */}
             <div className="bg-[#102E50] p-8 text-white relative">
                 <div className="absolute h-[2%] w-full bg-black/20 top-0 left-0"></div>

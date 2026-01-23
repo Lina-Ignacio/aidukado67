@@ -25,6 +25,11 @@ class Users(Base):
     submissions = relationship("StudentSubmission", back_populates="student", cascade="all, delete")
     
     quiz_progress = relationship("StudentQuizProgress", back_populates="student")
+    exam_progress = relationship(
+        "StudentExamProgress", 
+        back_populates="student",
+        cascade="all, delete-orphan"
+    )
     
     # For index
     __table_args__ = (
