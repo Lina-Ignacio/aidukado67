@@ -3,7 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import useClassStore from "../store/useClassStore";
 
-export default function ClassCard({ subjectName, classId}) {
+export default function ClassCard({ subjectName, classId, schedule}) {
   const navigate = useNavigate();
 
   const storeClassDetail = useClassStore((state) => state.storeClassDetail);
@@ -44,7 +44,7 @@ export default function ClassCard({ subjectName, classId}) {
             font-medium text-white truncate">
         {subjectName}
       </p>
-      <p className="text-sm text-white mt-1">Monday 5:00pm - 7:00pm</p>
+      <p className="text-sm text-white mt-1">{schedule}</p>
       
       {/* <div className="bg-[#1F4068] h-6 w-6 absolute right-[2%] bottom-[2%]  z-30 rounded-full"></div> */}
       {/* <div className="bg-[#E78B48] h-1/2 w-1/2 absolute right-[-20%] bottom-[-40%] -rotate-45 z-20"></div> */}

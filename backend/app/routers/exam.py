@@ -5,9 +5,9 @@ from typing import List, Optional
 from app.utils.tos import compute_tos
 from app.schemas.exam.exam import (
     TOSRequest, CreateExam, ExamOut, ExamUpdate, 
-    ArchiveExam, SimpleExamResponse, ExamListResponse
+    ArchiveExam, SimpleExamResponse, ExamListResponse, AddStudentsToExam
 )
-from app.schemas.exam.student_exam_progress import StudentExamProgressOut
+from app.schemas.exam.student_exam_progress import StudentExamProgressOut, StudentExamWithDetails
 from app.utils.generate_exam import generate_exam_realistic
 from datetime import datetime, timezone
 from app.models.exam.exams import Exam  
@@ -16,6 +16,8 @@ from app.models.class_enrollment import ClassEnrollment
 from app.models.class_material import ClassMaterial
 from app.models.classes import Classes
 from app.models.term import Term
+from app.models.users import Users
+from sqlalchemy.orm import joinedload
 from app.database import SessionLocal
 
 router = APIRouter(prefix="/exam", tags=["exam"])
@@ -31,7 +33,7 @@ def get_db():
 @router.get("/getExams/{class_id}", response_model=List[SimpleExamResponse])
 async def get_exams_for_class(
     class_id: int,
-    term: int = Query(..., description="Term ID"),
+    term_id: int = Query(..., description="Term ID"),
     is_archive: bool = Query(False, description="Include archived exams"),
     db: Session = Depends(get_db)
 ):
@@ -49,17 +51,17 @@ async def get_exams_for_class(
             )
         
         # Validate term exists
-        term_exists = db.query(Term).filter(Term.id == term).first()
+        term_exists = db.query(Term).filter(Term.id == term_id).first()
         if not term_exists:
             raise HTTPException(
                 status_code=404,
-                detail=f"Term with ID {term} not found"
+                detail=f"Term with ID {term_id} not found"
             )
         
         # Build query
         query = db.query(Exam).filter(
             Exam.class_id == class_id,
-            Exam.term_id == term
+            Exam.term_id == term_id
         )
         
         # Filter by archive status if not requesting archived exams
@@ -80,39 +82,57 @@ async def get_exams_for_class(
         )
 
 # For Students
-@router.get("/student/exams/{class_id}", response_model=List[StudentExamProgressOut])
+@router.get("/student/exams/{class_id}", response_model=List[StudentExamWithDetails])
 async def get_student_exams_for_class(
     class_id: int,
     student_id: int = Query(..., description="Student ID"),
-    term: int = Query(None, description="Term ID (optional)"),
+    term_id: int = Query(None, description="Term ID (optional)"),
     db: Session = Depends(get_db)
 ):
-    """
-    Get all active exam progress records for a specific student in a specific class
-    Endpoint: GET /exam/student/exams/9?student_id=123&term=1
-    Returns: List of StudentExamProgress records for non-archived exams
-    """
     try:
         
         query = db.query(StudentExamProgress).join(
-            Exam,
-            StudentExamProgress.exam_id == Exam.id
+            Exam, StudentExamProgress.exam
         ).filter(
             StudentExamProgress.student_id == student_id,
             Exam.class_id == class_id,
-            Exam.is_archive == False  
+            Exam.is_archive == False
         )
         
+        if term_id is not None:
+            query = query.filter(Exam.term_id == term_id)
         
-        if term is not None:
-            query = query.filter(Exam.term_id == term)
+        
+        progress_records = query.order_by(Exam.created_at.desc()).all()
         
         
-        progress_records = query.order_by(StudentExamProgress.created_at.desc()).all()
+        exam_list = []
+        for progress in progress_records:
+            exam = progress.exam  
+            exam_list.append({
+                "id": progress.id,
+                "student_id": progress.student_id,
+                "exam_id": progress.exam_id,
+                "status": progress.status,
+                "score": progress.score,
+                "answers": progress.answers,
+                "start_time": progress.start_time,
+                "created_at": progress.created_at,  
+                "updated_at": progress.updated_at,
+                "title": exam.title,
+                "total_points": exam.total_points,
+                "duration": exam.duration,
+                "instructions": exam.instructions,
+                "passing_score": exam.passing_score
+            })
         
-        return progress_records
+        return exam_list
         
     except Exception as e:
+        print(f"Error in get_student_exams_for_class: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
         raise HTTPException(
             status_code=500,
             detail=f"Failed to retrieve exam progress for student: {str(e)}"
@@ -306,10 +326,6 @@ async def generate_tos(data: TOSRequest):
             status_code=500,
             detail=f"Failed to generate exam: {str(e)}"
         )
-@router.get("/hello")
-def hello():
-    print("Lina")  # still logs on server
-    return {"message": "Hello from Lina!"}
 
 
 @router.post("/assignExam")
@@ -417,4 +433,129 @@ def assign_exam(exam: CreateExam, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=500,
             detail=f"Database error while creating exam: {str(e)}"
+        )
+        
+# ALL ENDPOINT FOR EXAM MONITORING
+
+@router.get("/{exam_id}/assigned-students")
+def get_assigned_students(exam_id: int, db: Session = Depends(get_db)):
+    """
+    Get list of student IDs already assigned to an exam
+    """
+    assigned = db.query(StudentExamProgress.student_id).filter(
+        StudentExamProgress.exam_id == exam_id
+    ).all()
+    
+    return [s.student_id for s in assigned]
+
+# Get exam monitoring data
+@router.get('/monitoring/{exam_id}')
+def exam_monitoring(exam_id: int, db: Session = Depends(get_db)):
+    """
+    Get comprehensive exam monitoring data for teachers
+    """
+    # Get exam header info
+    exam = db.query(Exam).filter(Exam.id == exam_id).first()
+    if not exam:
+        raise HTTPException(status_code=404, detail="Exam not found")
+    
+    # Get linked materials
+    linked_materials = [material.title for material in exam.class_materials]
+    
+    # Get student progress data
+    results = (
+        db.query(
+            Users.first_name, 
+            Users.last_name, 
+            StudentExamProgress.status,
+            StudentExamProgress.score,
+        )
+        .join(StudentExamProgress, StudentExamProgress.student_id == Users.id)
+        .filter(StudentExamProgress.exam_id == exam_id)
+        .order_by(Users.last_name, Users.first_name)
+        .all()
+    )
+    
+    return {
+        "examTitle": exam.title,
+        "totalPoints": exam.total_points,
+        "duration": exam.duration,
+        "passingScore": exam.passing_score,
+        "instructions": exam.instructions,
+        "linkedMaterials": linked_materials,
+        "scores": [
+            {
+                "studentName": f"{r.first_name} {r.last_name}",
+                "status": r.status,
+                "score": r.score,
+            }
+            for r in results
+        ]
+    }
+
+# Assign students to exam (POST version - different from your existing assignExam)
+from pydantic import BaseModel, Field
+from typing import List
+from fastapi import HTTPException, Depends
+from sqlalchemy.orm import Session
+
+class AddStudentsToExam(BaseModel):
+    exam_id: int = Field(..., gt=0, description="Exam ID must be positive")
+    student_ids: List[int] = Field(..., min_items=1, description="At least one student ID required")
+
+@router.post("/assign-students")
+def assign_exam_students(
+    request: AddStudentsToExam,
+    db: Session = Depends(get_db)
+):
+    """
+    Assign additional students to an existing exam
+    """
+    try:
+        # Check if exam exists
+        exam = db.query(Exam).filter(Exam.id == request.exam_id).first()
+        if not exam:
+            raise HTTPException(status_code=404, detail="Exam not found")
+        
+        # Check which students are already assigned
+        already_assigned = db.query(StudentExamProgress.student_id).filter(
+            StudentExamProgress.exam_id == request.exam_id,
+            StudentExamProgress.student_id.in_(request.student_ids)
+        ).all()
+        already_assigned_ids = {assigned[0] for assigned in already_assigned}
+        
+        assigned_count = 0
+        skipped_count = 0
+        for student_id in request.student_ids:
+            if student_id in already_assigned_ids:
+                skipped_count += 1
+                continue
+                
+            # Create new progress record
+            progress = StudentExamProgress(
+                student_id=student_id,
+                exam_id=request.exam_id,
+                status="assigned",
+                score=None,
+                answers=None,
+                start_time=None
+            )
+            db.add(progress)
+            assigned_count += 1
+        
+        db.commit()
+        
+        return {
+            "message": f"Assigned {assigned_count} new students, {skipped_count} were already assigned",
+            "assigned_count": assigned_count,
+            "skipped_count": skipped_count
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Failed to assign students: {str(e)}"
         )

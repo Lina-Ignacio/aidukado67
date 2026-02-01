@@ -4,12 +4,13 @@ from .parse_questions import parse_questions
 from dotenv import load_dotenv
 from pathlib import Path
 from app.core.gemini import get_gemini_model
+from app.core.quiz_groq import get_quiz_model  
 
 async def generate_quiz(lesson_content, num_items, question_type):
     """
-    Generates a quiz using Gemini with strict enforcement of valid answers.
+    Generates a quiz using Groq with strict enforcement of valid answers.
     """
-    model = get_gemini_model()
+    model = get_quiz_model()  # Use the new quiz model instead of Gemini
     
     # 1. Map question_type to user-friendly format
     type_map = {
@@ -38,7 +39,6 @@ Answer: B
 """
 
     # 3. The Optimized Prompt
-    # We use a "System Role" and explicit fallback instructions to prevent "N/A"
     prompt = f"""
 ROLE: You are an expert Assessment Specialist and Educator.
 
@@ -62,12 +62,15 @@ BEGIN GENERATING {num_items} QUESTIONS:
 """
 
     try:
-        # 4. Generate Content
-        response = await model.generate_content_async(prompt)
-        raw_questions = response.text
+        # 4. Generate Content using Groq
+        raw_questions = await model.generate(
+            prompt,
+            temperature=0.2,    # Lower temp for consistent quizzes
+            max_tokens=8000     # Adjust based on number of questions
+        )
         
         if not raw_questions:
-            print("Error: Gemini returned an empty response.")
+            print("Error: Groq returned an empty response.")
             return []
 
         # 5. Parse the raw text into Python objects
@@ -86,6 +89,20 @@ BEGIN GENERATING {num_items} QUESTIONS:
         return parsed_questions
     
     except Exception as e:
-        print(f"Error generating quiz: {str(e)}")
-        # You might want to return an empty list or re-raise depending on your API needs
-        raise
+        print(f"Error generating quiz with Groq: {str(e)}")
+        
+        # Fallback to Gemini if Groq fails
+        try:
+            print("Falling back to Gemini...")
+            gemini_model = get_gemini_model()
+            response = await gemini_model.generate_content_async(prompt)
+            raw_questions = response.text
+            
+            if raw_questions:
+                parsed_questions = parse_questions(raw_questions)
+                return parsed_questions
+        except Exception as gemini_error:
+            print(f"Gemini fallback also failed: {str(gemini_error)}")
+        
+        # Return empty or raise based on your needs
+        return []

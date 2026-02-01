@@ -27,6 +27,8 @@ import QuizMonitoring from './pages/AIQuiz/QuizMonitoring';
 import Layout from './components/Layout';
 import PasswordResetSearch from './pages/AdminPages/PasswordResetSearch';
 import ForceChangePassword from './pages/PasswordChanging/ForcePasswordChange';
+import ExamMonitoring from './pages/Exam/ExamMonitoring';
+import StudentExam from './pages/Exam/StudentExamPage';
 // Store
 import useUserStore from './store/useUserStore';
 import AIExam from './pages/Exam/AIExam';
@@ -46,7 +48,7 @@ function AppContent() {
         <Route path="/force-change-password" element={<ForceChangePassword />} />
         
         
-        <Route path="/submissions/:materialId" element={<Submissions />} />
+        <Route path="/submissions/:materialId/:totalScore" element={<Submissions />} />
         
         
         <Route 
@@ -68,36 +70,64 @@ function AppContent() {
         />
 
         <Route 
-            path="/quizMonitoring/:quizId" 
-            element={
-              <RoleProtectedRoute allowed_roles={["teacher"]}>
-                <QuizMonitoring />
-              </RoleProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/selectedClass/:classId/:term" 
-            element={
-              <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
-                <SelectedClass />
-              </RoleProtectedRoute>
-            } 
-          />
+          path="/quizMonitoring/:quizId" 
+          element={
+            <RoleProtectedRoute allowed_roles={["teacher"]}>
+              <QuizMonitoring />
+            </RoleProtectedRoute>
+          } 
+        />
 
-          <Route 
-            path="/studentQuizPage/:quizId" 
+        <Route 
+          path="/teacher/exam/monitoring/:examId" 
+          element={
+            <RoleProtectedRoute allowed_roles={["teacher"]}>
+              <ExamMonitoring />
+            </RoleProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/selectedClass/:classId/:term" 
+          element={
+            <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
+              <SelectedClass />
+            </RoleProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/studentQuizPage/:quizId" 
+          element={
+            <RoleProtectedRoute allowed_roles={["student"]}>
+              <StudentQuizPage />
+            </RoleProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/student/exam/:examId" 
+          element={
+            <RoleProtectedRoute allowed_roles={["student"]}>
+              <StudentExam />
+            </RoleProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/selectedLesson/:materialId/:materialType" 
+          element={
+            <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
+              <SelectedLesson />
+            </RoleProtectedRoute>
+          } 
+        />
+
+        <Route 
+            path="/lessonSummary/:materialId" 
             element={
               <RoleProtectedRoute allowed_roles={["student"]}>
-                <StudentQuizPage />
-              </RoleProtectedRoute>
-            } 
-          />
-
-          <Route 
-            path="/selectedLesson/:materialId/:materialType" 
-            element={
-              <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
-                <SelectedLesson />
+                <LessonSummary />
               </RoleProtectedRoute>
             } 
           />
@@ -171,14 +201,7 @@ function AppContent() {
               </RoleProtectedRoute>
             } 
           />
-          <Route 
-            path="/lessonSummary/:materialId" 
-            element={
-              <RoleProtectedRoute allowed_roles={["student"]}>
-                <LessonSummary />
-              </RoleProtectedRoute>
-            } 
-          />
+          
 
           {/* Help/About */}
           <Route path='/help' element={<AboutPage />} />

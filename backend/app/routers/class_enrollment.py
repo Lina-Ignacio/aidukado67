@@ -1,5 +1,5 @@
 
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 from app.models import ClassEnrollment, Users, Classes
@@ -68,7 +68,7 @@ def get_classes_by_user(user_id: int, db: Session= Depends(get_db)):
     
     return enrollments
 
-from fastapi import HTTPException, status
+
 
 @router.post("/create")
 def create_enrollment(new_enrollment: EnrollmentCreate, db: Session = Depends(get_db)):

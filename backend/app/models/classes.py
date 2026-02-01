@@ -5,14 +5,14 @@ from app.database import Base
 
     
 class Classes(Base):
-    __tablename__ = "classes"
+    __tablename__ = "classes"     
 
     id = Column(Integer, primary_key=True, index=True)
     subject_id = Column(Integer, ForeignKey("subjects.id", ondelete="CASCADE"), nullable=False)
     teacher_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     name = Column(String, nullable=False)
     is_archive = Column(Boolean, nullable=False, default=False)
-
+    schedule = Column(String, nullable=False)
     
     subject = relationship("Subject", back_populates="classes")
 

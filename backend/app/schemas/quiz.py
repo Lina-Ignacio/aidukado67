@@ -33,7 +33,17 @@ class QuizOut(BaseModel):
     is_archive:bool
     assessment_type:str
     term_id:int
-
+       
+class QuizOutSimple(BaseModel):
+    id: int
+    title: str
+    total_points: int
+    duration: int
+    created_at: datetime
+    assessment_type:str
+    status: str
+    score: Optional[int] = None
+    
 class AddStudentsRequest(BaseModel):
     quiz_id: int
     student_ids: List[int]

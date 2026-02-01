@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import * as pdfjsLib from "pdfjs-dist";
-import { MdArrowBack } from "react-icons/md";
+import { MdArrowBack, MdDownload } from "react-icons/md";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
   import.meta.url
 ).toString();
 
-export default function PdfViewer({ fileUrl, isVisible, setIsVisible }) {
+export default function PdfViewer({ fileUrl, fileName, isVisible, setIsVisible }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const renderTimeoutRef = useRef(null);
@@ -120,6 +120,59 @@ export default function PdfViewer({ fileUrl, isVisible, setIsVisible }) {
       cancelled = true;
     };
   }, [fileUrl]);
+
+  // Download PDF function
+  // Download PDF function
+  const handleDownload = async () => {
+    try {
+      // Use the passed fileName prop or extract from URL as fallback
+      let filename = fileName;
+      
+      if (!filename || filename.trim() === '') {
+        // Fallback: extract from URL
+        const url = new URL(fileUrl);
+        filename = url.pathname.split('/').pop() || 'document.pdf';
+        filename = filename.split('?')[0];
+        filename = decodeURIComponent(filename);
+      }
+      
+      // Clean filename: remove special characters and ensure .pdf extension
+      filename = filename.replace(/[^a-zA-Z0-9_\-. ]/g, '_'); // Replace invalid chars with underscore
+      
+      // Ensure it has .pdf extension
+      if (!filename.toLowerCase().endsWith('.pdf')) {
+        filename = `${filename}.pdf`;
+      }
+
+      console.log('Downloading file:', filename);
+
+      // Fetch the PDF file
+      const response = await fetch(fileUrl);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
+      }
+      
+      const blob = await response.blob();
+      
+      // Create download link
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert(`Failed to download PDF: ${error.message}`);
+    }
+  };
 
   // Responsive render function
   const renderPage = useCallback(async () => {
@@ -289,7 +342,7 @@ export default function PdfViewer({ fileUrl, isVisible, setIsVisible }) {
   }
 
   return (
-    <div className="flex flex-col h-full w-full  border border-white/20 bg-[#102E50] overflow-hidden">
+    <div className="flex flex-col min-h-screen w-full border border-white/20 bg-[#102E50] overflow-hidden">
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 bg-black/30 text-white">
         <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-start">
@@ -302,7 +355,7 @@ export default function PdfViewer({ fileUrl, isVisible, setIsVisible }) {
                     className="flex items-center justify-center gap-2 text-black bg-white px-4 py-2 rounded-lg hover:bg-gray-100 transition-all duration-300 group"
                   >
                     <MdArrowBack className="group-hover:-translate-x-1 transition-transform duration-300 ease-out" />
-                    <span>Go Back</span>
+                    <span>Back</span>
                   </button>
                 </div>
               )}
@@ -328,6 +381,16 @@ export default function PdfViewer({ fileUrl, isVisible, setIsVisible }) {
                 title="Zoom In"
               >
                 <span className="text-lg">+</span>
+              </button>
+
+              {/* Download Button */}
+              <button
+                onClick={handleDownload}
+                className="px-3 py-1.5 rounded-lg bg-[#E78B48] hover:bg-orange-400 transition-colors flex items-center gap-2"
+                title="Download PDF"
+              >
+                <MdDownload className="text-lg" />
+                <span className="hidden sm:inline text-lg">Download</span>
               </button>
             </div>
 
@@ -404,7 +467,14 @@ export default function PdfViewer({ fileUrl, isVisible, setIsVisible }) {
       <div className="sm:hidden px-4 py-2 bg-black/20 text-white/80 text-sm text-center border-t border-white/10">
         <div className="flex justify-between items-center">
           <span>Page {pageNum} of {numPages}</span>
-          <span>Zoom: {Math.round(scale * 100)}%</span>
+          <button
+            onClick={handleDownload}
+            className="px-2 py-1 rounded bg-green-600 hover:bg-green-700 transition-colors flex items-center gap-1 text-xs"
+            title="Download PDF"
+          >
+            <MdDownload />
+            <span>Download</span>
+          </button>
         </div>
         <div className="text-xs mt-1 text-white/60">
           Use pinch to zoom, swipe to navigate

@@ -85,14 +85,15 @@ def create_class(class_data: ClassCreate, db: Session = Depends(get_db)):
     new_class = Classes(
         subject_id = class_data.subject_id,
         teacher_id = class_data.teacher_id,
-        name = class_data.name
+        name = class_data.name,
+        schedule= class_data.schedule
     )
     
     db.add(new_class)
     db.commit()
     db.refresh(new_class)
     
-    return {"message": "Class Created Successfully", "class_id": new_class.id}
+    return {"message": "Class Created Successfully", "class_id": new_class.id, "name": new_class.name}
 
 # @router.put("/update/{class_id}")
 # def update_class(class_id:int, class_data:ClassCreate, db: Session = Depends(get_db)):

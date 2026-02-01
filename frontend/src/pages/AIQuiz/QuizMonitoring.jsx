@@ -105,7 +105,7 @@ export default function QuizMonitoring() {
                         </p>
                         <h2 className="text-xl font-semibold text-[#E78B48] mb-8">{quizTitle}</h2>
                         <p className="text-[#EBECF1] text-md">Lesson: {lessonTitle}</p>
-                        <p className="text-[#EBECF1] text-md">Total: <span className='text-gray-400'>{totalPoints} points</span></p>
+                        <p className="text-[#EBECF1] text-md">Total: <span className='text-[#E78B48]'>{totalPoints} points</span></p>
                     </div>
 
                     <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
@@ -144,7 +144,7 @@ export default function QuizMonitoring() {
                                 <tr className="bg-[#102E50] text-white">
                                     <th className="px-6 py-4 text-left font-bold text-xs uppercase tracking-widest">Student Name</th>
                                     <th className="px-6 py-4 text-center font-bold text-xs uppercase tracking-widest">Performance Status</th>
-                                    <th className="px-6 py-4 text-right font-bold text-xs uppercase tracking-widest">Final Score</th>
+                                    <th className="px-6 py-4 text-right font-bold text-xs uppercase tracking-widest">Score</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-[#EBECF1]">

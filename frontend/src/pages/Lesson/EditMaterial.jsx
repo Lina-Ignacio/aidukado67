@@ -59,19 +59,21 @@ export default function EditMaterial({materialId, setEditMaterialOpen, setSucces
     }
   }
 
-  const inputClass= "w-full sm:h-[6%] border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-[1%] rounded-md shadow-md";
-  const labelClass= "text-[#102E50] font-bold opacity-75";
+  const inputClass= "w-full h-auto border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-2 rounded-md shadow-md mb-4";
+  const labelClass= "text-[#102E50] font-bold opacity-75 mb-2";
 
   return (
       <form
-            className="flex flex-col justify-center w-full h-full gap-[2%] text-left rounded-2xl bg-[#F4F6FF] p-4 shadow-2xl"
+            className="flex flex-col justify-center w-full h-auto gap-[2%] text-left rounded-2xl bg-[#F4F6FF] p-4 shadow-2xl"
           >
-            {fetchError && <p className="text-red-800">{fetchError}</p>}
-            {updateError && <p className="text-red-800">{updateError}</p>}
+            
 
             <label className={labelClass}>(Optional)</label>
             <FileUploader type=".pdf, .doc, .docx" handleFileChange={handleFileChange} />
-      
+            <span className="mt-8 mb-4">
+              {fetchError && <p className="text-red-800">{fetchError}</p>}
+              {updateError && <p className="text-red-800">{updateError}</p>}
+            </span>
             <label className={labelClass}>Title</label>
             <input
               className={inputClass}
@@ -95,11 +97,11 @@ export default function EditMaterial({materialId, setEditMaterialOpen, setSucces
       
             <label className={labelClass}>Description</label>
             <textarea
-              className="w-full h-[20%] border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-[1%] rounded-md shadow-md"
+              className="w-full h-auto border-solid border border-[#C9CCD5] bg-transparent text-[#102E50] p-[1%] rounded-md shadow-md"
               value={metaData.description || ""}
               onChange={(e) => setMetaData((prev) => ({ ...prev, description: e.target.value }))}
               placeholder="Describe this material"
-              rows={2}
+              rows={3}
               cols={5}
             />
       
@@ -131,11 +133,18 @@ export default function EditMaterial({materialId, setEditMaterialOpen, setSucces
             )}
       
       
-            <div className="flex gap-2">
-              <button onClick={() => setEditMaterialOpen(false)} className="bg-[#9BA4B4] w-1/2 xl:text-lg p-2" type="button">
+            <div className="flex gap-2 mt-4 mb-8">
+              <button 
+                onClick={() => setEditMaterialOpen(false)} 
+                className="bg-gray-300 w-1/2 xl:text-lg p-2 text-[#102E50]" 
+                type="button"
+              >
                 CANCEL
               </button>
-              <button className="bg-[#102E50] w-1/2 xl:text-lg p-2" onClick={handleUpdate}>
+              <button 
+                className="bg-[#102E50] w-1/2 xl:text-lg p-2" 
+                onClick={handleUpdate}
+              >
                 UPDATE
               </button>
             </div>

@@ -14,7 +14,8 @@ from .routers import (
     student_quiz_progress,
     student_submission,
     lesson_content,
-    exam
+    exam,
+    student_exam_progress
 )
 
 from dotenv import load_dotenv
@@ -70,6 +71,7 @@ app.include_router(student_quiz_progress.router)
 app.include_router(student_submission.router)
 app.include_router(lesson_content.router)
 app.include_router(exam.router)
+app.include_router(student_exam_progress.router)
 
 
 @app.get("/")

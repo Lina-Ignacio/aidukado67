@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import axios from "axios";
 import useUserStore from "../store/useUserStore";
-import { MdPerson, MdEmail, MdSecurity } from "react-icons/md";
+import { MdPerson, MdEmail, MdSecurity, MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 
 export default function Login() {
@@ -10,7 +10,6 @@ export default function Login() {
     const navigate = useNavigate();
 
     const storeUser = useUserStore((state) => state.storeUser);
-    
     
     const [formData, setFormData] = useState({
         email : "",
@@ -20,6 +19,13 @@ export default function Login() {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState("");
+
+    // For Password Showing
+    const [showPassword, setShowPassword] = useState(false);
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(prev => !prev);
+    };
 
     const handleChange = (e) => {
         const {name, value} = e.target;
@@ -121,14 +127,14 @@ export default function Login() {
                     </h1>
 
                     <div className="relative">
-                        <MdPerson className="absolute right-4 top-1/2 -translate-y-1/2 text-[#102E50] text-2xl" />
+                        <MdPerson className="absolute left-4 top-1/2 -translate-y-1/2 text-[#102E50] text-2xl" />
                         <input
                             type="email"
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
                             placeholder="Email"
-                            className="w-full px-5 py-3 rounded-lg border border-gray-300
+                            className="w-full px-12 py-3 rounded-lg border border-gray-300
                                 bg-gray-100 text-lg text-[#102E50] placeholder:font-semibold
                                 placeholder:text-gray-600 focus:outline-none focus:ring-2 
                                 focus:ring-[#102E50]/40 focus:border-[#102E50] transition duration-200
@@ -137,18 +143,28 @@ export default function Login() {
                     </div>
 
                     <div className="relative">
-                        <MdSecurity className="absolute right-4 top-1/2 -translate-y-1/2 text-[#102E50] text-2xl" />
+                        <MdSecurity className="absolute left-4 top-1/2 -translate-y-1/2 text-[#102E50] text-2xl" />
                         <input
-                            type="password"
+                            type={showPassword? "text" : "password"}
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
                             placeholder="Password"
-                            className="w-full px-5 py-3 rounded-lg border border-gray-300 bg-gray-100
+                            className="w-full px-12 py-3 rounded-lg border border-gray-300 bg-gray-100
                                 text-lg text-[#102E50] placeholder:font-semibold placeholder:text-gray-600
                                 focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 focus:border-[#102E50]
                                 transition duration-200"
                         />
+                        {showPassword? 
+                            <MdVisibility 
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#102E50] text-2xl" 
+                                onClick={togglePasswordVisibility}
+                            /> :
+                            <MdVisibilityOff 
+                                className="absolute right-4 top-1/2 -translate-y-1/2 text-[#102E50] text-2xl" 
+                                onClick={togglePasswordVisibility}
+                            />
+                        }
                     </div>
 
                     <a className="text-[#102E50]/80 self-end">Forgot Password?</a>

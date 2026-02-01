@@ -124,7 +124,7 @@ export default function AssignQuiz({
       );
 
       alert("Quiz assigned successfully!");
-      navigate(`/class/${class_id}`);
+      navigate(-2);
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.detail || "Assignment failed");

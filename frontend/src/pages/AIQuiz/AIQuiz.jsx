@@ -33,11 +33,14 @@ export default function AIQuiz() {
     if (!items || items <= 0) {
       return "Please enter a valid number of items";
     }
-    if (items > 50) {
-      return "Maximum 50 questions allowed";
+    if (items > 30) {
+      return "Maximum 30 questions allowed";
     }
     if (!duration || duration <= 0) {
       return "Please enter a valid duration";
+    }
+    if (duration > 120) {
+      return "Maximum time is 120 mins"
     }
     if (!question_type) {
       return "Please select a question type";

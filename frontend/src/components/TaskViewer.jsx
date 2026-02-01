@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { MdEdit, MdArchive, MdFileUpload, MdMenuBook, MdCalendarToday, 
-  MdOutlineComment, MdOutlineCancel, MdVisibility, MdPerson } from "react-icons/md";
+  MdOutlineComment, MdOutlineCancel, MdVisibility, MdPerson, MdAnalytics } from "react-icons/md";
 import { LuClipboardCheck } from "react-icons/lu";
 import FileView from "../pages/Lesson/FileView";
 import FileUploader from "./FileUploader";
@@ -8,6 +8,7 @@ import useUserStore from "../store/useUserStore";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import ClassicButton from "./classicButton";
+import useClassStore from "../store/useClassStore";
 
 export default function TaskViewer({
   materialData,
@@ -25,9 +26,12 @@ export default function TaskViewer({
   const [stats, setStats] = useState(
     {
       totalSubmissions : null,
-      scoredSubmissions : null
+      scoredSubmissions : null,
+      numberOfStudents : null
     }
   )
+
+  const classId = useClassStore((state) => state.classId);
 
   const navigate = useNavigate();
 
@@ -39,6 +43,7 @@ export default function TaskViewer({
     type: materialData.materialType,
     studentId: userId,
   };
+
 
   // ✅ Check submission
   const checkSubmission = async () => {
@@ -63,18 +68,25 @@ export default function TaskViewer({
   const fetchSubmissionStats = async () => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/student_submission/stats/${materialData.materialId}`
+        `${import.meta.env.VITE_API_URL}/student_submission/stats/${materialData.materialId}`, 
+        {
+          params: {
+            class_id: classId
+          }
+        }
       );
 
       if (response.data) {
         setStats({
           totalSubmissions: response.data.total_submissions,
           scoredSubmissions: response.data.scored_submissions,
+          numberOfStudents: response.data.number_of_students
         });
       } else {
         setStats({
           totalSubmissions: null,
           scoredSubmissions: null,
+          numberOfStudents: null
         });
       }
 
@@ -91,7 +103,6 @@ export default function TaskViewer({
       }
     }
   };
-
 
 
   useEffect(() => {
@@ -160,6 +171,7 @@ export default function TaskViewer({
         <FileView
           fileExtension={materialData.fileExtension}
           fileUrl={materialData.fileUrl}
+          fileName={materialData.title}
         />
       </div>
     );
@@ -186,9 +198,28 @@ export default function TaskViewer({
     );
   }
 
-  const due = new Date(materialData.dueDate);
+  const dueDate = new Date(materialData.dueDate);
+  const today = new Date();
+  
+  // Set both dates to midnight for accurate day comparison
+  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const dueDateMidnight = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
 
-  const formattedDue = due.toLocaleString("en-US", {
+  const isOverdue = dueDate < today;
+  const isDueToday = dueDateMidnight.getTime() === todayMidnight.getTime();
+
+  let dueColor = 'text-blue-300';
+  let dueStatus = '';
+
+  if (isDueToday) {
+    dueColor = 'text-yellow-400';
+    dueStatus = '(Due Today)';
+  } else if (isOverdue) {
+    dueColor = 'text-red-400';
+    dueStatus = '(Past Due)';
+  }
+
+  const formattedDue = dueDate.toLocaleString("en-US", {
     month: "long",
     day: "numeric",
     year: "numeric",
@@ -198,173 +229,178 @@ export default function TaskViewer({
   });
 
 return (
-  <div className="w-full h-auto grid grid-cols-1 xl:grid-cols-[3fr_2fr] 
-          py-[10px] xl:px-[20px] gap-4"
-  >
-    {/* Material */}
+  <div className="w-11/12 lg:w-3/5 mx-auto mt-10 mb-10 bg-white rounded-2xl shadow-xl overflow-hidden font-sans border border-[#EBECF1]">
     
-      <div className="child w-full flex flex-col rounded-2xl bg-white
-              h-auto p-[25px] pb-12 shadow-lg
-              backdrop-blur-lg relative overflow-hidden"
-      >
-        
-        <div className="absolute h-[2%] w-full bg-black/10 bottom-0 left-0"></div>
+    {/* Header */}
+    <div className="bg-[#102E50] p-8 text-white relative">
+      <div className="absolute h-[2%] w-full bg-black/20 top-0 left-0"></div>
+      
+      <div className="flex flex-col md:flex-row md:items-end justify-between">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2 mb-8">
+            <MdAnalytics className="text-[#E78B48]" /> Task Details
+          </h1>
+          
+          <div className="flex flex-col gap-2">
+            <h2 className="text-xl font-semibold text-[#E78B48]">{materialData.title}</h2>
+            <p className="text-[#EBECF1] text-md">
+              Description: <span className='text-[#E78B48]'>{materialData.description}</span>
+            </p>
+            {materialData.totalScore && (
+              <p className="text-[#EBECF1] text-md">
+                Total Score: <span className='text-green-400'>{materialData.totalScore} points</span>
+              </p>
+            )}
+            <p className="text-[#EBECF1] text-md">
+              Due: <span className={dueColor}>
+                {formattedDue} {dueStatus}
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        
-        <div className="relative z-10 flex flex-col h-full">
-          {uploadError && <p className="text-red-800">{uploadError}</p>}
+    {/* Main Content Area */}
+    <div className="p-6 md:p-8 bg-[#EBECF1]/30 relative">
+      <div className="absolute h-[1%] w-full bg-[#D9CFC7]/40 bottom-0 left-0"></div>
+      
+      {/* Teacher Actions Section */}
+      {userRole === "teacher" && (
+        <div className="mb-8">
+          <div className="bg-white rounded-xl shadow-sm border border-[#EBECF1] p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+              <div className="bg-[#EBECF1]/30 p-4 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="bg-[#102E50] p-2 rounded-lg">
+                    <MdPerson className="text-white text-xl" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-[#102E50]">{stats.numberOfStudents !== null ? stats.numberOfStudents : "0"}</p>
+                    <p className="text-xs uppercase tracking-tighter text-gray-600">Assigned Students</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-[#EBECF1]/30 p-4 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="bg-[#102E50] p-2 rounded-lg">
+                    <MdPerson className="text-white text-xl" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-[#102E50]">{stats.totalSubmissions !== null ? stats.totalSubmissions : "0"}</p>
+                    <p className="text-xs uppercase tracking-tighter text-gray-600">Total Submissions</p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-[#EBECF1]/30 p-4 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="bg-[#102E50] p-2 rounded-lg">
+                    <MdPerson className="text-white text-xl" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-[#102E50]">{stats.scoredSubmissions !== null ? stats.scoredSubmissions : "0"}</p>
+                    <p className="text-xs uppercase tracking-tighter text-gray-600">Graded</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <h2 className="font-bold text-2xl md:text-4xl text-[#102E50] truncate mb-1">
-            {materialData.title}
-          </h2>
+            <div className="flex flex-col md:flex-row gap-4">
 
-          <p className="text-base md:text-lg leading-tight text-[#102E50]/80 mb-12">
-            {materialData.description}
-          </p>
+              <ClassicButton 
+                buttonName="View Material"
+                className="flex-1 shadow-md lg:w-1/4"
+                onClick={() => setIsVisible(true)}
+                mainColor="#5C6BC0" 
+                darkColor="#3949AB"
+                icon={MdMenuBook}
+              />
+              <ClassicButton 
+                buttonName="View Submissions"
+                className="flex-2 shadow-md lg:w-1/4"
+                onClick={() => navigate(`/submissions/${materialData.materialId}/${materialData.totalScore}`)}
+                mainColor="#E78B48" 
+                darkColor="#B9652B"
+                icon={LuClipboardCheck}
+              />
+              
+              
+              <ClassicButton 
+                buttonName="Edit"
+                className="flex-1 shadow-md"
+                onClick={() => setEditMaterialOpen(true)}
+                mainColor="#183D65" 
+                darkColor="#102E50"
+                icon={MdEdit}
+              />
 
-          <p className="text-[#E78B48]/90 flex justify-items 
-                        items-center gap-2 text-sm md:text-lg self-end mb-2"
-          >
-            <MdCalendarToday/> Due: {formattedDue}
-          </p>
+              <ClassicButton 
+                buttonName="Archive"
+                className="flex-1 shadow-md"
+                onClick={() => setArchiveMaterialOpen(true)}
+                mainColor="#C53030" 
+                darkColor="#8E1616"
+                icon={MdArchive}
+              />
+            </div>
 
-          <hr className="h-px bg-[#102E50]/50 border-0 mb-8" />
+  
+          </div>
+        </div>
+      )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 w-full gap-2">
+      {/* Student Submission Section */}
+      {userRole === "student" && (
+        <div className="flex flex-col gap-6">
+          {/* View Material Card - For Students */}
+          <div className="bg-white w-full lg:w-3/5 xl:w-1/2 place-self-center rounded-xl shadow-sm border border-[#EBECF1] p-6 mt-8">
+            <h2 className="text-2xl font-bold text-[#102E50] mb-4">Task Material</h2>
+            <p className="text-[#102E50]/80 mb-6">
+              View the material for this task.
+            </p>
             <ClassicButton 
               buttonName="View Material"
-              className="shadow-md w-full 2xl:w-3/4"
+              className="w-full shadow-md"
               onClick={() => setIsVisible(true)}
               mainColor="#E78B48" 
               darkColor="#B9652B"
               icon={MdMenuBook}
             />
-            
-            {userRole === "teacher" && (
-              <div className="w-full grid grid-cols-1 md:grid-cols-2 items-end justify-end self-end gap-2  
-                              mt-2 md:mt-0">
-                <ClassicButton 
-                  buttonName="Edit"
-                  className="shadow-md text-md"
-                  onClick={() => setEditMaterialOpen(true)}
-                  mainColor="#183D65" 
-                  darkColor="#102E50"
-                  icon={MdEdit}
-                />
-
-                <ClassicButton 
-                  buttonName="Archive"
-                  className="shadow-md text-md"
-                  onClick={() => setArchiveMaterialOpen(true)}
-                  mainColor="#C53030" 
-                  darkColor="#8E1616"
-                  icon={MdArchive}
-                />
-              </div>
-            )}
           </div>
-        </div>
-    </div>
-    
 
-    {/* Submit */}
-    <div className="xl:max-h-[500px] flex 2xl:justify-end ">
-
-      {userRole === "teacher" && (
-        <div className="child w-full md:w-1/2 xl:w-full 2xl:w-4/5 h-auto shadow-2xl rounded-xl 
-                bg-[#102E50] flex flex-col p-[20px] pb-10 gap-0 relative overflow-hidden"
-        >
-          
-          <div className="absolute h-[3%] w-full bg-black/10 bottom-0 left-0"></div>
-
-          
-          <div className="relative z-10 flex flex-col gap-8 h-auto justify-center">
-
-            <div className="w-full flex h-auto">
-              <div className="bg-white/10 backdrop-blur-md rounded-xl py-8 px-4 border border-white/20 flex gap-12 w-full flex-wrap">
-                <div className="flex items-center gap-3">
-                    <div className="bg-[#E78B48] p-2 rounded-lg">
-                      <MdPerson className="text-[#102E50] text-xl" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">----</p>
-                      <p className="text-[10px] uppercase tracking-tighter text-[#EBECF1]">Pending</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="bg-[#E78B48] p-2 rounded-lg">
-                      <MdPerson className="text-[#102E50] text-xl" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">{stats.totalSubmissions}</p>
-                      <p className="text-[10px] uppercase tracking-tighter text-[#EBECF1]">Submissions</p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <div className="bg-[#E78B48] p-2 rounded-lg">
-                      <MdPerson className="text-[#102E50] text-xl" />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-bold">{stats.scoredSubmissions}</p>
-                      <p className="text-[10px] uppercase tracking-tighter text-[#EBECF1]">Graded</p>
-                    </div>
-                </div>
-                
-              </div>
-            </div>
-
-            <ClassicButton 
-              buttonName="View Submissions"
-              className="shadow-md w-full text-md mt-auto"
-              onClick={() => navigate(`/submissions/${materialData.materialId}`)}
-              mainColor="#E78B48" 
-              darkColor="#B9652B"
-              icon={LuClipboardCheck}
-            />
-
-          </div>
-        </div>
-      )}
-
-      {userRole === "student" && (
-        <div className="child w-full sm:w-1/2 xl:w-full 2xl:w-4/5 h-auto shadow-md rounded-xl bg-[#F4F6FF] 
-                        flex flex-col p-[15px] 2xl:px-[20px] pb-10 gap-5 relative overflow-hidden
-                        "
-        >
-          
-          <div className="absolute h-[2%] w-full bg-black/10 bottom-0 left-0"></div>
-
-          
-          <div className="relative z-10 flex flex-col gap-4">
+          {/* Submission Card */}
+          <div className="bg-white w-full lg:w-3/5 xl:w-1/2 place-self-center rounded-xl shadow-sm border border-[#EBECF1] p-6 mb-8">
             {!submissionData ? (
               <>
+                <h2 className="text-2xl font-bold text-[#102E50] mb-4">Submit Your Work</h2>
                 <FileUploader
                   type=".pdf, .doc, .docx"
                   handleFileChange={handleFileChange}
                 />
 
-                <ClassicButton 
-                  buttonName="Submit File"
-                  onClick={handleSubmit}
-                  className="w-full shadow-md"
-                  mainColor="#102E50" 
-                  darkColor="#0B2239"
-                  icon={MdFileUpload}
-                />
+                <div className="mt-6">
+                  <ClassicButton 
+                    buttonName="Submit File"
+                    onClick={handleSubmit}
+                    className="w-full shadow-md"
+                    mainColor="#102E50" 
+                    darkColor="#0B2239"
+                    icon={MdFileUpload}
+                  />
+                </div>
               </>
             ) : (
               <>
-                <h2 className="text-[#102E50] font-bold text-2xl md:text-3xl xl:text-4xl">Your Work</h2>
-                <p className="text-[#102E50]/80 font-semibold md:text-md lg:text-lg xl:text-xl">
+                <h2 className="text-2xl font-bold text-[#102E50] mb-4">Your Submission</h2>
+                <p className="text-[#102E50]/80 font-semibold mb-6">
                   You already submitted this task.
                 </p>
 
-                <div className="w-full flex gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <ClassicButton 
                     buttonName="View File"
                     onClick={() => setViewSubmittedFile(true)}
-                    className="flex-1 shadow-md"
+                    className="shadow-md"
                     mainColor="#102E50" 
                     darkColor="#0B2239"
                     icon={MdVisibility}
@@ -373,16 +409,16 @@ return (
                   <ClassicButton 
                     buttonName="Unsubmit"
                     onClick={handleUnsubmit}
-                    className="flex-1 shadow-md"
+                    className="shadow-md"
                     mainColor="#8E1616" 
                     darkColor="#660F0F"
                     icon={MdOutlineCancel}
                   />
                 </div>
 
-                {unsubmitError && <p className="text-red-800">{unsubmitError}</p>}
+                {unsubmitError && <p className="text-red-800 mb-4">{unsubmitError}</p>}
                 
-                <div className="bg-white/50 p-3 rounded-lg border border-[#206A5D]/20">
+                <div className="bg-[#EBECF1]/30 p-4 rounded-lg border border-[#206A5D]/20 mb-4">
                   {submissionData.score != null ? (
                     <p className="text-[#206A5D] font-bold text-lg">
                       Score: {submissionData.score} / {materialData.totalScore}
@@ -393,25 +429,21 @@ return (
                     </p>
                   )}
                 </div>
-              </>
-            )}
 
-            {submissionData && submissionData.remarks != null && (
-              <div className="mt-2 p-3 bg-[#102E50]/5 rounded-lg border-l-4 border-[#102E50]">
-                <h2 className="text-[#102E50] font-bold text-lg flex items-center gap-1">
-                  <MdOutlineComment /> Remarks:
-                </h2>
-                <p className="text-[#102E50]/80 italic">"{submissionData.remarks}"</p>
-              </div>
+                {submissionData && submissionData.remarks != null && (
+                  <div className="mt-4 p-4 bg-[#102E50]/5 rounded-lg border-l-4 border-[#102E50]">
+                    <h2 className="text-[#102E50] font-bold text-lg flex items-center gap-2 mb-2">
+                      <MdOutlineComment /> Remarks:
+                    </h2>
+                    <p className="text-[#102E50]/80 italic">"{submissionData.remarks}"</p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
       )}
-      
     </div>
-    
-</div>
+  </div>
 );
-
-
 }

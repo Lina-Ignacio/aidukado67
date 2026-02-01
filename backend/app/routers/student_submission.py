@@ -1,5 +1,5 @@
 import os
-from fastapi import APIRouter, HTTPException, Depends, File, Form, UploadFile
+from fastapi import APIRouter, HTTPException, Depends, File, Form, UploadFile, Query
 from typing import Optional
 from sqlalchemy.orm import Session, joinedload
 from app.database import SessionLocal
@@ -7,6 +7,7 @@ from app.schemas.student_submission import SubmissionCreate, SubmissionUpdate, S
 from app.models import StudentSubmission
 from app.utils.r2_helper import upload_file, generate_presigned_url, delete_file
 import json
+from app.models.class_enrollment import ClassEnrollment
 
 router = APIRouter(prefix="/student_submission", tags=["student_submission"])
 
@@ -156,17 +157,15 @@ def update_score_remarks(submission_id: int, payload: SubmissionUpdate, db: Sess
 
 
 @router.get("/stats/{material_id}")
-def get_submission_stats(material_id: int, db: Session = Depends(get_db)):
+def get_submission_stats(material_id: int, class_id: int = Query(...), db: Session = Depends(get_db)):
 
     total_submissions = db.query(StudentSubmission).filter(
         StudentSubmission.material_id == material_id
     ).count()
-
-    if total_submissions == 0:
-        raise HTTPException(
-            status_code=404,
-            detail=f"No submissions found for material_id {material_id}"
-        )
+    
+    number_of_students = db.query(ClassEnrollment).filter(
+        ClassEnrollment.class_id == class_id
+    ).count()
 
     scored_submissions = db.query(StudentSubmission).filter(
         StudentSubmission.material_id == material_id,
@@ -176,7 +175,8 @@ def get_submission_stats(material_id: int, db: Session = Depends(get_db)):
     return {
         "material_id": material_id,
         "total_submissions": total_submissions,
-        "scored_submissions": scored_submissions
+        "scored_submissions": scored_submissions,
+        "number_of_students": number_of_students
     }
 
 

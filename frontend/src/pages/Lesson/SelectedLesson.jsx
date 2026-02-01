@@ -32,8 +32,8 @@ export default function SelectedLesson() {
     const [successMessage, setSuccessMessage] = useState("");
     
 
-    const panelStyleEdit = "w-full h-4/5 5 max-w-lg rounded-xl shadow-xl"
-    const panelStyleArchive = "w-full h-1/5 max-w-lg rounded-xl shadow-xl"
+    const panelStyleEdit = "w-full h-auto 5 max-w-lg rounded-xl shadow-xl"
+    const panelStyleArchive = "w-full h-auto max-w-lg rounded-xl shadow-xl"
 
     const userRole = useUserStore((state) => state.userRole);
 
@@ -90,8 +90,8 @@ export default function SelectedLesson() {
     }
 
     return (
-        <div className="w-full h-auto min-h-screen flex flex-col items-center px-[10px] 
-                md:px-[50px] lg:px-[100px] py-[50px] bg-gray-100 relative">
+        <div className="w-full h-auto min-h-screen flex flex-col items-center 
+                  bg-gray-100 relative">
             <UserDropup />
             
             {materialType == "lesson" && (
@@ -114,7 +114,7 @@ export default function SelectedLesson() {
             )}
 
 
-            <Modal isOpen={archiveMaterialOpen} onClose={() => setArchiveMaterialOpen(false)} title="Archive Lesson" panelStyle={panelStyleArchive}>
+            <Modal isOpen={archiveMaterialOpen} onClose={() => setArchiveMaterialOpen(false)} title="" panelStyle={panelStyleArchive}>
                 <ArchiveMaterial 
                     setArchiveLessonOpen={setArchiveMaterialOpen}
                     materialId={materialData.materialId}

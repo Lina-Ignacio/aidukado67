@@ -8,6 +8,7 @@ class ClassCreate(BaseModel):
     subject_id: int
     teacher_id: int
     name: str
+    schedule: str
 
     model_config = ConfigDict(
         alias_generator=to_camel,
@@ -19,6 +20,7 @@ class ClassUpdate(BaseModel):
     subject_id: Optional[int] = None
     teacher_id: Optional[int] = None
     name: Optional[str] = None
+    schedule: Optional[str] = None
 
     model_config = ConfigDict(
         alias_generator=to_camel,
@@ -31,6 +33,7 @@ class ClassOut(BaseModel):
     name: str
     subject: SubjectOut
     user_teacher: TeacherOut
+    schedule: str
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -41,6 +44,7 @@ class ClassOut(BaseModel):
 class ClassWithTeacherOut(BaseModel):
     id: int
     name: str
+    schedule: str
     user_teacher: TeacherOut
     
     model_config = ConfigDict(

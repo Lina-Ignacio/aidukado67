@@ -51,18 +51,23 @@ def get_user_by_id(user_id: int , db: Session = Depends(get_db)):
 
 @router.get("/get_teachers", response_model=list[TeacherOut])
 def get_all_teachers(db: Session = Depends(get_db)):
-    teachers = db.query(Users).filter(Users.role == "teacher").all()
+    teachers = db.query(Users).filter(
+        Users.role == "teacher",
+        Users.is_archive == False
+    ).all()
     
     return teachers
 
 @router.get("/get_students", response_model=list[UserOut])
 def get_all_students(db: Session = Depends(get_db)):
-    students = db.query(Users).filter(Users.role == "student").all()
+    students = db.query(Users).filter(
+        Users.role == "student",
+        Users.is_archive == False
+    ).all()
     
     return students
 
-from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+
 
 @router.post("/batch_create")
 def create_multiple_users(users: list[UserCreate], db: Session = Depends(get_db)):

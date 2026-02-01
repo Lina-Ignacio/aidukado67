@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Form, Query
 from app.database import SessionLocal
 from sqlalchemy.orm import Session
 from app.models.quiz import Quiz
-from app.schemas.quiz import CreateQuiz, QuizOut, AddStudentsRequest
+from app.schemas.quiz import CreateQuiz, QuizOut, AddStudentsRequest, QuizOutSimple
 from ..utils.generate_quiz import generate_quiz
 from app.models.lesson_content import LessonContent
 from app.models.class_material import ClassMaterial
@@ -139,31 +139,45 @@ def get_quizzes(classId: int, term: int = Query(...), db: Session = Depends(get_
     
     
 # For Students
-@router.get("/student/quizzes/{classId}", response_model=list[QuizOut])
+@router.get("/student/quizzes/{classId}", response_model=list[QuizOutSimple])
 def get_student_quizzes(
     classId: int,
     term: int = Query(...),
-    studentId: int = Query(...),
+    student_id: int = Query(...),
     db: Session = Depends(get_db)
 ):
-    quizzes = (
-        db.query(Quiz)
+    
+    results = (
+        db.query(Quiz, StudentQuizProgress)
         .join(StudentQuizProgress, StudentQuizProgress.quiz_id == Quiz.id)
         .filter(
             Quiz.class_id == classId,
             Quiz.term_id == term,
             Quiz.is_archive == False,
-            StudentQuizProgress.student_id == studentId,
+            StudentQuizProgress.student_id == student_id,
         )
         .order_by(desc(Quiz.created_at))
         .all()
     )
-
-    if not quizzes:
-        return []  
-
-    return quizzes
-
+    
+    if not results:
+        return []
+    
+    quizzes_out = []
+    for quiz, progress in results:
+        quiz_out = QuizOutSimple(
+            id=quiz.id,
+            title=quiz.title,
+            duration=quiz.duration,
+            total_points=quiz.total_points,
+            assessment_type=quiz.assessment_type,
+            created_at=quiz.created_at,
+            score=progress.score,
+            status=progress.status
+        )
+        quizzes_out.append(quiz_out)
+    
+    return quizzes_out
 
 @router.patch('/archiveQuiz/{quiz_id}')
 def archive_quiz(quiz_id: int, db: Session = Depends(get_db)):

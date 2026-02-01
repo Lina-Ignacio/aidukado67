@@ -3,9 +3,11 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import StudentSubmissionCard from "../../components/classMaterials/studentSubmissionCard";
 import FileView from "./FileView";
+import ClassicButton from "../../components/classicButton";
+import { MdSend } from "react-icons/md";
 
 export default function Submissions() {
-  const { materialId } = useParams();
+  const { materialId, totalScore } = useParams();
   const [submissions, setSubmissions] = useState([]);
 
   // Pagination states
@@ -78,6 +80,10 @@ export default function Submissions() {
     if (!selectedSubmission) return;
 
     try {
+      if(Number(score) > totalScore) {
+        alert("Score is greater than total score");
+        return;
+      }
       const payload = {
         score: score ? Number(score) : null,
         remarks: remarks || null,
@@ -91,6 +97,7 @@ export default function Submissions() {
 
       fetchSubmissions(); // Refresh submissions list
       alert(isGraded ? "Updated successfully!" : "Submitted successfully!");
+      setScore("")
     } catch (err) {
       console.error(err);
       alert("Failed to submit grade.");
@@ -127,34 +134,39 @@ export default function Submissions() {
           {/* Comment and Score Section */}
           <div className="h-auto py-2 px-4 rounded flex flex-col gap-2">
             <textarea
-              className="w-full h-1/2 p-2 rounded outline-none bg-[#EFECE3] placeholder-[#102E50] text-[#102E50]"
+              className="w-full h-auto p-2 rounded outline-none bg-blue-50 placeholder-[#102E50] text-[#102E50] mb-4"
               placeholder="Remarks..."
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
             />
 
             <div className="flex justify-end gap-4">
+              
               <input
                 type="number"
-                className="w-24 p-2 rounded outline-none bg-[#EFECE3] placeholder-[#102E50] text-[#102E50]"
-                placeholder="Score"
+                max={totalScore}
+                className="w-24 p-2 rounded outline-none bg-blue-50 placeholder-[#102E50]/70 text-[#102E50]"
+                placeholder={`max: ${totalScore}`}
                 value={score}
                 onChange={(e) => setScore(e.target.value)}
               />
+              
 
-              <button
+              <ClassicButton 
+                buttonName={isGraded ? "UPDATE" : "SUBMIT"}
                 onClick={handleSubmitGrade}
-                className="xl:text-lg p-2 bg-[#102E50]/90 text-white rounded font-bold transition-opacity hover:opacity-90"
-              >
-                {isGraded ? "UPDATE" : "SUBMIT"}
-              </button>
+                className="lg:w-1/5 shadow-md xl:text-lg"
+                mainColor="#102E50" 
+                darkColor="#0B2239"
+                icon={MdSend}
+              />
             </div>
           </div>
         </div>
 
         {/* LEFT SIDE – List of students */}
-        <div className="p-4 overflow-y-auto flex flex-col gap-4 bg-[#1F4068]/90">
-          <h2 className="font-bold text-white] 2xl:text-3xl self-end">LIST OF STUDENTS</h2>
+        <div className="p-4 overflow-y-auto flex flex-col gap-4 bg-[#102E50]">
+          <h2 className="font-bold text-white] 2xl:text-3xl self-end mb-4">LIST OF STUDENTS</h2>
 
           {currentSubmissions.length > 0 ? (
             currentSubmissions.map((submission) => (

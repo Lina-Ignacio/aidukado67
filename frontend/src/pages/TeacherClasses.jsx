@@ -46,6 +46,7 @@ export default function StudentClasses() {
             <ClassCard
               key={cls.id}
               subjectName={cls.name}
+              schedule={cls.schedule}
               teacher={
                 cls.userTeacher
                   ? `${cls.userTeacher.firstName} ${cls.userTeacher.lastName}`

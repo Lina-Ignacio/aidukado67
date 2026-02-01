@@ -29,7 +29,7 @@ export default function StudentClasses() {
   return (
     <main className="flex flex-col items-center px-8 lg:px-10 xl:px-16
               py-8 sm:py-10 min-h-screen gap-y-5 lg:gap-y-8">
-        <h1 className="text-2xl md:text-3xl 2xl:text-5xl font-bold lg:font-extrabold text-[#102E50] mb-4">All Your Classes in One Place</h1>
+        <h1 className="text-2xl md:text-3xl 2xl:text-5xl font-bold lg:font-extrabold text-[#E78B48] mb-8">All Your Classes in One Place</h1>
           
         {classes.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5 w-full">
@@ -37,6 +37,7 @@ export default function StudentClasses() {
                   <ClassCardStudent
                     key={cls.id}
                     subjectName={cls.enrolledClass.name} 
+                    schedule={cls.enrolledClass.schedule}
                     teacher={
                       cls.enrolledClass.userTeacher
                         ? `${cls.enrolledClass.userTeacher.firstName} ${cls.enrolledClass.userTeacher.lastName}`

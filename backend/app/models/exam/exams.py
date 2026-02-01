@@ -40,4 +40,3 @@ class Exam(Base):
         back_populates="exams"
     )
     
-    

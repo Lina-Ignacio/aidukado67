@@ -39,29 +39,37 @@ export default function QuizForm({ formData, onChange, onSubmit, loading }) {
         className={inputClass}
         required
       />
-
-      <label className={labelClass}>
-        Number of items: <span className="text-red-500">*</span>
-      </label>
+      <div className="flex items-center justify-between">
+        <label className={labelClass}>
+          Number of items: <span className="text-red-500">*</span> 
+        </label>
+      <p className="text-xs text-gray-500">Minimum: 1, Maximum: 30</p>
+      </div>
+      
       <input
         value={formData.items}
         onChange={(e) => handleChange('items', e.target.value)}
         type="number"
         min="1"
-        max="50"
+        max="30"
         placeholder="Enter Number of Items"
         className={inputClass}
         required
       />
-
-      <label className={labelClass}>
-        Set Assessment Duration (minutes): <span className="text-red-500">*</span>
-      </label>
+      
+      <div className="flex items-center justify-between">
+        <label className={labelClass}>
+          Assessment Duration (minutes): <span className="text-red-500">*</span>
+        </label>
+      <p className="text-xs text-gray-500">Maximum: 120</p>
+      </div>
+      
       <input
         value={formData.duration}
         onChange={(e) => handleChange('duration', e.target.value)}
         type="number"
         min="1"
+        max="120"
         placeholder="Set assessment timer"
         className={inputClass}
         required

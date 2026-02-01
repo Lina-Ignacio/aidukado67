@@ -23,7 +23,7 @@ export default function SelectedClass() {
   const [materials, setMaterials] = useState([]);
   const [fetchMaterialsError, setFetchMaterialsError] = useState("");
   const [quizzes, setQuizzes] = useState([]);
-  const [exams, setExams] = useState([]); // Add state for exams
+  const [exams, setExams] = useState([]);
 
   const handleArchiveQuiz = async (quizId) => {
     try {
@@ -90,24 +90,36 @@ export default function SelectedClass() {
   const getExams = async () => {
     try {
       let response;
+      let examData;
 
       if (userRole === "teacher") {
         response = await axios.get(
           `${import.meta.env.VITE_API_URL}/exam/getExams/${classId}`,
-          { params: { term } }
+          { 
+            params: { 
+              term_id: term,
+              class_id: classId 
+            } 
+          }
         );
+        examData = response.data || [];
       } else {
         response = await axios.get(
           `${import.meta.env.VITE_API_URL}/exam/student/exams/${classId}`,
           {
-            params: { term, studentId: userId },
+            params: { 
+              term_id: term, 
+              student_id: userId 
+            },
           }
         );
+        examData = response.data || [];
       }
 
-      setExams(response.data || []);
+      setExams(examData);
     } catch (error) {
       console.log("Error fetching exams:", error);
+      setExams([]);
     }
   };
 
@@ -131,7 +143,6 @@ export default function SelectedClass() {
   }, [materials, term]);
 
   const handleGenerateExam = () => {
-    
     navigate(`/exam/generate/${classId}/${term}`, {
       state: {
         lessons: filteredMaterials,
@@ -185,7 +196,7 @@ export default function SelectedClass() {
         <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Materials</h2>
       </div>
       
-      <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] bg-[#EBECF1]/30 p-2 rounded-2xl">
+      <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl">
         {filteredMaterials.length > 0 ? (
           filteredMaterials.map((lesson) => (
             <LessonCard 
@@ -209,7 +220,7 @@ export default function SelectedClass() {
         <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Quizzes</h2>
       </div>
 
-      <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] bg-[#EBECF1]/30 p-2 rounded-2xl">
+      <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl">
         {materials.length > 0 && quizzes.length > 0 ? (
           quizzes.map((quiz) => {
             const lesson = materials.find((m) => m.id === quiz.lesson_id);
@@ -217,12 +228,8 @@ export default function SelectedClass() {
             return (
               <QuizCard 
                 key={quiz.id} 
-                quizId={quiz.id} 
-                lessonTitle={lessonTitle}
-                quizTitle={quiz.title} 
-                createdAt={quiz.created_at}
+                quizData={quiz}
                 onArchive={handleArchiveQuiz} 
-                assessmentType={quiz.assessment_type}
               />
             );
           })
@@ -235,38 +242,25 @@ export default function SelectedClass() {
 
       {/* Exams Section */}
       <div className="w-3/4 sm:w-[70%] mt-10">
-        <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Exams</h2>
+        <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Exam</h2>
       </div>
 
-      <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] bg-[#EBECF1]/30 p-2 rounded-2xl mb-12">
+      <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl mb-12">
         {exams.length > 0 ? (
-          exams.map((exam) => {
-            // For exams covering multiple lessons, show the count
-            const lessonsCount = exam.lesson_ids?.length || exam.lessons?.length || 1;
-            const lessonTitle = lessonsCount > 1 
-              ? `${lessonsCount} Lessons` 
-              : (() => {
-                  const lesson = materials.find((m) => m.id === exam.lesson_ids?.[0] || exam.lesson_id);
-                  return lesson ? lesson.title : "General Exam";
-                })();
-            
-            return (
-              <ExamCard 
-                key={exam.id} 
-                examId={exam.id} 
-                lessonTitle={lessonTitle}
-                examTitle={exam.title} 
-                createdAt={exam.created_at}
-                onArchive={handleArchiveExam}
-                totalPoints={exam.total_points}
-                duration={exam.duration}
-                passingScore={exam.passing_score}
-              />
-            );
-          })
+          exams.map((exam) => (
+            <ExamCard 
+              key={exam.id} 
+              examData={exam}
+              userRole={userRole}
+              onArchive={userRole === "teacher" ? handleArchiveExam : undefined}
+            />
+          ))
         ) : (
           <div className="text-gray-500 text-center w-full py-6">
-            No exams available for this term yet.
+            {userRole === "teacher" 
+              ? "No exams available for this term yet." 
+              : "No exams assigned to you for this term."
+            }
           </div>
         )}
       </div>
@@ -282,7 +276,7 @@ export default function SelectedClass() {
         />
       </div>
 
-      {/* Modal for Upload Lesson (kept as is) */}
+      {/* Modal for Upload Lesson */}
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Upload a Material" panelStyle={panelStyle}>
         <UploadLesson 
           setSuccessMessage={setSuccessMessage}

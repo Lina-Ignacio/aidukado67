@@ -26,9 +26,18 @@ p {
   font-family: 'Oswald', sans-serif;
 } 
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #f3f4f6 inset !important;
+    -webkit-text-fill-color: #102E50 !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
 
 .material-background {
-  --bg-image: url("https://images.pexels.com/photos/13807427/pexels-photo-13807427.jpeg");
+  --bg-image: url("https://wallpaperaccess.com/full/683409.jpg");
   --bg-image-opacity: .1;
   background-color: rgba(158, 198, 243, 0.2);
   position: relative;
@@ -46,9 +55,29 @@ p {
   opacity: var(--bg-image-opacity);
 }
 
+.exam-background {
+  --bg-image: url("https://wallpapercave.com/wp/wp6374897.jpg");
+  --bg-image-opacity: .1;
+  background: linear-gradient(135deg, rgba(242, 248, 252, 0.5), rgba(209, 231, 246, 0.5));
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.exam-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: var(--bg-image);
+  opacity: var(--bg-image-opacity);
+}
+
 .assessment-background {
-  --bg-image: url("https://images.pexels.com/photos/1266808/pexels-photo-1266808.jpeg");
-  --bg-image-opacity: .05;
+  --bg-image: url("https://i.pinimg.com/originals/45/77/b5/4577b5737674e460fbc7b8c577f18586.jpg");
+  --bg-image-opacity: .1;
   background-color: rgba(231, 139, 72, 0.5);
   position: relative;
   isolation: isolate;
@@ -64,6 +93,7 @@ p {
   background-image: var(--bg-image);
   opacity: var(--bg-image-opacity);
 }
+
 
 @keyframes float {
   0%, 100% {

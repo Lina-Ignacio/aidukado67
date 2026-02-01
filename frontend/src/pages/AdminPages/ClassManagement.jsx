@@ -18,6 +18,7 @@ export default function ClassManagement() {
         { id: 2, name: "Name", key: "name" },
         { id: 3, name: "Subject Name", key: "subjectName" },
         { id: 4, name: "Teacher Name", key: "teacherName" },
+        { id: 5, name: "Schedule", key: "schedule"}
     ];
 
 

@@ -43,6 +43,7 @@ export default function LessonViewer({materialData, setIsVisible, isVisible, set
                 <div className="w-full h-auto min-h-screen">
                     <FileView 
                         fileExtension={materialData.fileExtension}
+                        fileName={materialData.title}
                         fileUrl={materialData.fileUrl}
                         isVisible={isVisible}
                         setIsVisible={setIsVisible}
@@ -77,7 +78,7 @@ export default function LessonViewer({materialData, setIsVisible, isVisible, set
                         {/* View Button Group */}
                         <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr_1fr] w-full gap-2 mb-4">
                             <ClassicButton 
-                                buttonName="View Material"
+                                buttonName="View Material"    
                                 onClick={() => setIsVisible(true)}
                                 className="w-full lg:w-4/5 shadow-md xl:text-lg"
                                 mainColor="#102E50" 
