@@ -1,10 +1,11 @@
-// components/ExamCard.jsx
 import { useNavigate } from "react-router-dom";
 import { 
   FaClock, 
   FaHourglassHalf,
 } from "react-icons/fa";
 import { FiCheckCircle, FiClock, FiAlertCircle } from "react-icons/fi";
+import { useState, useEffect } from "react";
+import axios from "axios"; // Import axios
 
 export default function ExamCard({ 
   examData,
@@ -12,6 +13,11 @@ export default function ExamCard({
   lessonTitle = "" 
 }) {
   const navigate = useNavigate();
+  const [isExamClosed, setIsExamClosed] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
+  
+  // Get API URL from environment variable
+  const API_URL = import.meta.env.VITE_API_URL;
   
   // Check user role
   const isTeacher = userRole === "teacher";
@@ -44,9 +50,46 @@ export default function ExamCard({
     examTotalPoints: examData.total_points || examData.exam?.total_points,
     examDuration: examData.duration || examData.exam?.duration,
     examInstructions: examData.instructions || examData.exam?.instructions,
-    examPassingScore: examData.passing_score || examData.exam?.passing_score
+    examPassingScore: examData.passing_score || examData.exam?.passing_score,
+    closingTime: examData.closing_time || examData.exam?.closing_time
   } : null;
-  
+
+  // Check exam availability based on student_exam_reopens table
+  useEffect(() => {
+    const checkExamAvailability = async () => {
+      if (isTeacher || !studentData || studentData.status !== "assigned") return;
+      
+      setIsChecking(true);
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/exam/student/${studentData.examId}/check-availability`,
+          {
+            studentId: studentData.studentId
+          }
+        );
+        
+        setIsExamClosed(!response.data.isAvailable);
+      } catch (error) {
+        console.error('Error checking exam availability:', error);
+        // Only fall back if it's NOT a 404 error (endpoint doesn't exist)
+        if (error.response?.status !== 404 && studentData.closingTime) {
+          const currentDateTime = new Date();
+          const closingDateTime = new Date(studentData.closingTime);
+          setIsExamClosed(currentDateTime > closingDateTime);
+        }
+      } finally {
+        setIsChecking(false);
+      }
+    };
+
+    checkExamAvailability();
+    
+    // Cleanup function to prevent memory leaks
+    return () => {
+      // You can add cleanup logic here if needed
+    };
+  }, [studentData?.examId, studentData?.studentId, studentData?.status, isTeacher]);
+
   // Teacher: Navigate to monitoring page
   const handleClick = () => {
     if (isTeacher && teacherData) {
@@ -55,14 +98,44 @@ export default function ExamCard({
   };
 
   // Student: Start/Continue exam
-  const handleExam = (e) => {
+  const handleExam = async (e) => {
     e.stopPropagation();
     if (!studentData) return;
     
-    navigate(`/student/exam/${studentData.examId}`);
+    // For in_progress and submitted, just navigate
+    if (studentData.status === "in_progress" || studentData.status === "submitted") {
+      navigate(`/student/exam/${studentData.examId}`);
+      return;
+    }
+    
+    // For assigned status, check availability
+    if (studentData.status === "assigned") {
+      setIsChecking(true);
+      try {
+        const response = await axios.post(
+          `${import.meta.env.VITE_API_URL}/exam/student/${studentData.examId}/check-availability`,
+          {
+            studentId: studentData.studentId
+          }
+        );
+        
+        if (response.data.isAvailable) {
+          // Exam is available - navigate
+          navigate(`/student/exam/${studentData.examId}`);
+        } else {
+          // Exam is not available - show message
+          alert(response.data.reason || "This exam is not available.");
+          setIsExamClosed(true);
+        }
+      } catch (error) {
+        console.error('Error checking exam availability:', error);
+        alert("Error checking exam availability. Please try again.");
+      } finally {
+        setIsChecking(false);
+      }
+    }
   };
 
-  
 
   // Status badge styling for students
   const getStatusBadge = (status) => {
@@ -95,21 +168,19 @@ export default function ExamCard({
     
     return statusConfig[status] || statusConfig.assigned;
   };
-
-  // Teacher view - clickable card
+  // Teacher view 
   if (isTeacher && teacherData) {
     return (
       <div 
-        className="p-5 rounded-2xl shadow-md exam-background relative
-          hover:shadow-md transition-shadow cursor-pointer w-full"
+        className="p-5 rounded-2xl relative bg-blue-50 border
+          hover:shadow-md transition-shadow cursor-pointer w-full border-blue-100"
         onClick={handleClick}
       >
         {/* Shadow at bottom */}
         <div 
-          className="absolute h-[2%] w-full bg-[#102E50] bottom-0 left-0
-            rounded-2xl"
-        >
-        </div>
+          className={`absolute h-[4%] w-full bg-[#E78B48]/20 bottom-0 left-0
+            rounded-br-2xl rounded-bl-2xl`}
+        ></div>
 
         {/* Archive badge if archived */}
         {teacherData.isArchive && (
@@ -267,12 +338,30 @@ export default function ExamCard({
           </span>
           
           {studentData.status === "assigned" && (
-            <button
-              onClick={handleExam}
-              className="text-white bg-blue-600 hover:bg-blue-700 text-xs px-3 py-1 rounded-full font-medium transition-colors"
-            >
-              Start Exam
-            </button>
+            <>
+              {isChecking ? (
+                <button
+                  disabled
+                  className="text-white bg-gray-400 text-xs px-3 py-1 rounded-full font-medium cursor-not-allowed opacity-60"
+                >
+                  Checking...
+                </button>
+              ) : isExamClosed ? (
+                <button
+                  disabled
+                  className="text-white bg-gray-400 text-xs px-3 py-1 rounded-full font-medium cursor-not-allowed opacity-60"
+                >
+                  Exam Closed
+                </button>
+              ) : (
+                <button
+                  onClick={handleExam}
+                  className="text-white bg-blue-600 hover:bg-blue-700 text-xs px-3 py-1 rounded-full font-medium transition-colors"
+                >
+                  Start Exam
+                </button>
+              )}
+            </>
           )}
           
           {studentData.status === "in_progress" && (

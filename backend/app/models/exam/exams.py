@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.database import Base
 from app.models.exam.association_tables import exam_class_materials
+from datetime import datetime, timedelta
 
 class Exam(Base):
     __tablename__ = "exams"
@@ -21,11 +22,18 @@ class Exam(Base):
     shuffle_questions = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    opening_time = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    closing_time = Column(DateTime(timezone=True), nullable=False, 
+                          default=lambda: datetime.utcnow() + timedelta(days=1))
+    allow_reopen = Column(Boolean, default=False, nullable=False)
     
     __table_args__ = (
         Index("idx_exam_class", "class_id"),
         Index("idx_exam_term", "term_id"),
         Index("idx_exam_created", "created_at"),
+         Index("idx_exam_opening", "opening_time"),
+        Index("idx_exam_closing", "closing_time"),
+        Index("idx_exam_active", "opening_time", "closing_time", "is_archive"),
     )
 
     # Relationships
@@ -38,5 +46,11 @@ class Exam(Base):
         "ClassMaterial",
         secondary="exam_class_materials",
         back_populates="exams"
+    )
+    
+    student_reopens = relationship(
+        "StudentExamReopen",  
+        back_populates="exam",
+        cascade="all, delete-orphan"
     )
     

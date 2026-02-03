@@ -11,6 +11,7 @@ from .quiz import Quiz
 from .exam.exams import Exam
 from .exam.student_exam_progress import StudentExamProgress
 from .exam.association_tables import exam_class_materials
+from .exam.student_exam_reopens import StudentExamReopen
 
 
 

@@ -30,6 +30,11 @@ class Users(Base):
         back_populates="student",
         cascade="all, delete-orphan"
     )
+    exam_reopens = relationship(
+        "StudentExamReopen",  
+        back_populates="student",
+        cascade="all, delete-orphan"
+    )
     
     # For index
     __table_args__ = (

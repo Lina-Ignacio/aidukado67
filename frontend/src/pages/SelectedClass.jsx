@@ -12,7 +12,7 @@ import QuizCard from "../components/QuizCard";
 import ExamCard from "../components/AIExam/ExamCard";
 import { LuUpload } from "react-icons/lu";
 import ClassicButton from "../components/classicButton";
-import { PiKeyReturn } from "react-icons/pi";
+import { PiKeyReturn, PiExport, PiUpload } from "react-icons/pi";
 import UserDropup from "../components/DropUp/UserDropUp";
 import { FaMagic } from "react-icons/fa";
 
@@ -169,22 +169,32 @@ export default function SelectedClass() {
 
       {userRole === "teacher" && (
         <div className="flex flex-col md:flex-row w-3/4 sm:w-[70%] h-auto gap-2 mx-auto justify-end mt-3">
+          
           <ClassicButton 
             buttonName="Upload Material"
-            className="bg-[#102E50] shadow-md place-self-end w-full md:w-1/2 lg:w-1/3 2xl:w-1/4"
+            className="bg-[#102E50] shadow-md place-self-end w-full md:w-auto"
             onClick={() => setIsOpen(true)}
             mainColor="#183D65" 
             darkColor="#102E50"
-            icon={LuUpload}
+            icon={PiUpload}
           />
 
           <ClassicButton 
             buttonName="Generate Exam"
-            className="shadow-md place-self-end w-full md:w-1/3 2xl:w-1/4"
+            className="shadow-md place-self-end w-full md:w-auto"
             onClick={handleGenerateExam}
             mainColor="#E78B48" 
             darkColor="#B9652B"
             icon={FaMagic}
+          />
+
+          <ClassicButton 
+            buttonName="Export Scores"
+            className="shadow-md w-full md:w-auto"
+            onClick={() => navigate(`/export-scores/${classId}/${term}`)}
+            mainColor="#5C6BC0" 
+            darkColor="#3949AB"
+            icon={PiExport}
           />
 
           {successMessage && (<p className="text-green-800 self-end">{successMessage}</p>)}

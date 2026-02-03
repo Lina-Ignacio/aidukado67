@@ -50,9 +50,14 @@ export default function QuizCard({ quizData, onArchive }) {
         </div>
       )}
 
-      <div className={`${status? "bg-green-200": "bg-orange-200"} w-auto px-2 rounded-full flex items-center justify-center absolute top-2 right-2`}>
-        <span className={`text-sm font-semibold ${status? "text-green-700" : "text-orange-700"}`}>{status ? "Done": "Not Started"} </span> 
-      </div>
+      {usersRole?.toLowerCase() === "student" && (
+        <div className={`${status? "bg-green-200": "bg-orange-200"} w-auto px-2 rounded-full flex items-center justify-center absolute top-2 right-2`}>
+          <span className={`text-sm font-semibold ${status? "text-green-700" : "text-orange-700"}`}>
+            {status ? "Done": "Not Started"}
+          </span> 
+        </div>
+      )}
+      
       {/* Title Section */}
       <h2 className="text-md font-bold text-[#E6501B] leading-tight mt-1">
         {quizData.title} 

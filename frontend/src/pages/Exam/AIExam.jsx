@@ -110,8 +110,8 @@ export default function AIExam() {
       return "Minimum duration is 15 minutes";
     }
     
-    if (duration > 300) {
-      return "Maximum duration is 300 minutes (5 hours)";
+    if (duration > 90) {
+      return "Maximum duration is 90 minutes";
     }
 
     // Check if at least one lesson has hours > 0
@@ -419,14 +419,15 @@ export default function AIExam() {
                     <input
                       value={formData.duration}
                       onChange={(e) => handleFormChange('duration', e.target.value)}
+                      onWheel={(e) => e.target.blur()}
                       type="number"
                       min="15"
-                      max="180"
-                      placeholder="e.g., 120"
+                      max="90"
+                      placeholder="e.g., 60"
                       className="w-full border border-gray-300 bg-white text-[#102E50] p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E78B48] focus:border-transparent transition-all duration-200 placeholder-gray-400"
                       disabled={generating}
                     />
-                    <p className="text-xs text-gray-500">Minimum: 15, Maximum: 180</p>
+                    <p className="text-xs text-gray-500">Minimum: 15, Maximum: 90</p>
                   </div>
 
                   <div className="space-y-2">
@@ -446,6 +447,7 @@ export default function AIExam() {
                         const numValue = value === '' ? '' : parseInt(value, 10);
                         handleFormChange('totalItems', numValue);
                       }}
+                      onWheel={(e) => e.target.blur()}
                       className="w-full border border-gray-300 bg-white text-[#102E50] p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E78B48] focus:border-transparent transition-all duration-200 placeholder-gray-400"
                       disabled={generating}
                     />

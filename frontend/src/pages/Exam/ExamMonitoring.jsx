@@ -7,6 +7,8 @@ import useClassStore from '../../store/useClassStore';
 import ClassicButton from '../../components/classicButton';
 import { PiStudent, PiKeyReturn } from "react-icons/pi";
 import UserDropup from '../../components/DropUp/UserDropUp';
+import { PiClockCounterClockwise } from "react-icons/pi";
+import ExamReopenModal from '../../components/AIExam/ExamReopenModal';
 
 export default function ExamMonitoring() {
     const navigate = useNavigate();
@@ -38,6 +40,13 @@ export default function ExamMonitoring() {
         passRate: 0
     });
 
+    const [showReopenModal, setShowReopenModal] = useState(false);
+    const [examInfo, setExamInfo] = useState({
+        opening_time: null,
+        closing_time: null,
+        allow_reopen: false
+    });
+
     // Fetch exam info & scores
     useEffect(() => {
         const fetchExamData = async () => {
@@ -51,6 +60,13 @@ export default function ExamMonitoring() {
                 setLinkedMaterials(res.data.linkedMaterials || []);
                 setData(res.data.scores || []);
                 
+                // NEW: Save exam timeframe info
+                setExamInfo({
+                    opening_time: res.data.opening_time,
+                    closing_time: res.data.closing_time,
+                    allow_reopen: res.data.allow_reopen
+                });
+                
                 // Calculate stats
                 calculateStats(res.data.scores || []);
             } catch (err) {
@@ -59,6 +75,17 @@ export default function ExamMonitoring() {
         };
         fetchExamData();
     }, [examId]);
+
+    const isPastDeadline = () => {
+        if (!examInfo.closing_time) return false;
+        const now = new Date();
+        const closingTime = new Date(examInfo.closing_time);
+        return now > closingTime;
+    };
+
+    const openReopenModal = () => {
+        setShowReopenModal(true);
+    };
 
     // Calculate statistics
     const calculateStats = (scores) => {
@@ -210,7 +237,19 @@ export default function ExamMonitoring() {
             </div>
 
             {/* Assign Students Button  */}
-            <div className="flex justify-end p-6 md:p-8">
+            <div className="flex justify-end gap-2 p-6 md:p-8">
+                <ClassicButton 
+                    buttonName="Reopen Exam"
+                    icon={PiClockCounterClockwise}
+                    onClick={openReopenModal}
+                    disabled={!isPastDeadline() || !examInfo.allow_reopen}
+                    className="" 
+                    mainColor="#E78B48" 
+                    darkColor="#D97C38"
+                    title={!examInfo.allow_reopen ? "This exam doesn't allow reopening" : 
+                        !isPastDeadline() ? "Can only reopen after exam deadline" : 
+                        "Reopen exam for students who missed the deadline"}
+                />
                 <ClassicButton 
                     buttonName="Assign Students"
                     icon={PiStudent}
@@ -314,6 +353,28 @@ export default function ExamMonitoring() {
                     title={`Assign Students to Exam: ${examTitle}`}
                 />
             )}
+
+            {showReopenModal && (
+            <ExamReopenModal
+                examId={examId}
+                onClose={() => setShowReopenModal(false)}
+                onSuccess={() => {
+                    // Refresh exam data
+                    const refreshData = async () => {
+                        try {
+                            const res = await axios.get(`${import.meta.env.VITE_API_URL}/exam/monitoring/${examId}`);
+                            setData(res.data.scores || []);
+                            calculateStats(res.data.scores || []);
+                        } catch (err) {
+                            console.error("Failed to refresh data:", err);
+                        }
+                    };
+                    refreshData();
+                }}
+            />
+        )}
         </div>
+    
+        
     );
 }

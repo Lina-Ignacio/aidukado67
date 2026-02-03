@@ -6,19 +6,14 @@ from app.schemas.user import UserCreate, UserOut, UserUpdate, TeacherOut, Passwo
 from app.database import SessionLocal
 from app.utils.auth import hash_password, get_current_user
 from app.schemas.user import AdminPasswordReset 
-
+from app.database import get_db
 
 router = APIRouter(prefix="/user", tags=["User"])
 
 
 router = APIRouter(prefix="/user", tags=["user"])
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db 
-    finally:
-        db.close()
+
 
 
 @router.get("/get", response_model=list[UserOut])

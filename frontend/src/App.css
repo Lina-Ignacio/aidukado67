@@ -36,6 +36,45 @@ input:-webkit-autofill:active {
 }
 
 
+.datetime-local-styled::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: gray;
+  opacity: 1;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  z-index: 1;
+}
+.datetime-local-styled::-webkit-datetime-edit-fields-wrapper {
+  padding-right: 30px;
+}
+
+
+.datetime-local-styled {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="%23102E50"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+
+.datetime-local-styled::-moz-calendar-picker-indicator {
+  opacity: 0;
+  width: 16px;
+  height: 16px;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  z-index: 1;
+}
+
 .material-background {
   --bg-image: url("https://wallpaperaccess.com/full/683409.jpg");
   --bg-image-opacity: .1;

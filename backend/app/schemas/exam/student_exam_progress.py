@@ -47,8 +47,9 @@ class StudentExamWithDetails(BaseModel):
     duration: int
     instructions: Optional[str] = None
     passing_score: Optional[int] = None
+    closing_time: Optional[datetime] = None
+    allow_reopen: bool
        
-    
     class Config:
         from_attributes = True
         
@@ -102,3 +103,12 @@ class ExamProgressSave(BaseModel):
     student_id: int
     exam_id: int
     answers: Dict[str, Any] = {}  
+    
+class CheckAvailabilityRequest(BaseModel):
+    studentId: int
+
+class CheckAvailabilityResponse(BaseModel):
+    isAvailable: bool
+    closingTime: str
+    reason: str
+    extendedDeadline: bool = False

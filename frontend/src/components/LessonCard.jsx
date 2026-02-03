@@ -1,6 +1,6 @@
 
 import { useNavigate} from "react-router-dom"
-import { MdMenuBook, MdAssignment, MdTaskAlt, MdWorkOutline } from "react-icons/md";
+import { MdMenuBook, MdAssignment, MdTaskAlt, MdWorkOutline, MdScience } from "react-icons/md";
 
 export default function LessonCard ({materialName, materialId, creationDate, materialType, classId}) {
 
@@ -17,7 +17,6 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
     const navigate = useNavigate();
     
     const handleClick = () => {
-        // navigate(`/selectedLesson/${materialId}/${materialType}/${classId}`)
         navigate(`/selectedLesson/${materialId}/${materialType}`)
     }
 
@@ -32,27 +31,12 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
                 return <MdTaskAlt size={24} className={iconStyle}/>;
             case "project":
                 return <MdWorkOutline size={24} className={iconStyle}/>;
+            case "laboratory activity":
+                return <MdScience size={24} className={iconStyle}/>;
             default:
                 return <MdMenuBook size={24} className={iconStyle}/>; 
         }
     };
-    
-    // const returnColor = (type) => {
-    //     switch (type) {
-    //         case "lesson":
-    //             return "206A5D";
-    //         case "assignment":
-    //             return "F5C45E";
-    //         case "activity":
-    //             return "102E50";
-    //         case "project":
-    //             return "E78B48";
-    //         default:
-    //             return "206A5D"; 
-    //     }
-    // }
-
-    // const iconColor = returnColor(materialType);
 
     return (
         <div 
@@ -73,7 +57,7 @@ export default function LessonCard ({materialName, materialId, creationDate, mat
             
             <p className="w-4/5 text-sm font-semibold text-gray-700">{formattedDate}</p>
             <div className={`flex justify-center items-center bg-[#102E50] w-11 h-11 
-                absolute bottom-2 right-2 rounded-full p-3`}>
+                absolute bottom-2 right-2 rounded-full p-3 hover:brightness-110`}>
                 {returnIcon(materialType)}
             </div>
         </div>

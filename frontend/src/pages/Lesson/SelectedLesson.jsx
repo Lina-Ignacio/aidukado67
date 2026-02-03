@@ -92,7 +92,7 @@ export default function SelectedLesson() {
     return (
         <div className="w-full h-auto min-h-screen flex flex-col items-center 
                   bg-gray-100 relative">
-            <UserDropup />
+            
             
             {materialType == "lesson" && (
                 <LessonViewer 

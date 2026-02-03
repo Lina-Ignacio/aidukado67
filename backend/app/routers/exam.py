@@ -1,5 +1,6 @@
 # app/routers/exam.py
 from fastapi import APIRouter, HTTPException, Depends, Query
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.utils.tos import compute_tos
@@ -7,11 +8,14 @@ from app.schemas.exam.exam import (
     TOSRequest, CreateExam, ExamOut, ExamUpdate, 
     ArchiveExam, SimpleExamResponse, ExamListResponse, AddStudentsToExam
 )
-from app.schemas.exam.student_exam_progress import StudentExamProgressOut, StudentExamWithDetails
+from app.schemas.exam.student_exam_progress import (StudentExamProgressOut, StudentExamWithDetails, 
+    CheckAvailabilityRequest, CheckAvailabilityResponse
+)
 from app.utils.generate_exam import generate_exam_realistic
 from datetime import datetime, timezone
 from app.models.exam.exams import Exam  
 from app.models.exam.student_exam_progress import StudentExamProgress
+from app.models.exam.student_exam_reopens import StudentExamReopen
 from app.models.class_enrollment import ClassEnrollment
 from app.models.class_material import ClassMaterial
 from app.models.classes import Classes
@@ -123,7 +127,9 @@ async def get_student_exams_for_class(
                 "total_points": exam.total_points,
                 "duration": exam.duration,
                 "instructions": exam.instructions,
-                "passing_score": exam.passing_score
+                "passing_score": exam.passing_score,
+                "closing_time": exam.closing_time,
+                "allow_reopen": exam.allow_reopen
             })
         
         return exam_list
@@ -137,6 +143,93 @@ async def get_student_exams_for_class(
             status_code=500,
             detail=f"Failed to retrieve exam progress for student: {str(e)}"
         )
+
+@router.post("/student/{exam_id}/check-availability", response_model=CheckAvailabilityResponse)
+async def check_exam_availability(
+    exam_id: int,
+    request: CheckAvailabilityRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Check if an exam is available for a specific student.
+    """
+    try:
+        # 1. Check if exam exists
+        exam = db.query(Exam).filter(Exam.id == exam_id).first()
+        if not exam:
+            raise HTTPException(status_code=404, detail="Exam not found")
+        
+        # 2. Check if student exists
+        student = db.query(Users).filter(Users.id == request.studentId).first()
+        if not student:
+            raise HTTPException(status_code=404, detail="Student not found")
+        
+        # 3. Check student's current status in StudentExamProgress
+        progress = db.query(StudentExamProgress).filter(
+            StudentExamProgress.exam_id == exam_id,
+            StudentExamProgress.student_id == request.studentId
+        ).first()
+        
+        if not progress:
+            # Student doesn't have this exam assigned
+            return CheckAvailabilityResponse(
+                isAvailable=False,
+                closingTime="",
+                reason="Exam not assigned to this student",
+                extendedDeadline=False
+            )
+        
+        # 4. Check current status
+        current_time = datetime.now(timezone.utc)
+        
+        # If student already started or submitted, they can always access
+        if progress.status in ["in_progress", "submitted"]:
+            return CheckAvailabilityResponse(
+                isAvailable=True,
+                closingTime=exam.closing_time.isoformat() if exam.closing_time else "",
+                reason=f"Exam already {progress.status}",
+                extendedDeadline=False
+            )
+        
+        # 5. Student is "assigned" - check if exam is still open
+        # First check extended deadline in student_exam_reopens
+        reopen_record = db.query(StudentExamReopen).filter(
+            StudentExamReopen.exam_id == exam_id,
+            StudentExamReopen.student_id == request.studentId
+        ).first()
+        
+        if reopen_record:
+            # Student has extended deadline
+            is_available = current_time <= reopen_record.new_closing_time
+            return CheckAvailabilityResponse(
+                isAvailable=is_available,
+                closingTime=reopen_record.new_closing_time.isoformat(),
+                reason="Extended deadline" if is_available else "Extended deadline has passed",
+                extendedDeadline=True
+            )
+        else:
+            # No extended deadline, use exam's original closing time
+            if not exam.closing_time:
+                # No closing time set - always available
+                return CheckAvailabilityResponse(
+                    isAvailable=True,
+                    closingTime="",
+                    reason="No closing time set",
+                    extendedDeadline=False
+                )
+            
+            is_available = current_time <= exam.closing_time
+            return CheckAvailabilityResponse(
+                isAvailable=is_available,
+                closingTime=exam.closing_time.isoformat(),
+                reason="Original deadline" if is_available else "Exam deadline has passed",
+                extendedDeadline=False
+            )
+        
+    except Exception as e:
+        print(f"Error checking exam availability: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @router.get("/{exam_id}", response_model=ExamOut)
 async def get_exam_by_id(
@@ -482,6 +575,9 @@ def exam_monitoring(exam_id: int, db: Session = Depends(get_db)):
         "duration": exam.duration,
         "passingScore": exam.passing_score,
         "instructions": exam.instructions,
+        "opening_time": exam.opening_time,  
+        "closing_time": exam.closing_time,  
+        "allow_reopen": exam.allow_reopen,  
         "linkedMaterials": linked_materials,
         "scores": [
             {
@@ -493,15 +589,6 @@ def exam_monitoring(exam_id: int, db: Session = Depends(get_db)):
         ]
     }
 
-# Assign students to exam (POST version - different from your existing assignExam)
-from pydantic import BaseModel, Field
-from typing import List
-from fastapi import HTTPException, Depends
-from sqlalchemy.orm import Session
-
-class AddStudentsToExam(BaseModel):
-    exam_id: int = Field(..., gt=0, description="Exam ID must be positive")
-    student_ids: List[int] = Field(..., min_items=1, description="At least one student ID required")
 
 @router.post("/assign-students")
 def assign_exam_students(
@@ -559,3 +646,5 @@ def assign_exam_students(
             status_code=500, 
             detail=f"Failed to assign students: {str(e)}"
         )
+        
+

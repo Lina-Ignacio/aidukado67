@@ -32,6 +32,7 @@ import StudentExam from './pages/Exam/StudentExamPage';
 // Store
 import useUserStore from './store/useUserStore';
 import AIExam from './pages/Exam/AIExam';
+import ExportScores from './pages/Scores/ExportScores';
 
 function AppContent() {
   const role = useUserStore((state) => state.userRole);
@@ -119,6 +120,15 @@ function AppContent() {
           element={
             <RoleProtectedRoute allowed_roles={["student", "teacher"]}>
               <SelectedLesson />
+            </RoleProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/export-scores/:classId/:term" 
+          element={
+            <RoleProtectedRoute allowed_roles={["teacher"]}>
+              <ExportScores/>
             </RoleProtectedRoute>
           } 
         />

@@ -5,16 +5,9 @@ from sqlalchemy.orm import Session, joinedload
 from app.models import ClassEnrollment, Users, Classes
 from app.schemas.class_enrollment import EnrollmentCreate, EnrollmentOut, EnrollmentUpdate, EnrollmentClassOut
 from app.database import SessionLocal
+from app.database import get_db
 
 router = APIRouter(prefix="/enrollment", tags=["enrollment"])
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-    
 
 @router.get("/get", response_model=list[EnrollmentOut])
 def get_enrollments(query: str | None = None, db: Session = Depends(get_db)):
