@@ -8,8 +8,8 @@ export default function Table({ columns, data, setSelectedData, setIsOpenEditMod
     const { width } = useScreenSize();
 
 
-    const columnStyle = "px-4 py-2 text-left text-md xl:text-lg 2xl:text-xl";
-    const tableDataStyle = "text-[#10375C] px-4 py-2 text-left text-sm xl:text-md 2xl:text-lg"
+    const columnStyle = "px-3 py-2 text-left text-xs sm:text-sm md:text-base 2xl:text-lg";
+    const tableDataStyle = "text-[#10375C] px-3 py-2 text-left text-xs sm:text-sm md:text-base 2xl:text-lg"
 
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -62,7 +62,7 @@ export default function Table({ columns, data, setSelectedData, setIsOpenEditMod
                                 <td className={tableDataStyle}>
                                     <div className="w-full h-full flex gap-2">
                                         <button
-                                            className="text-sm text-white bg-[#2563EB]/90 p-2 xl:text-md p-2"
+                                            className="text-xs sm:text-xs md:text-sm text-white bg-[#2563EB]/90 px-2 py-1 sm:px-3 sm:py-1"
                                             onClick={ () => {
                                                 setSelectedData(row);
                                                 setIsOpenEditModal(true);
@@ -71,7 +71,7 @@ export default function Table({ columns, data, setSelectedData, setIsOpenEditMod
                                             Edit
                                         </button>
                                         <button
-                                            className="text-sm text-white bg-[#8E1616] p-2 xl:text-md p-2"
+                                            className="text-xs sm:text-xs md:text-sm text-white bg-[#8E1616] px-2 py-1 sm:px-3 sm:py-1"
                                             onClick={ () => {
                                                 setSelectedData(row);
                                                 setIsOpenDeleteModal(true);
@@ -86,7 +86,7 @@ export default function Table({ columns, data, setSelectedData, setIsOpenEditMod
                         ))
                     ) : (
                         <tr>
-                            <td colSpan={columns.length} className="px-4 py-2 text-left text-red-800">
+                            <td colSpan={columns.length} className="px-3 py-2 text-left text-red-800 text-xs sm:text-sm">
                                 No Data
                             </td>
                         </tr>
@@ -98,7 +98,7 @@ export default function Table({ columns, data, setSelectedData, setIsOpenEditMod
                 <button
                     key={i}
                     onClick={() => setCurrentPage(i + 1)}
-                    className={`px-3 py-1 border rounded ${currentPage === i + 1 ? "bg-[#B9652B] text-white" : "bg-[#102E50]"}`}
+                    className={`px-2 py-1 border rounded text-xs sm:text-sm ${currentPage === i + 1 ? "bg-[#B9652B] text-white" : "bg-[#102E50]"}`}
                 >
                     {i + 1}
                 </button>

@@ -7,9 +7,15 @@ export default function AddClass({ onClose, onSuccess }) {
         subject_id: "",
         teacher_id: "",
         name: "",
-        schedule_days: [],      // Array for selected days like ['M', 'W']
-        schedule_start: "",     // 24h format like "11:00"
-        schedule_end: ""        // 24h format like "12:30"
+        schedule_days: [],
+        schedule_start: "",
+        schedule_end: "",
+        room: "",
+        section: "",
+        academic_year: "",
+        semester: "",
+        lecture_units: 0,  
+        lab_units: 0       
     })
 
     // For dropdown options
@@ -38,6 +44,18 @@ export default function AddClass({ onClose, onSuccess }) {
         { value: 'F', label: 'Friday' },
         { value: 'S', label: 'Saturday' },
         { value: 'U', label: 'Sunday' }
+    ]
+
+    // Semester options
+    const semesterOptions = [
+        { value: '1st semester', label: '1st Semester' },
+        { value: '2nd semester', label: '2nd Semester' }
+    ]
+
+    // Academic year options (you can generate dynamically)
+    const academicYearOptions = [
+        { value: '2025-2026', label: '2025-2026' },
+        { value: '2026-2027', label: '2026-2027' }
     ]
 
     // Fetch teachers
@@ -165,13 +183,39 @@ export default function AddClass({ onClose, onSuccess }) {
             currentErrors.schedule_end = "End time is required"
         }
 
-        // Time validation: end time should be after start time
+        
         if (formData.schedule_start && formData.schedule_end) {
             const start = new Date(`2000-01-01T${formData.schedule_start}`);
             const end = new Date(`2000-01-01T${formData.schedule_end}`);
             if (end <= start) {
                 currentErrors.schedule_end = "End time must be after start time"
             }
+        }
+
+        if (!formData.room || formData.room.trim() === "") {
+            currentErrors.room = "Room is required"
+        }
+
+        if (!formData.section || formData.section.trim() === "") {
+            currentErrors.section = "Section is required"
+        }
+
+        if (!formData.academic_year) {
+            currentErrors.academic_year = "Academic year is required"
+        }
+
+        if (!formData.semester) {
+            currentErrors.semester = "Semester is required"
+        }
+
+        if (formData.lecture_units < 0) {
+            currentErrors.lecture_units = "Lecture units cannot be negative";
+        }
+        if (formData.lab_units < 0) {
+            currentErrors.lab_units = "Lab units cannot be negative";
+        }
+        if (formData.lecture_units === 0 && formData.lab_units === 0) {
+            currentErrors.lecture_units = "At least one unit (lecture or lab) is required";
         }
 
         return currentErrors
@@ -195,12 +239,18 @@ export default function AddClass({ onClose, onSuccess }) {
         // Format schedule string
         const scheduleString = formatScheduleString();
 
-        // Prepare API data
+        // Prepare API data with ALL fields
         const apiData = {
-            subject_id: formData.subject_id,
-            teacher_id: formData.teacher_id,
+            subject_id: parseInt(formData.subject_id),
+            teacher_id: parseInt(formData.teacher_id),
             name: formData.name,
-            schedule: scheduleString  // Send formatted string
+            schedule: scheduleString,
+            room: formData.room || null,
+            section: formData.section || null,
+            academic_year: formData.academic_year,
+            semester: formData.semester,
+            lecture_units: parseInt(formData.lecture_units) || 0,  
+            lab_units: parseInt(formData.lab_units) || 0          
         };
 
         try {
@@ -219,7 +269,11 @@ export default function AddClass({ onClose, onSuccess }) {
                 name: "",
                 schedule_days: [],
                 schedule_start: "",
-                schedule_end: ""
+                schedule_end: "",
+                room: "",
+                section: "",
+                academic_year: "",
+                semester: ""
             })
 
             // Call success callback after delay
@@ -251,6 +305,10 @@ export default function AddClass({ onClose, onSuccess }) {
             {inputErrors.schedule_days && <p className="text-red-600 text-sm mb-2">{inputErrors.schedule_days}</p>}
             {inputErrors.schedule_start && <p className="text-red-600 text-sm mb-2">{inputErrors.schedule_start}</p>}
             {inputErrors.schedule_end && <p className="text-red-600 text-sm mb-2">{inputErrors.schedule_end}</p>}
+            {inputErrors.room && <p className="text-red-600 text-sm mb-2">{inputErrors.room}</p>}
+            {inputErrors.section && <p className="text-red-600 text-sm mb-2">{inputErrors.section}</p>}
+            {inputErrors.academic_year && <p className="text-red-600 text-sm mb-2">{inputErrors.academic_year}</p>}
+            {inputErrors.semester && <p className="text-red-600 text-sm mb-2">{inputErrors.semester}</p>}
 
             {success && <p className="text-green-600 font-medium mb-4">{success}</p>}
 
@@ -258,28 +316,20 @@ export default function AddClass({ onClose, onSuccess }) {
             {errors.teacherError && <p className="text-red-600 text-sm mb-4">{errors.teacherError}</p>}
             {errors.subjectError && <p className="text-red-600 text-sm mb-4">{errors.subjectError}</p>}
 
-            {/* Schedule Preview */}
-            {schedulePreview && (
-                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded w-full">
-                    <p className="text-blue-800 font-semibold text-sm">Schedule Preview:</p>
-                    <p className="text-blue-600 font-medium">{schedulePreview}</p>
-                </div>
-            )}
-
             <form
                 onSubmit={handleSubmit}
                 className="flex flex-col w-full h-auto gap-4 text-left"
             >
                 {/* Class Name */}
                 <div>
-                    <label htmlFor="name" className={labelClass}>Class Name:</label>
+                    <label htmlFor="name" className={labelClass}>Course Code:</label>
                     <input
                         id="name"
                         type="text"
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="e.g., Biology 101"
+                        placeholder="e.g., CS413, CPE412"
                         className="w-full p-3 rounded-lg border border-gray-300 bg-gray-50 text-[#102E50] 
                             focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 focus:border-transparent"
                     />
@@ -287,7 +337,7 @@ export default function AddClass({ onClose, onSuccess }) {
 
                 {/* Subject */}
                 <div>
-                    <label htmlFor="subject_id" className={labelClass}>Subject:</label>
+                    <label htmlFor="subject_id" className={labelClass}>Course Name:</label>
                     <select
                         id="subject_id"
                         name="subject_id"
@@ -333,8 +383,121 @@ export default function AddClass({ onClose, onSuccess }) {
                     </select>
                 </div>
 
+                {/* Section */}
+                <div>
+                    <label htmlFor="section" className={labelClass}>Section:</label>
+                    <input
+                        id="section"
+                        type="text"
+                        name="section"
+                        value={formData.section}
+                        onChange={handleChange}
+                        placeholder="e.g., I-ED1, II-CPE1, III-BA1, IV-CS1, "
+                        className="w-full p-3 rounded-lg border border-gray-300 bg-gray-50 text-[#102E50] 
+                            focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 focus:border-transparent"
+                    />
+                </div>
+
+                {/* Room */}
+                <div>
+                    <label htmlFor="room" className={labelClass}>Room/Location:</label>
+                    <input
+                        id="room"
+                        type="text"
+                        name="room"
+                        value={formData.room}
+                        onChange={handleChange}
+                        placeholder="e.g., CB27, CL4"
+                        className="w-full p-3 rounded-lg border border-gray-300 bg-gray-50 text-[#102E50] 
+                            focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 focus:border-transparent"
+                    />
+                </div>
+                {/* Units Section */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label htmlFor="lecture_units" className={labelClass}>Lecture Units:</label>
+                        <input
+                            id="lecture_units"
+                            type="number"
+                            name="lecture_units"
+                            value={formData.lecture_units}
+                            onChange={handleChange}
+                            min="0"
+                            max="10"
+                            placeholder="e.g., 3"
+                            className="w-full p-3 rounded-lg border border-gray-300 bg-gray-50 text-[#102E50] 
+                                focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 focus:border-transparent"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label htmlFor="lab_units" className={labelClass}>Lab Units:</label>
+                        <input
+                            id="lab_units"
+                            type="number"
+                            name="lab_units"
+                            value={formData.lab_units}
+                            onChange={handleChange}
+                            min="0"
+                            max="10"
+                            placeholder="e.g., 1"
+                            className="w-full p-3 rounded-lg border border-gray-300 bg-gray-50 text-[#102E50] 
+                                focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 focus:border-transparent"
+                        />
+                    </div>
+                </div>
+
+                {/* Academic Year */}
+                <div>
+                    <label htmlFor="academic_year" className={labelClass}>Academic Year:</label>
+                    <select
+                        id="academic_year"
+                        name="academic_year"
+                        value={formData.academic_year}
+                        onChange={handleChange}
+                        className="w-full p-3 rounded-lg border border-gray-300 bg-gray-50 text-[#102E50] 
+                            focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 focus:border-transparent"
+                    >
+                        <option value="">Select academic year</option>
+                        {academicYearOptions.map((year) => (
+                            <option value={year.value} key={year.value}>
+                                {year.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Semester */}
+                <div>
+                    <label htmlFor="semester" className={labelClass}>Semester:</label>
+                    <select
+                        id="semester"
+                        name="semester"
+                        value={formData.semester}
+                        onChange={handleChange}
+                        className="w-full p-3 rounded-lg border border-gray-300 bg-gray-50 text-[#102E50] 
+                            focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 focus:border-transparent"
+                    >
+                        <option value="">Select semester</option>
+                        {semesterOptions.map((sem) => (
+                            <option value={sem.value} key={sem.value}>
+                                {sem.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+
+                {/* Schedule Preview */}
+                {schedulePreview && (
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded w-full">
+                        <p className="text-blue-800 font-semibold text-sm">Schedule Preview:</p>
+                        <p className="text-blue-600 font-medium">{schedulePreview}</p>
+                    </div>
+                )}
+
                 {/* Schedule Section */}
-                <div className="mt-2 pt-4 border-t border-gray-200">
+                <div className="pt-4 border-t border-gray-200">
                     <h3 className="text-[#102E50] font-bold text-lg mb-3">Schedule</h3>
 
                     {/* Days Selection */}
@@ -361,7 +524,6 @@ export default function AddClass({ onClose, onSuccess }) {
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label htmlFor="schedule_start" className={labelClass}>Start Time:</label>
-                            
                             <input
                                 id="schedule_start"
                                 type="time"

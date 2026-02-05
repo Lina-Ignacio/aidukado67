@@ -8,7 +8,7 @@ import {
 
 } from "react-icons/md";
 import { IoLogOut, IoHelpCircle, IoLibrary, IoSchool, IoPeople, IoClipboard } from "react-icons/io5";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import useUserStore from "../store/useUserStore";
 import useClassStore from "../store/useClassStore";
 import useTermStore from "../store/useTermStore";
@@ -18,6 +18,8 @@ import axios from "axios";
 
 export default function Sidebar({closeMobile}) {
 
+  const location = useLocation();
+  
   const userRole = useUserStore((state) => state.userRole)
 
   const handleClick = () => {
@@ -117,14 +119,14 @@ export default function Sidebar({closeMobile}) {
         {userRole == "admin" && (
           <NavLink to="/classManagement" className={linkClasses}>
             <IoSchool className={iconClasses} />
-            <h2 className="font-extrabold text-2xl md:text[3xl] xl:text[4xl]">Classes</h2>
+            <h2 className="font-extrabold text-2xl md:text[3xl] xl:text[4xl]">Course Code</h2>
           </NavLink>
         )}
 
         {userRole == "admin" && (
           <NavLink to="/subjectManagement" className={linkClasses}>
             <IoLibrary className={iconClasses}/>
-            <h2 className="font-extrabold text-2xl md:text[3xl] xl:text[4xl]">Subjects</h2>
+            <h2 className="font-extrabold text-2xl md:text[3xl] xl:text[4xl]">Courses</h2>
           </NavLink>
         )}
 
@@ -154,10 +156,20 @@ export default function Sidebar({closeMobile}) {
         )}
 
         {userRole == "teacher" && (
-          <NavLink to="/teacherClasses" className={linkClasses}>
-            <MdBarChart size={40} />
-            <h2 className="font-extrabold text-2xl md:text[3xl] xl:text[4xl]">My Classes</h2>
-          </NavLink>
+          <>
+            <NavLink to="/teacherClasses" className={linkClasses}>
+              <MdBarChart size={40} />
+              <h2 className="font-extrabold text-2xl md:text[3xl] xl:text[4xl]">My Classes</h2>
+            </NavLink>
+            {location.pathname === '/termPage' && (
+              <NavLink to="/studentList" className={linkClasses}>
+                <MdBarChart size={40} />
+                <h2 className="font-extrabold text-2xl md:text-[3xl] xl:text-[4xl]">Student List</h2>
+              </NavLink>
+            )}
+          </>
+          
+
         )}
 
       </div>
@@ -170,7 +182,7 @@ export default function Sidebar({closeMobile}) {
           <h2 className="font-extrabold text-2xl md:text[3xl] xl:text[4xl]">Help</h2>
         </NavLink>
 
-        
+  
 
         <button onClick={() => {handleLogout(); handleClick(); }} className="flex justify-items items-center p-2 gap-2 bg-transparent">
           <IoLogOut className="text-[#102E50] text-3xl md:text[4xl] xl:text[6xl]"/>

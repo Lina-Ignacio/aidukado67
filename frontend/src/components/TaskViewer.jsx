@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import ClassicButton from "./classicButton";
 import useClassStore from "../store/useClassStore";
 
+
 export default function TaskViewer({
   materialData,
   setIsVisible,
@@ -17,6 +18,14 @@ export default function TaskViewer({
   setArchiveMaterialOpen,
   setEditMaterialOpen,
 }) {
+
+
+  const handleViewSubmissions = () => {
+    navigate(`/submissions/${materialData.materialId}/${materialData.totalScore}`, {
+      state: { from: window.location.pathname }
+    });
+  };
+
   const [file, setFile] = useState(null);
   const [submissionData, setSubmissionData] = useState(null);
   const [uploadError, setUploadError] = useState("");
@@ -358,7 +367,7 @@ export default function TaskViewer({
                 <ClassicButton 
                   buttonName="View Submissions"
                   className="flex-2 shadow-md lg:w-1/4"
-                  onClick={() => navigate(`/submissions/${materialData.materialId}/${materialData.totalScore}`)}
+                  onClick={handleViewSubmissions}
                   mainColor="#E78B48" 
                   darkColor="#B9652B"
                   icon={LuClipboardCheck}

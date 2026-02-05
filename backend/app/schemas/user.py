@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
 from pydantic import ConfigDict  
 
 
@@ -115,3 +115,13 @@ class PasswordChangeRequest(BaseModel):
         alias_generator=to_camel,
         populate_by_name=True
     )
+    
+class StudentSimpleResponse(BaseModel):
+    id: int
+    full_name: str
+    email: str
+    first_name: str
+    last_name: str
+    
+    class Config:
+        from_attributes = True

@@ -144,6 +144,7 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
       
       <div className="mb-2">
         <FileUploader type=".pdf, .doc, .docx" handleFileChange={handleFileChange} />
+        <span className="text-xs text-[#102E50]/80 mt-1">max size: 20mb</span>
       </div>
 
       <div className="space-y-1">
@@ -163,6 +164,19 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
 
       <div className="space-y-1">
         <label className="text-sm font-semibold text-[#102E50] mb-1">
+          {metaData.type == "lesson" ? "Description" : "Instruction"} 
+        </label>
+        <textarea
+          className="w-full border border-gray-300 bg-white text-[#102E50] p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E78B48] focus:border-transparent transition-all duration-200 placeholder-gray-400 resize-y"
+          value={metaData.description}
+          onChange={(e) => setMetaData((prev) => ({ ...prev, description: e.target.value }))}
+          placeholder="Describe this material..."
+          rows={4}
+        />
+      </div>
+
+      <div className="space-y-1">
+        <label className="text-sm font-semibold text-[#102E50] mb-1">
           Type
         </label>
         <div className="relative">
@@ -175,25 +189,13 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
             <option value="lesson">Lesson</option>
             <option value="assignment">Assignment</option>
             <option value="activity">Activity / Exercise</option>
-            <option value="laboratory activity">Laboratory Activity</option>
+            <option value="laboratory activity">Experiment / Laboratory Activity</option>
             <option value="project">Project / Case Study</option>
           </select>
           <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm pointer-events-none" />
         </div>
       </div>
 
-      <div className="space-y-1">
-        <label className="text-sm font-semibold text-[#102E50] mb-1">
-          Description
-        </label>
-        <textarea
-          className="w-full border border-gray-300 bg-white text-[#102E50] p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E78B48] focus:border-transparent transition-all duration-200 placeholder-gray-400 resize-y"
-          value={metaData.description}
-          onChange={(e) => setMetaData((prev) => ({ ...prev, description: e.target.value }))}
-          placeholder="Describe this material..."
-          rows={4}
-        />
-      </div>
 
       {metaData.type != "lesson" && (
         <div className="space-y-4 mt-2 p-4 bg-blue-50 rounded-lg border border-blue-100">

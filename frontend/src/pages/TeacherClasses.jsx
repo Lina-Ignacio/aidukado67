@@ -5,7 +5,7 @@ import ClassCard from "../components/ClassCard";
 import useUserStore from "../store/useUserStore.js";
 import Layout from "../components/Layout.jsx";
 
-export default function StudentClasses() {
+export default function TeacherClasses() {
 
   const teacherId = useUserStore((state) => state.userId)
 
@@ -19,6 +19,7 @@ export default function StudentClasses() {
       try{
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/classes/getByUserId/${teacherId}`)
         setClasses(response.data)
+        console.log("response", response.data)
       }catch(error){
         console.error("Error fetching classes ", error)
       }
@@ -47,11 +48,8 @@ export default function StudentClasses() {
               key={cls.id}
               subjectName={cls.name}
               schedule={cls.schedule}
-              teacher={
-                cls.userTeacher
-                  ? `${cls.userTeacher.firstName} ${cls.userTeacher.lastName}`
-                  : "Unknown Teacher"
-              }
+              room={cls.room}
+              section={cls.section}
               classId={cls.id}
             />
           ))}

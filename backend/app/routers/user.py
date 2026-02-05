@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status
+from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from app.models import Users, ClassEnrollment
-from app.schemas.user import UserCreate, UserOut, UserUpdate, TeacherOut, PasswordChangeRequest
+from app.schemas.user import UserCreate, UserOut, UserUpdate, TeacherOut, PasswordChangeRequest, StudentSimpleResponse
 from app.database import SessionLocal
 from app.utils.auth import hash_password, get_current_user
 from app.schemas.user import AdminPasswordReset 
@@ -10,8 +11,6 @@ from app.database import get_db
 
 router = APIRouter(prefix="/user", tags=["User"])
 
-
-router = APIRouter(prefix="/user", tags=["user"])
 
 
 
@@ -248,3 +247,47 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     return {"message": f"User with ID {user_id} archived successfully"}
 
 
+@router.get("/{class_id}/students", response_model=List[StudentSimpleResponse])
+async def get_students_by_class_id(
+    class_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Simple endpoint to get all students in a class.
+    Returns list of students sorted by last name.
+    """
+    # Query students
+    students = (
+        db.query(Users)
+        .join(ClassEnrollment, Users.id == ClassEnrollment.student_id)
+        .filter(
+            ClassEnrollment.class_id == class_id,
+            Users.role == "student",
+            Users.is_archive == False
+        )
+        .order_by(Users.last_name.asc())
+        .all()
+    )
+    
+    if not students:
+        return []
+    
+    # Format response
+    result = []
+    for student in students:
+        # Format full name
+        middle_initial = ""
+        if student.middle_name:
+            middle_initial = f" {student.middle_name[0]}." if student.middle_name.strip() else ""
+        
+        full_name = f"{student.last_name}, {student.first_name}{middle_initial}"
+        
+        result.append(StudentSimpleResponse(
+            id=student.id,
+            full_name=full_name,
+            email=student.email,
+            first_name=student.first_name,
+            last_name=student.last_name
+        ))
+    
+    return result

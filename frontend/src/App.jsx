@@ -33,6 +33,7 @@ import StudentExam from './pages/Exam/StudentExamPage';
 import useUserStore from './store/useUserStore';
 import AIExam from './pages/Exam/AIExam';
 import ExportScores from './pages/Scores/ExportScores';
+import StudentList from './pages/StudentList';
 
 function AppContent() {
   const role = useUserStore((state) => state.userRole);
@@ -140,6 +141,15 @@ function AppContent() {
                 <LessonSummary />
               </RoleProtectedRoute>
             } 
+        />
+
+        <Route 
+            path="/studentList" 
+            element={
+              <RoleProtectedRoute allowed_roles={["teacher"]}>
+                <StudentList />
+              </RoleProtectedRoute>
+            } 
           />
 
         {/* ==========================================
@@ -181,6 +191,8 @@ function AppContent() {
               </RoleProtectedRoute>
             } 
           />
+          
+          
 
           {/* Quiz & Testing Logic */}
           <Route 

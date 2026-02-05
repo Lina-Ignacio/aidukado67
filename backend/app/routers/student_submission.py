@@ -238,7 +238,8 @@ def get_submission_stats(material_id: int, class_id: int = Query(...), db: Sessi
 @router.get("/material/{material_id}", response_model=list[SubmissionWithStudentOut])
 def get_submissions_by_material(material_id: int, db: Session = Depends(get_db)):
     """Get all submissions for a material"""
-
+    
+    # Query submissions with student data joined
     submissions = db.query(StudentSubmission).options(
         joinedload(StudentSubmission.student)
     ).filter(
@@ -252,6 +253,13 @@ def get_submissions_by_material(material_id: int, db: Session = Depends(get_db))
             status_code=404,
             detail=f"No submitted files found for material_id {material_id}"
         )
+
+    # Sort submissions alphabetically by student name (last name, then first name, then middle name)
+    submissions.sort(key=lambda x: (
+        (x.student.last_name or "").lower(),
+        (x.student.first_name or "").lower(),
+        (x.student.middle_name or "").lower()
+    ))
 
     return submissions
 

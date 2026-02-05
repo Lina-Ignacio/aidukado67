@@ -34,20 +34,19 @@ export default function StudentClasses() {
         {classes.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-5 w-full">
               {classes.map((cls) => (
-                  <ClassCardStudent
-                    key={cls.id}
-                    subjectName={cls.enrolledClass.name} 
-                    schedule={cls.enrolledClass.schedule}
-                    teacher={
-                      cls.enrolledClass.userTeacher
-                        ? `${cls.enrolledClass.userTeacher.firstName} ${cls.enrolledClass.userTeacher.lastName}`
-                        : "Unknown Teacher"
-                    }
-                    email={cls.enrolledClass.userTeacher
-                        ? `${cls.enrolledClass.userTeacher.email}`
-                        : "Unknown Teacher"}
-                    classId={cls.enrolledClass.id}
-                  />
+                <ClassCardStudent
+                  key={cls.id}
+                  subjectName={cls.enrolledClass.name} 
+                  schedule={cls.enrolledClass.schedule}
+                  room={cls.enrolledClass.room}
+                  section={cls.enrolledClass.section}
+                  teacher={
+                    cls.enrolledClass.userTeacher
+                      ? `${cls.enrolledClass.userTeacher.firstName} ${cls.enrolledClass.userTeacher.lastName}`
+                      : "Unknown Teacher"
+                  }
+                  classId={cls.enrolledClass.id}
+                />
               ))}
             </div>
             ) : (

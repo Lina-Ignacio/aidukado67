@@ -13,7 +13,7 @@ import { LuUserPlus } from "react-icons/lu"
 export default function EnrollmentManagement() {
   const enrollmentColumns = [
     { id: 1, name: "ID", key: "id" },
-    { id: 2, name: "Class", key: "className" },
+    { id: 2, name: "Course Code", key: "className" },
     { id: 3, name: "Full Name", key: "fullName" },
     { id: 4, name: "Status", key: "status" }
   ];
@@ -148,7 +148,7 @@ export default function EnrollmentManagement() {
         {fetchDataError && <p className="text-red-800">{fetchDataError}</p>}
         <div className="w-4/5 h-auto grid grid-cols-[3fr_1fr] gap-2 
                         lg:h-11 xl:h-12 2xl:h-15 mt-3">
-          <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by class, name, status"/>
+          <SearchForm query={query} setQuery={setQuery} inputPlaceholder="Search by course code, name, status"/>
           <ClassicButton 
             buttonName="Enroll"
             className=" bg-[#102E50] shadow-md w-3/4 place-self-end"
