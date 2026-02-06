@@ -34,7 +34,9 @@ export default function ClassCardStudent({ subjectName, classId, teacher, email,
       'MW': 'Monday & Wednesday',
       'TTH': 'Tuesday & Thursday',
       'MWF': 'Monday, Wednesday & Friday',
-      'TTHS': 'Tuesday, Thursday & Saturday'
+      'TTHS': 'Tuesday, Thursday & Saturday',
+      'MF': 'Monday & Friday',
+      'MTH': 'Monday & Thursday'
     };
     
     // Convert day codes to full names

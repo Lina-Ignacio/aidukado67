@@ -203,31 +203,95 @@ export default function SelectedClass() {
 
       {/* Materials Section */}
       <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
-        <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Materials</h2>
+        <h2 className="text-[#E78B48] font-bold text-2xl place-self-end">{termName}</h2>
+      </div>
+
+      {/* Lesson Section */}
+      <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
+        <h2 className="text-[#102E50] font-bold text-2xl">Lessons</h2>
       </div>
       
       <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl">
         {filteredMaterials.length > 0 ? (
-          filteredMaterials.map((lesson) => (
-            <LessonCard 
-              key={lesson.id} 
-              materialName={lesson.title} 
-              materialId={lesson.id} 
-              creationDate={lesson.createdAt}
-              materialType={lesson.type}
-              classId={classId}
-            />
-          ))
+          filteredMaterials
+            .filter(material => material.type === "lesson")  
+            .map((lesson) => (
+              <LessonCard 
+                key={lesson.id} 
+                materialName={lesson.title} 
+                materialId={lesson.id} 
+                creationDate={lesson.createdAt}
+                materialType={lesson.type}
+                classId={classId}
+              />
+            ))
         ) : (
           <div className="text-gray-500 text-center w-full py-6">
             No lessons available for this term yet.
           </div>
         )}
       </div>
+
+      {/* Activity Section */}
+
+      <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
+        <h2 className="text-[#102E50] font-bold text-2xl">Activities and Assignments</h2>
+      </div>
+      
+      <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl">
+        {filteredMaterials.length > 0 ? (
+          filteredMaterials
+            .filter(material => material.type === "activity")  
+            .map((lesson) => (
+              <LessonCard 
+                key={lesson.id} 
+                materialName={lesson.title} 
+                materialId={lesson.id} 
+                creationDate={lesson.createdAt}
+                materialType={lesson.type}
+                classId={classId}
+              />
+            ))
+        ) : (
+          <div className="text-gray-500 text-center w-full py-6">
+            No lessons available for this term yet.
+          </div>
+        )}
+      </div>
+
+      {/* Experiment Section */}
+
+      {filteredMaterials.filter(m => m.type === "experiment").length > 0 && (
+        <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
+          <h2 className="text-[#102E50] font-bold text-2xl">Experiments and Exercises</h2>
+        </div>
+      )}
+      
+      <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl">
+        {filteredMaterials.length > 0 ? (
+          filteredMaterials
+            .filter(material => material.type === "experiment")  
+            .map((lesson) => (
+              <LessonCard 
+                key={lesson.id} 
+                materialName={lesson.title} 
+                materialId={lesson.id} 
+                creationDate={lesson.createdAt}
+                materialType={lesson.type}
+                classId={classId}
+              />
+            ))
+        ) : (
+          <div className="text-gray-500 text-center w-full py-6">
+            No materials available for this term yet.
+          </div>
+        )}
+      </div>
+
       
       {/* Quizzes Section */}
       <div className="w-3/4 sm:w-[70%] mt-10">
-        <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Quizzes</h2>
+        <h2 className="text-[#102E50] font-bold text-2xl">Assessments</h2>
       </div>
 
       <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl">
@@ -252,7 +316,7 @@ export default function SelectedClass() {
 
       {/* Exams Section */}
       <div className="w-3/4 sm:w-[70%] mt-10">
-        <h2 className="text-[#102E50] font-bold text-2xl">{termName}'s Exam</h2>
+        <h2 className="text-[#102E50] font-bold text-2xl">Exam</h2>
       </div>
 
       <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl mb-12">

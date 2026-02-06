@@ -1,7 +1,7 @@
 
     
 from pydantic import BaseModel, ConfigDict
-from typing import Optional
+from typing import Optional, List
 from datetime import date
 from app.schemas.classes import ClassWithTeacherOut
 
@@ -52,4 +52,27 @@ class EnrollmentUpdate(BaseModel):
         alias_generator=to_camel,
         populate_by_name=True
     )
+    
+class EnrollmentImportRequest(BaseModel):
+    class_id: int
+    file_content: str
+    
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
+
+class EnrollmentImportResponse(BaseModel):
+    success_count: int
+    failed_emails: List[str]
+    message: str
+    
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
+
+class CSVRow(BaseModel):
+    name: str
+    email: str
 

@@ -187,9 +187,8 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
             className="w-full border border-gray-300 bg-white text-[#102E50] p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E78B48] focus:border-transparent transition-all duration-200 appearance-none pr-10"
           >
             <option value="lesson">Lesson</option>
-            <option value="assignment">Assignment</option>
-            <option value="activity">Activity / Exercise</option>
-            <option value="laboratory activity">Experiment / Laboratory Activity</option>
+            <option value="experiment">Experiment / Exercise</option>
+            <option value="activity">Assignment / Activity</option>
             <option value="project">Project / Case Study</option>
           </select>
           <FaChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm pointer-events-none" />

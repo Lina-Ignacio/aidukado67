@@ -29,7 +29,7 @@ export default function QuizCard({ quizData, onArchive }) {
 
   return (
     <div
-      className="flex flex-col w-full h-auto lg:w-[45%] xl:w-[31%] p-5 gap-2
+      className="flex flex-col w-full h-auto lg:w-[45%] xl:w-[32%] p-5 gap-2
                     rounded-md cursor-pointer shadow-sm hover:shadow-md
                     transition-all duration-300 ease-in-out
                     hover:scale-[1.01] relative bg-orange-50

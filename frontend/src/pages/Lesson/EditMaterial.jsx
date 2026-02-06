@@ -90,9 +90,9 @@ export default function EditMaterial({materialId, setEditMaterialOpen, setSucces
               className={inputClass}
             >
               <option value="lesson">Lesson</option>
-              <option value="activity">Activity</option>
-              <option value="assignment">Assignment</option>
-              <option value="project">Project</option>
+              <option value="experiment">Experiment / Exercise</option>
+              <option value="activity">Assignment / Activity</option>
+              <option value="project">Project / Case Study</option>
             </select>
       
             <label className={labelClass}>Description</label>
