@@ -18,7 +18,8 @@ from .routers import (
     exam,
     student_exam_progress,
     exam_reopen,
-    export_scores
+    export_scores,
+    student_task_reopen
 )
 
 from dotenv import load_dotenv
@@ -107,6 +108,7 @@ app.include_router(exam.router)
 app.include_router(student_exam_progress.router)
 app.include_router(exam_reopen.router)
 app.include_router(export_scores.router)
+app.include_router(student_task_reopen.router)
 
 @app.get("/")
 def health():

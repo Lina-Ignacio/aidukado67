@@ -3,7 +3,7 @@ from typing import Optional, List
 from app.utils.to_camel import to_camel   
 from app.schemas.user import TeacherOut
 from app.schemas.subject import SubjectOut
-
+import re 
 
 class ClassCreate(BaseModel):
     subject_id: int

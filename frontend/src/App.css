@@ -35,44 +35,30 @@ input:-webkit-autofill:active {
     transition: background-color 5000s ease-in-out 0s;
 }
 
-
-.datetime-local-styled::-webkit-calendar-picker-indicator {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  cursor: pointer;
-  color: gray;
-  opacity: 1;
-  width: 16px;
-  height: 16px;
-  padding: 0;
-  z-index: 1;
-}
-.datetime-local-styled::-webkit-datetime-edit-fields-wrapper {
-  padding-right: 30px;
-}
-
-
+/* Simple datetime-local styling that works */
 .datetime-local-styled {
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="%23102E50"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z"/></svg>');
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 16px;
-  padding-right: 40px;
+  /* Ensure there's enough padding for the icon */
+  padding-right: 40px !important;
 }
 
-
-.datetime-local-styled::-moz-calendar-picker-indicator {
-  opacity: 0;
-  width: 16px;
-  height: 16px;
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
+/* Style the calendar icon */
+.datetime-local-styled::-webkit-calendar-picker-indicator {
   cursor: pointer;
-  z-index: 1;
+  opacity: 1;
+  filter: invert(24%) sepia(15%) saturate(2476%) hue-rotate(183deg) brightness(90%) contrast(96%);
+  width: 18px;
+  height: 18px;
+}
+
+.datetime-local-styled::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.8;
+}
+
+/* For Firefox */
+.datetime-local-styled::-moz-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  filter: invert(24%) sepia(15%) saturate(2476%) hue-rotate(183deg) brightness(90%) contrast(96%);
 }
 
 .material-background {

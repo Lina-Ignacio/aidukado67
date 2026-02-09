@@ -11,6 +11,21 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
   const [uploadError, setUploadError] = useState("");
   const [file, setFile] = useState(null);
 
+  // Function to get default due date (tomorrow at 11:59 PM)
+  // Function to get default due date (today's date and current time)
+  const getDefaultDueDate = () => {
+    const now = new Date();
+    
+    // Format to "YYYY-MM-DD HH:MM:SS" for backend
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day} ${hours}:${minutes}:00`;
+  };
+
   const [metaData, setMetaData] = useState({
     classId: classId,
     termId: term,
@@ -20,6 +35,14 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
     totalScore: null,    
     dueDate: null        
   });
+
+  // Set default due date when component mounts and when type changes to non-lesson
+  useEffect(() => {
+    if (metaData.type !== "lesson" && !metaData.dueDate) {
+      const defaultDueDate = getDefaultDueDate();
+      setMetaData(prev => ({ ...prev, dueDate: defaultDueDate }));
+    }
+  }, [metaData.type]);
 
   useEffect(() => {
     setMetaData((prev) => ({
@@ -143,8 +166,8 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
       )}
       
       <div className="mb-2">
+        <span className="text-xs text-[#102E50]/80 mt-1">Max Size: 20mb</span>
         <FileUploader type=".pdf, .doc, .docx" handleFileChange={handleFileChange} />
-        <span className="text-xs text-[#102E50]/80 mt-1">max size: 20mb</span>
       </div>
 
       <div className="space-y-1">
@@ -183,7 +206,15 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
           <select
             name="type"
             value={metaData.type}
-            onChange={(e) => setMetaData((prev) => ({ ...prev, type: e.target.value }))}
+            onChange={(e) => {
+              const newType = e.target.value;
+              setMetaData(prev => ({ 
+                ...prev, 
+                type: newType,
+                // Set default due date when switching to non-lesson type
+                dueDate: newType !== "lesson" && !prev.dueDate ? getDefaultDueDate() : prev.dueDate
+              }));
+            }}
             className="w-full border border-gray-300 bg-white text-[#102E50] p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E78B48] focus:border-transparent transition-all duration-200 appearance-none pr-10"
           >
             <option value="lesson">Lesson</option>
@@ -226,13 +257,12 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
             <div className="relative">
               <input
                 className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E78B48] focus:border-transparent 
-                transition-all duration-200 pr-10 datetime-local-styled bg-white text-[#102E50]"
+                transition-all duration-200 bg-[#102E50] text-white placeholder:text-white/70"
                 type="datetime-local"
                 value={getDateTimeLocalValue()}
                 onChange={handleDueDateChange}
                 step="60"
               />
-              
             </div>
           </div>
         </div>

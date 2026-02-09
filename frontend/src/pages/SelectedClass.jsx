@@ -155,6 +155,24 @@ export default function SelectedClass() {
   let termName = getTermName(Number(term));
   const panelStyle = "w-full h-auto max-w-lg rounded-xl shadow-xl";
 
+  // Group materials by type for cleaner rendering
+  const materialsByType = useMemo(() => {
+    const grouped = {
+      lesson: [],
+      activity: [],
+      project: [],
+      experiment: []
+    };
+    
+    filteredMaterials.forEach(material => {
+      if (grouped[material.type]) {
+        grouped[material.type].push(material);
+      }
+    });
+    
+    return grouped;
+  }, [filteredMaterials]);
+
   return (
     <div className="flex flex-col w-full h-auto min-h-screen py-8 gap-8 items-center relative">
       <UserDropup />
@@ -203,19 +221,18 @@ export default function SelectedClass() {
 
       {/* Materials Section */}
       <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
-        <h2 className="text-[#E78B48] font-bold text-2xl place-self-end">{termName}</h2>
+        <h2 className="text-[#E78B48] font-bold text-2xl place-self-center uppercase">{termName}</h2>
       </div>
 
       {/* Lesson Section */}
-      <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
-        <h2 className="text-[#102E50] font-bold text-2xl">Lessons</h2>
-      </div>
-      
-      <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl">
-        {filteredMaterials.length > 0 ? (
-          filteredMaterials
-            .filter(material => material.type === "lesson")  
-            .map((lesson) => (
+      {materialsByType.lesson.length > 0 && (
+        <>
+          <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
+            <h2 className="text-[#102E50] font-bold text-2xl">Lessons</h2>
+          </div>
+          
+          <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl">
+            {materialsByType.lesson.map((lesson) => (
               <LessonCard 
                 key={lesson.id} 
                 materialName={lesson.title} 
@@ -224,70 +241,85 @@ export default function SelectedClass() {
                 materialType={lesson.type}
                 classId={classId}
               />
-            ))
-        ) : (
-          <div className="text-gray-500 text-center w-full py-6">
-            No lessons available for this term yet.
+            ))}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       {/* Activity Section */}
-
-      <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
-        <h2 className="text-[#102E50] font-bold text-2xl">Activities and Assignments</h2>
-      </div>
-      
-      <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl">
-        {filteredMaterials.length > 0 ? (
-          filteredMaterials
-            .filter(material => material.type === "activity")  
-            .map((lesson) => (
+      {materialsByType.activity.length > 0 && (
+        <>
+          <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
+            <h2 className="text-[#102E50] font-bold text-2xl">Activities and Assignments</h2>
+          </div>
+          
+          <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl">
+            {materialsByType.activity.map((activity) => (
               <LessonCard 
-                key={lesson.id} 
-                materialName={lesson.title} 
-                materialId={lesson.id} 
-                creationDate={lesson.createdAt}
-                materialType={lesson.type}
+                key={activity.id} 
+                materialName={activity.title} 
+                materialId={activity.id} 
+                creationDate={activity.createdAt}
+                materialType={activity.type}
                 classId={classId}
               />
-            ))
-        ) : (
-          <div className="text-gray-500 text-center w-full py-6">
-            No lessons available for this term yet.
+            ))}
           </div>
-        )}
-      </div>
+        </>
+      )}
+
+      {/* Project Section */}
+      {materialsByType.project.length > 0 && (
+        <>
+          <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
+            <h2 className="text-[#102E50] font-bold text-2xl">Projects</h2>
+          </div>
+          
+          <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl">
+            {materialsByType.project.map((project) => (
+              <LessonCard 
+                key={project.id} 
+                materialName={project.title} 
+                materialId={project.id} 
+                creationDate={project.createdAt}
+                materialType={project.type}
+                classId={classId}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Experiment Section */}
-
-      {filteredMaterials.filter(m => m.type === "experiment").length > 0 && (
-        <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
-          <h2 className="text-[#102E50] font-bold text-2xl">Experiments and Exercises</h2>
-        </div>
-      )}
-      
-      <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl">
-        {filteredMaterials.length > 0 ? (
-          filteredMaterials
-            .filter(material => material.type === "experiment")  
-            .map((lesson) => (
+      {materialsByType.experiment.length > 0 && (
+        <>
+          <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
+            <h2 className="text-[#102E50] font-bold text-2xl">Experiments and Exercises</h2>
+          </div>
+          
+          <div className="flex flex-wrap justify-start gap-5 w-3/4 sm:w-[70%] p-2 rounded-2xl">
+            {materialsByType.experiment.map((experiment) => (
               <LessonCard 
-                key={lesson.id} 
-                materialName={lesson.title} 
-                materialId={lesson.id} 
-                creationDate={lesson.createdAt}
-                materialType={lesson.type}
+                key={experiment.id} 
+                materialName={experiment.title} 
+                materialId={experiment.id} 
+                creationDate={experiment.createdAt}
+                materialType={experiment.type}
                 classId={classId}
               />
-            ))
-        ) : (
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Show message if no materials exist */}
+      {filteredMaterials.length === 0 && (
+        <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
           <div className="text-gray-500 text-center w-full py-6">
             No materials available for this term yet.
           </div>
-        )}
-      </div>
-
+        </div>
+      )}
       
       {/* Quizzes Section */}
       <div className="w-3/4 sm:w-[70%] mt-10">

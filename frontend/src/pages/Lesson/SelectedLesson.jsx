@@ -44,7 +44,6 @@ export default function SelectedLesson() {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/class_material/getMaterialById/${materialId}`)
 
             setMaterial(response.data);
-            console.log("ge", response.data)
         } catch (err) {
             if (err.response?.data?.detail) {
                 setFetchFileError(err.response.data.detail)

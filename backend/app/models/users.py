@@ -36,6 +36,11 @@ class Users(Base):
         cascade="all, delete-orphan"
     )
     
+    task_reopens = relationship(
+        "StudentTaskReopen",
+        back_populates="student"
+    )
+    
     # For index
     __table_args__ = (
         Index(

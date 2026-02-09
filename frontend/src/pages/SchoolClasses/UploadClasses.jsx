@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import * as XLSX from "xlsx";
 import FileUploader from "../../components/FileUploader";
 import { LuUpload } from "react-icons/lu";
 
@@ -11,9 +12,18 @@ export default function UploadClasses({ onClose, onSuccess }) {
     const [preview, setPreview] = useState([]);
     const [validationErrors, setValidationErrors] = useState([]);
 
-    const handleFileChange = (e) => {
+    const handleFileChange = async (e) => {
         const selectedFile = e.target.files[0];
         if (!selectedFile) return;
+
+        // Validate file type
+        const validExtensions = ['.csv', '.xlsx', '.xls'];
+        const fileExtension = selectedFile.name.slice(selectedFile.name.lastIndexOf('.')).toLowerCase();
+        
+        if (!validExtensions.includes(fileExtension)) {
+            setError("Please upload a CSV or Excel file (.csv, .xlsx, .xls)");
+            return;
+        }
 
         setFile(selectedFile);
         setError("");
@@ -21,19 +31,207 @@ export default function UploadClasses({ onClose, onSuccess }) {
         setPreview([]);
         setValidationErrors([]);
 
-        // Preview CSV content
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            const text = event.target.result;
-            parseCSVPreview(text);
-        };
-        reader.readAsText(selectedFile);
+        // Parse file based on type
+        try {
+            if (fileExtension === '.csv') {
+                await parseCSVFile(selectedFile);
+            } else {
+                await parseExcelFile(selectedFile);
+            }
+        } catch (err) {
+            setError(`Failed to parse file: ${err.message}`);
+        }
+    };
+
+    const parseCSVFile = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const text = event.target.result;
+                    parseCSVPreview(text);
+                    resolve();
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = () => reject(new Error("Failed to read CSV file"));
+            reader.readAsText(file);
+        });
+    };
+
+    // Helper function to fix Excel date conversions for units
+    const fixExcelUnits = (value) => {
+        if (!value) return '';
+        
+        const strValue = String(value).trim();
+        
+        // Check if it's an Excel serial date (5+ digits)
+        if (/^\d{5,}$/.test(strValue)) {
+            const num = parseInt(strValue);
+            
+            // Common Excel date conversions for units like 3/1, 2/1
+            const dateToUnitsMap = {
+                45957: '2/1',   // Feb 1, 2026
+                46082: '3/1',   // Mar 1, 2026
+                46113: '4/1',   // Apr 1, 2026
+                46143: '5/1',   // May 1, 2026
+                46174: '6/1',   // Jun 1, 2026
+                46204: '7/1',   // Jul 1, 2026
+                46235: '8/1',   // Aug 1, 2026
+                46266: '9/1',   // Sep 1, 2026
+                46296: '10/1',  // Oct 1, 2026
+                46327: '11/1',  // Nov 1, 2026
+                46357: '12/1',  // Dec 1, 2026
+                // Add more dates for 1/N patterns
+                43831: '1/1',   // Jan 1, 2020
+                44197: '1/2',   // Jan 2, 2021
+                44562: '1/3',   // Jan 3, 2022
+                44927: '1/4',   // Jan 4, 2023
+                45292: '1/5',   // Jan 5, 2024
+                45657: '1/6',   // Jan 6, 2025
+                46022: '1/7',   // Jan 7, 2026
+            };
+            
+            if (dateToUnitsMap[num]) {
+                return dateToUnitsMap[num];
+            }
+            
+            // Calculate month and day from Excel serial date
+            // Excel epoch is December 30, 1899
+            const excelEpoch = new Date(1899, 11, 30);
+            const actualDate = new Date(excelEpoch.getTime() + num * 86400000);
+            const month = actualDate.getMonth() + 1;
+            const day = actualDate.getDate();
+            
+            // Common pattern: N/1 units (3/1, 2/1, etc.)
+            if (day === 1 && month >= 1 && month <= 12) {
+                return `${month}/1`;
+            }
+            // Pattern: 1/N units
+            else if (month === 1 && day >= 1 && day <= 31) {
+                return `1/${day}`;
+            }
+            // Pattern: 3/2, etc.
+            else if (day <= 31 && month <= 12) {
+                return `${month}/${day}`;
+            }
+        }
+        
+        return strValue;
+    };
+
+    const parseExcelFile = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    const data = new Uint8Array(event.target.result);
+                    // Read workbook with proper settings
+                    const workbook = XLSX.read(data, { 
+                        type: 'array',
+                        cellDates: false,
+                        raw: false,
+                        cellNF: true
+                    });
+                    
+                    // Get first sheet
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    
+                    // Convert to JSON with formatted values
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+                        header: 1, 
+                        raw: false,
+                        defval: '' 
+                    });
+                    
+                    if (jsonData.length < 2) {
+                        reject(new Error("Excel file must have at least 2 rows (header + data)"));
+                        return;
+                    }
+                    
+                    // Normalize headers
+                    const headers = jsonData[0].map(header => 
+                        String(header || '').trim().toLowerCase().replace(/\s+/g, '_')
+                    );
+                    
+                    // Map headers to expected column names
+                    const headerMapping = {
+                        'course_code': ['course_code', 'course_code', 'code', 'course'],
+                        'course_name': ['course_name', 'course_name', 'course_name', 'name'],
+                        'teacher_email': ['teacher_email', 'teacher_email', 'teacher', 'email', 'instructor_email'],
+                        'section': ['section', 'section'],
+                        'room': ['room', 'room', 'location', 'classroom'],
+                        'units': ['units', 'units', 'credit', 'credits'],
+                        'schedule': ['schedule', 'schedule', 'time', 'class_time'],
+                        'academic_year': ['academic_year', 'academic_year', 'year', 'academic_year'],
+                        'semester': ['semester', 'semester', 'term']
+                    };
+                    
+                    // Find column indices
+                    const columnIndices = {};
+                    Object.keys(headerMapping).forEach(expectedHeader => {
+                        const possibleNames = headerMapping[expectedHeader];
+                        for (let i = 0; i < headers.length; i++) {
+                            if (possibleNames.includes(headers[i])) {
+                                columnIndices[expectedHeader] = i;
+                                break;
+                            }
+                        }
+                    });
+                    
+                    // Check required columns
+                    const requiredColumns = [
+                        'course_code', 'course_name', 'teacher_email', 'section', 'room',
+                        'units', 'schedule', 'academic_year', 'semester'
+                    ];
+                    
+                    const missingColumns = requiredColumns.filter(col => columnIndices[col] === undefined);
+                    if (missingColumns.length > 0) {
+                        reject(new Error(`Missing required columns: ${missingColumns.join(', ')}`));
+                        return;
+                    }
+                    
+                    // Convert to CSV format for preview
+                    const csvLines = [];
+                    csvLines.push(requiredColumns.join(','));
+                    
+                    // Process data rows for preview (first 5 rows)
+                    for (let i = 1; i < Math.min(6, jsonData.length); i++) {
+                        const row = jsonData[i];
+                        if (row && row.length > 0) {
+                            const csvRow = requiredColumns.map(col => {
+                                let value = row[columnIndices[col]] || '';
+                                value = String(value).trim();
+                                
+                                // Fix units column if it's an Excel date
+                                if (col === 'units') {
+                                    value = fixExcelUnits(value);
+                                }
+                                
+                                return value;
+                            });
+                            csvLines.push(csvRow.join(','));
+                        }
+                    }
+                    
+                    parseCSVPreview(csvLines.join('\n'));
+                    resolve();
+                    
+                } catch (err) {
+                    reject(err);
+                }
+            };
+            reader.onerror = () => reject(new Error("Failed to read Excel file"));
+            reader.readAsArrayBuffer(file);
+        });
     };
 
     const parseCSVPreview = (csvText) => {
         const lines = csvText.split('\n').filter(line => line.trim() !== '');
         if (lines.length < 2) {
-            setError("CSV file must have at least 2 lines (header + data)");
+            setError("File must have at least 2 lines (header + data)");
             return;
         }
 
@@ -50,10 +248,10 @@ export default function UploadClasses({ onClose, onSuccess }) {
             'semester'
         ];
 
-        // Validate headers
+        // Validate headers match exactly
         const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
         if (missingHeaders.length > 0) {
-            setError(`Missing required columns: ${missingHeaders.join(', ')}`);
+            setError(`File must contain these exact columns: ${requiredHeaders.join(', ')}`);
             return;
         }
 
@@ -89,8 +287,8 @@ export default function UploadClasses({ onClose, onSuccess }) {
         });
 
         // Course code validation (maps to DB "name" field)
-        if (row.course_code && row.course_code.trim().length > 50) {
-            errors.push(`Row ${rowNum}: course_code cannot exceed 50 characters`);
+        if (row.course_code && row.course_code.trim().length > 15) {
+            errors.push(`Row ${rowNum}: course_code cannot exceed 15 characters`);
         }
 
         // Section validation
@@ -156,17 +354,112 @@ export default function UploadClasses({ onClose, onSuccess }) {
 
     const handleSubmit = async () => {
         if (!file) {
-            setError("Please select a CSV file first");
+            setError("Please select a CSV or Excel file first");
             return;
         }
 
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            const csvText = event.target.result;
-            const lines = csvText.split('\n').filter(line => line.trim() !== '');
+        setLoading(true);
+        try {
+            const fileExtension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+            let csvContent = "";
+
+            if (fileExtension === '.csv') {
+                csvContent = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (event) => resolve(event.target.result);
+                    reader.onerror = () => reject(new Error("Failed to read CSV file"));
+                    reader.readAsText(file);
+                });
+            } else {
+                // Convert Excel to CSV format
+                csvContent = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const data = new Uint8Array(event.target.result);
+                            const workbook = XLSX.read(data, { 
+                                type: 'array',
+                                cellDates: false,
+                                raw: false,
+                                cellNF: true
+                            });
+                            
+                            const sheetName = workbook.SheetNames[0];
+                            const worksheet = workbook.Sheets[sheetName];
+                            const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+                                header: 1, 
+                                raw: false,
+                                defval: '' 
+                            });
+                            
+                            // Normalize headers
+                            const headers = jsonData[0].map(header => 
+                                String(header || '').trim().toLowerCase().replace(/\s+/g, '_')
+                            );
+                            
+                            const headerMapping = {
+                                'course_code': ['course_code', 'course_code', 'code', 'course'],
+                                'course_name': ['course_name', 'course_name', 'course_name', 'name'],
+                                'teacher_email': ['teacher_email', 'teacher_email', 'teacher', 'email', 'instructor_email'],
+                                'section': ['section', 'section'],
+                                'room': ['room', 'room', 'location', 'classroom'],
+                                'units': ['units', 'units', 'credit', 'credits'],
+                                'schedule': ['schedule', 'schedule', 'time', 'class_time'],
+                                'academic_year': ['academic_year', 'academic_year', 'year', 'academic_year'],
+                                'semester': ['semester', 'semester', 'term']
+                            };
+                            
+                            const columnIndices = {};
+                            Object.keys(headerMapping).forEach(expectedHeader => {
+                                const possibleNames = headerMapping[expectedHeader];
+                                for (let i = 0; i < headers.length; i++) {
+                                    if (possibleNames.includes(headers[i])) {
+                                        columnIndices[expectedHeader] = i;
+                                        break;
+                                    }
+                                }
+                            });
+                            
+                            const requiredColumns = [
+                                'course_code', 'course_name', 'teacher_email', 'section', 'room',
+                                'units', 'schedule', 'academic_year', 'semester'
+                            ];
+                            
+                            const csvLines = [];
+                            csvLines.push(requiredColumns.join(','));
+                            
+                            for (let i = 1; i < jsonData.length; i++) {
+                                const row = jsonData[i];
+                                if (row && row.length > 0) {
+                                    const csvRow = requiredColumns.map(col => {
+                                        let value = row[columnIndices[col]] || '';
+                                        value = String(value).trim();
+                                        
+                                        if (col === 'units') {
+                                            value = fixExcelUnits(value);
+                                        }
+                                        
+                                        return value;
+                                    });
+                                    csvLines.push(csvRow.join(','));
+                                }
+                            }
+                            
+                            resolve(csvLines.join('\n'));
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    reader.onerror = () => reject(new Error("Failed to read Excel file"));
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+
+            const lines = csvContent.split('\n').filter(line => line.trim() !== '');
             
             if (lines.length < 2) {
-                setError("CSV file is empty or has no data rows");
+                setError("File is empty or has no data rows");
+                setLoading(false);
                 return;
             }
 
@@ -176,10 +469,11 @@ export default function UploadClasses({ onClose, onSuccess }) {
                 'units', 'schedule', 'academic_year', 'semester'
             ];
 
-            // Validate all headers
+            // Validate all headers match exactly
             const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
             if (missingHeaders.length > 0) {
-                setError(`Missing required columns: ${missingHeaders.join(', ')}`);
+                setError(`File must contain these exact columns: ${requiredHeaders.join(', ')}`);
+                setLoading(false);
                 return;
             }
 
@@ -197,18 +491,17 @@ export default function UploadClasses({ onClose, onSuccess }) {
 
                     const rowErrors = validateRow(row, i);
                     if (rowErrors.length === 0) {
-                        // Convert to backend format
                         const backendRow = {
-                            course_code: row.course_code,           // Maps to DB "name"
-                            course_name: row.course_name,           // Used for subject
-                            section: row.section,                   // Same
-                            room: row.room,                         // Same
-                            schedule: row.schedule,                 // Same
-                            academic_year: row.academic_year,       // Same
-                            semester: row.semester,                 // Same
-                            lecture_units: row.lecture_units,       // Parsed from units
-                            lab_units: row.lab_units,               // Parsed from units
-                            teacher_email: row.teacher_email        // Used for teacher
+                            course_code: row.course_code,
+                            course_name: row.course_name,
+                            section: row.section,
+                            room: row.room,
+                            schedule: row.schedule,
+                            academic_year: row.academic_year,
+                            semester: row.semester,
+                            lecture_units: row.lecture_units,
+                            lab_units: row.lab_units,
+                            teacher_email: row.teacher_email
                         };
                         validRows.push(backendRow);
                     } else {
@@ -222,81 +515,95 @@ export default function UploadClasses({ onClose, onSuccess }) {
             if (allErrors.length > 0) {
                 setValidationErrors(allErrors);
                 setError(`Found ${allErrors.length} validation errors`);
+                setLoading(false);
                 return;
             }
 
             if (validRows.length === 0) {
-                setError("No valid rows found in CSV file");
+                setError("No valid rows found in file");
+                setLoading(false);
                 return;
             }
 
             // Send to backend
-            setLoading(true);
-            try {
-                const response = await axios.post(
-                    `${import.meta.env.VITE_API_URL}/classes/bulk-upload`,
-                    { classes: validRows },
-                    { headers: { 'Content-Type': 'application/json' } }
-                );
+            const response = await axios.post(
+                `${import.meta.env.VITE_API_URL}/classes/bulk-upload`,
+                { classes: validRows },
+                { headers: { 'Content-Type': 'application/json' } }
+            );
 
-                setSuccess(`${response.data.created} classes created successfully! ${response.data.skipped} duplicates skipped.`);
-                setValidationErrors([]);
-                
-                // Clear file after successful upload
-                setFile(null);
-                setPreview([]);
+            setSuccess(`${response.data.created} classes created successfully! ${response.data.skipped} duplicates skipped.`);
+            setValidationErrors([]);
+            
+            // Clear file after successful upload
+            setFile(null);
+            setPreview([]);
 
-                // Call success callback after delay
-                setTimeout(() => {
-                    if (onSuccess) onSuccess();
-                }, 2000);
+            // Call success callback after delay
+            setTimeout(() => {
+                if (onSuccess) onSuccess();
+            }, 2000);
 
-            } catch (err) {
-                const errorMsg = err.response?.data?.detail || "Network Error";
-                setError(errorMsg);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        reader.readAsText(file);
+        } catch (err) {
+            const errorMsg = err.response?.data?.detail || err.message || "Upload failed";
+            setError(errorMsg);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="w-full h-auto flex flex-col justify-center items-center bg-white 
                 py-6 px-4 shadow-2xl rounded-lg max-w-2xl mx-auto"
         >
-            <h2 className="text-xl font-bold text-[#102E50] mb-4">Upload Classes via CSV</h2>
+            <h2 className="text-xl font-bold text-[#102E50] mb-4">Upload Classes via CSV/Excel</h2>
 
             {/* Instructions */}
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg w-full">
-                <h3 className="text-blue-800 font-semibold mb-2">CSV Format (Match Table Columns):</h3>
+                <h3 className="text-blue-800 font-semibold mb-2">File Format Requirements:</h3>
                 <ul className="text-blue-600 text-sm list-disc pl-5 space-y-1">
-                    <li>Required columns in this order: <code>course_code, course_name, teacher_email, section, room, units, schedule, academic_year, semester</code></li>
-                    <li><strong>course_code</strong>: Course code (maps to "Course Code" in table)</li>
-                    <li><strong>course_name</strong>: Full course name (maps to "Course Name" in table)</li>
-                    <li><strong>teacher_email</strong>: Teacher's registered email (maps to "Teacher Name")</li>
-                    <li><strong>section</strong>: Class section (e.g., IV-CS1)</li>
-                    <li><strong>room</strong>: Room location</li>
-                    <li><strong>units</strong>: Format "3" (lecture only) or "3/1" (3 lecture + 1 lab)</li>
-                    <li><strong>schedule</strong>: Format "Days: Time" (e.g., "MW: 9:00am-12:00pm")</li>
-                    <li><strong>academic_year</strong>: Format "YYYY-YYYY" (e.g., 2025-2026)</li>
-                    <li><strong>semester</strong>: "1st semester" or "2nd semester"</li>
+                    <li>Supported formats: CSV, Excel (.csv, .xlsx, .xls)</li>
+                    <li><strong>Required columns:</strong> <code>course_code, course_name, teacher_email, section, room, units, schedule, academic_year, semester</code></li>
+                    <li>Excel files will automatically detect columns with similar names</li>
                 </ul>
+                
                 <div className="mt-3 p-3 bg-white border rounded">
-                    <p className="text-blue-800 text-sm font-semibold mb-1">Example CSV row:</p>
-                    <code className="text-gray-700 text-sm">
-                        CS101,Computer Science 101,teacher@example.com,IV-CS1,CB27,3/1,MW: 9:00am-12:00pm,2025-2026,1st semester
-                    </code>
+                    <p className="text-blue-800 text-sm font-semibold mb-1">Column Formats:</p>
+                    <ul className="text-gray-700 text-sm space-y-1">
+                        <li><code>course_code</code>: Course code (max 15 chars)</li>
+                        <li><code>course_name</code>: Full course name</li>
+                        <li><code>teacher_email</code>: Teacher's registered email address</li>
+                        <li><code>section</code>: Class section (max 10 chars)</li>
+                        <li><code>room</code>: Room location (max 50 chars)</li>
+                        <li><code>units</code>: Format "3" (lecture only) or "3/1" (3 lecture + 1 lab)</li>
+                        <li><code>schedule</code>: Class schedule (e.g., "MW: 9:00am-12:00pm")</li>
+                        <li><code>academic_year</code>: Format "YYYY-YYYY" (e.g., 2025-2026)</li>
+                        <li><code>semester</code>: "1st semester" or "2nd semester"</li>
+                    </ul>
+                </div>
+
+                {/* Excel-specific instructions */}
+                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                    <p className="text-yellow-800 text-sm font-semibold mb-1">For Excel files:</p>
+                    <ul className="text-yellow-700 text-sm list-disc pl-5 space-y-1">
+                        <li>The <strong>units column</strong> should be formatted as <strong>Text</strong> to prevent Excel from converting fractions to dates</li>
+                        <li>Or use an apostrophe before values: <code>'3/1</code></li>
+                        <li>Common units like 3/1, 2/1 will be automatically converted if Excel treats them as dates</li>
+                    </ul>
                 </div>
             </div>
 
             {/* File Upload */}
             <div className="w-full mb-6">
                 <FileUploader 
-                    type=".csv" 
+                    type=".csv,.xlsx,.xls" 
                     handleFileChange={handleFileChange} 
                 />
+                {file && (
+                    <p className="text-sm text-green-600 mt-2">
+                        Selected: {file.name} ({file.type || file.name.split('.').pop().toUpperCase()} format)
+                    </p>
+                )}
             </div>
 
             {/* Preview */}
@@ -327,9 +634,6 @@ export default function UploadClasses({ onClose, onSuccess }) {
                             </tbody>
                         </table>
                     </div>
-                    <p className="text-sm text-gray-600 mt-2">
-                        Total rows to process: {file ? (preview.length === 5 ? '5+' : preview.length) : 0}
-                    </p>
                 </div>
             )}
 
@@ -372,6 +676,7 @@ export default function UploadClasses({ onClose, onSuccess }) {
                     onClick={onClose}
                     className="flex-1 py-3 bg-gray-200 text-[#102E50] font-medium rounded-lg
                         hover:bg-gray-300 transition-colors"
+                    disabled={loading}
                 >
                     Cancel
                 </button>

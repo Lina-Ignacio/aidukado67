@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Request
 from datetime import timedelta
 from sqlalchemy.orm import Session
+from jose import JWTError, jwt
 from app.models.users import Users
 from app.schemas.user import UserCreate, UserResponse, UserLogin, TokenResponse
 from app.database import get_db
-from app.utils.auth import hash_password, verify_password
-from app.utils.jwt import create_access_token
+from app.utils.auth import hash_password, verify_password, create_access_token, get_current_user
+from app.config import SECRET_KEY, ALGORITHM
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -18,13 +18,13 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
     
     if existing_user:
         raise HTTPException(
-            status_code=status.HTPP_400_BAD_REQUEST,
-            detail="email already existing"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already exists"
         )
         
     hashed_pw = hash_password(user.password)
     
-    db_user = Users (
+    db_user = Users(
         email=user.email,
         password_hash=hashed_pw,
         role=user.role,
@@ -66,32 +66,32 @@ def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
 
     payload = {
         "sub": str(db_user.id),   
-        "role": db_user.role
+        "role": db_user.role,
+        "email": db_user.email
     }
 
     access_token = create_access_token(payload, access_token_expires)
     refresh_token = create_access_token(payload, refresh_token_expires)
 
-    
-    # Don't set domain parameter for localhost development
+    # Set access token cookie (30 minutes)
     response.set_cookie(
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,
+        secure=False,  
         samesite="lax",
-        max_age=3600,
-        path="/",
-        # domain=None  # Don't set domain for localhost
+        max_age=1800,  
+        path="/"
     )
 
+    # Set refresh token cookie (7 days)
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=False, 
+        secure=False,  
         samesite="Lax",
-        max_age=int(refresh_token_expires.total_seconds()),
+        max_age=604800,  
         path="/"
     )
 
@@ -104,26 +104,77 @@ def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
         "first_name": db_user.first_name
     }
 
-    
-    
-@router.post("/refresh", response_model=TokenResponse)
-def refresh_token(refresh_token: str):
-    try:
-        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload.get("sub")
-        if email is None:
-            raise HTTPException(status_code=401, detail="Invalid refresh token")
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Refresh token expired")
-    except jwt.PyJWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
 
+@router.post("/refresh", response_model=TokenResponse)
+def refresh_token(refresh_token: str = None):
+    """
+    Refresh access token using refresh token
+    Can be passed as parameter or cookie
+    """
+    # If no refresh token provided, try to get from cookies
+    if not refresh_token:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Refresh token required"
+        )
+    
+    try:
+        # Decode the refresh token
+        payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = payload.get("sub")
+        role = payload.get("role")
+        email = payload.get("email")
+        
+        if not user_id or not email:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token"
+            )
+            
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token expired"
+        )
+    except jwt.JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token"
+        )
+
+    # Create new access token
     new_access_token = create_access_token(
-        data={"sub": email},
+        data={"sub": user_id, "role": role, "email": email},
         expires_delta=timedelta(minutes=30)
     )
 
     return {
         "access_token": new_access_token,
         "token_type": "bearer"
+    }
+
+
+@router.post("/logout")
+def logout(response: Response):
+    """
+    Clear authentication cookies
+    """
+    response.delete_cookie(key="access_token", path="/")
+    response.delete_cookie(key="refresh_token", path="/")
+    
+    return {"message": "Logout successful"}
+
+
+@router.get("/me")
+def get_current_user_info(current_user: Users = Depends(get_current_user)):
+    """
+    Get current logged-in user info
+    """
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "role": current_user.role,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "must_change_password": current_user.must_change_password
     }

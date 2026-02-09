@@ -13,8 +13,6 @@ router = APIRouter(prefix="/user", tags=["User"])
 
 
 
-
-
 @router.get("/get", response_model=list[UserOut])
 def get_users(query: str | None = None, db: Session = Depends(get_db)):
     

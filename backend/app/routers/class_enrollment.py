@@ -4,36 +4,82 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
 from app.models import ClassEnrollment, Users, Classes
 from app.schemas.class_enrollment import (EnrollmentCreate, EnrollmentOut, 
-    EnrollmentUpdate, EnrollmentClassOut, EnrollmentImportRequest, EnrollmentImportResponse)
+    EnrollmentUpdate, EnrollmentClassOut, EnrollmentImportRequest, EnrollmentImportResponse, CSVRow, EnrollmentTableOut)
 from app.database import SessionLocal
 from app.database import get_db
+import io
+import csv
+from datetime import date
 
 router = APIRouter(prefix="/enrollment", tags=["enrollment"])
 
-@router.get("/get", response_model=list[EnrollmentOut])
-def get_enrollments(query: str | None = None, db: Session = Depends(get_db)):
-    
+@router.get("/get", response_model=list[EnrollmentTableOut])
+def get_enrollments(db: Session = Depends(get_db)):
+    """
+    Get all enrollments with ONLY the data needed for table display.
+    Very lightweight and fast.
+    """
     enrollments = (
-        db.query(ClassEnrollment)
-        .options(
-            joinedload(ClassEnrollment.student),
-            joinedload(ClassEnrollment.enrolled_class)
+        db.query(
+            ClassEnrollment.id,
+            ClassEnrollment.class_id,
+            ClassEnrollment.student_id,
+            ClassEnrollment.enrollment_date,
+            ClassEnrollment.status,
+            Users.first_name.label('student_first_name'),
+            Users.last_name.label('student_last_name'),
+            Classes.name.label('class_name')
         )
+        .join(Users, ClassEnrollment.student_id == Users.id)
+        .join(Classes, ClassEnrollment.class_id == Classes.id)
         .filter(ClassEnrollment.is_archive == False)
+        .filter(Users.is_archive == False)  
+        .filter(Classes.is_archive == False)  
+        .order_by(ClassEnrollment.id.asc())
+        .all()
     )
     
-    if query:
-        q = f"%{query}%"
-        enrollments = enrollments.join(Users).join(Classes).filter(
+    return enrollments
+
+@router.get("/get-filtered", response_model=list[EnrollmentTableOut])
+def get_enrollments_filtered(
+    query: str | None = None, 
+    db: Session = Depends(get_db)
+):
+    """
+    Get enrollments with backend filtering.
+    Still returns minimal data for table.
+    """
+    q = (
+        db.query(
+            ClassEnrollment.id,
+            ClassEnrollment.class_id,
+            ClassEnrollment.student_id,
+            ClassEnrollment.enrollment_date,
+            ClassEnrollment.status,
+            Users.first_name.label('student_first_name'),
+            Users.last_name.label('student_last_name'),
+            Classes.name.label('class_name')
+        )
+        .join(Users, ClassEnrollment.student_id == Users.id)
+        .join(Classes, ClassEnrollment.class_id == Classes.id)
+        .filter(ClassEnrollment.is_archive == False)
+        .filter(Users.is_archive == False)
+        .filter(Classes.is_archive == False)
+    )
+    
+    if query and query.strip():
+        search = f"%{query.strip()}%"
+        q = q.filter(
             or_(
-                Users.first_name.ilike(q),
-                Users.last_name.ilike(q),
-                Classes.name.ilike(q),
-                ClassEnrollment.status.ilike(q)
+                Users.first_name.ilike(search),
+                Users.last_name.ilike(search),
+                Classes.name.ilike(search),
+                ClassEnrollment.status.ilike(search)
             )
         )
     
-    enrollments = enrollments.order_by(ClassEnrollment.id.asc()).all()
+    enrollments = q.order_by(ClassEnrollment.id.asc()).all()
     
     return enrollments
 
@@ -131,7 +177,7 @@ def archive_enrollment(enrollment_id: int, db: Session = Depends(get_db)):
     return {"message" : f"Enrollment Data with id: {enrollment_id} has been archived"}
 
 
-@router.post("/", response_model=EnrollmentImportResponse)
+@router.post("/import", response_model=EnrollmentImportResponse)
 def import_enrollments(
     request: EnrollmentImportRequest, 
     db: Session = Depends(get_db)
@@ -182,9 +228,9 @@ def import_enrollments(
         
         try:
             # Get the class
-            class_obj = db.query(models.Classes).filter(
-                models.Classes.id == request.class_id,
-                models.Classes.is_archive == False
+            class_obj = db.query(Classes).filter(
+                Classes.id == request.class_id,
+                Classes.is_archive == False
             ).first()
             
             if not class_obj:
@@ -194,9 +240,9 @@ def import_enrollments(
                 )
             
             # Get all users with matching emails (case-insensitive)
-            users = db.query(models.Users).filter(
-                models.Users.email.in_(emails),
-                models.Users.is_archive == False
+            users = db.query(Users).filter(
+                Users.email.in_(emails),
+                Users.is_archive == False
             ).all()
             
             # Create email->user mapping (lowercase for case-insensitive matching)
@@ -223,10 +269,10 @@ def import_enrollments(
                 )
             
             # Check for existing enrollments to avoid duplicates
-            existing_enrollments = db.query(models.ClassEnrollment).filter(
-                models.ClassEnrollment.class_id == request.class_id,
-                models.ClassEnrollment.student_id.in_([user.id for user in users]),
-                models.ClassEnrollment.is_archive == False
+            existing_enrollments = db.query(ClassEnrollment).filter(
+                ClassEnrollment.class_id == request.class_id,
+                ClassEnrollment.student_id.in_([user.id for user in users]),
+                ClassEnrollment.is_archive == False
             ).all()
             
             existing_student_ids = {enrollment.student_id for enrollment in existing_enrollments}
@@ -241,11 +287,11 @@ def import_enrollments(
                     continue
                 
                 # Create enrollment
-                enrollment = models.ClassEnrollment(
+                enrollment = ClassEnrollment(
                     class_id=request.class_id,
                     student_id=user.id,
                     enrollment_date=date.today(),
-                    status="active",
+                    status="enrolled",
                     is_archive=False
                 )
                 db.add(enrollment)

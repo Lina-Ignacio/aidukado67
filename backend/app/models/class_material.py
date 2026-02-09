@@ -26,7 +26,7 @@ class ClassMaterial(Base):
     student_progress = relationship("StudentActivityProgress", back_populates="material")
     submissions = relationship("StudentSubmission", back_populates="material", cascade="all, delete")
 
-    # activities = relationship("Activity", back_populates="lesson", cascade="all, delete")
+    
     quizzes = relationship("Quiz", back_populates="material", cascade="all, delete")
     exams = relationship(
         "Exam", 
@@ -34,4 +34,7 @@ class ClassMaterial(Base):
         back_populates="class_materials",
         cascade="all, delete"
     )
+    
+    
+    student_reopens = relationship("StudentTaskReopen", back_populates="material", cascade="all, delete")
     

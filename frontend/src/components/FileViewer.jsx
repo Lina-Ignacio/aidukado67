@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { MdDownload } from "react-icons/md";
 
-export default function FileViewer({ fileUrl, fileName }) {
+export default function FileViewer({ fileUrl, fileName, isVisible, setIsVisible }) {
   const [isLoading, setIsLoading] = useState(true);
   const [scale, setScale] = useState(1);
   const iframeRef = useRef(null);
@@ -146,6 +146,18 @@ export default function FileViewer({ fileUrl, fileName }) {
       
       {/* Controls Container */}
       <div className="absolute bottom-4 right-4 flex flex-col sm:flex-row items-end gap-3 z-20">
+        {/* Close Button - ADDED THIS */}
+        <div className="flex justify-end">
+          <button
+            onClick={() => setIsVisible(false)}
+            className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-lg transition-colors"
+            title="Close Viewer"
+          >
+            <span className="hidden sm:inline">Close</span>
+            <span className="sm:hidden">✕</span>
+          </button>
+        </div>
+        
         {/* Download Button */}
         <div className="flex justify-end">
           <button
@@ -155,7 +167,7 @@ export default function FileViewer({ fileUrl, fileName }) {
           >
             <MdDownload className="text-lg" />
             <span className="hidden sm:inline">Download</span>
-            <span className="sm:hidden">↓</span>
+            <span className="sm:hidden"></span>
           </button>
         </div>
         

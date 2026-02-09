@@ -76,3 +76,19 @@ class CSVRow(BaseModel):
     name: str
     email: str
 
+class EnrollmentTableOut(BaseModel):
+    id: int
+    class_id: int
+    student_id: int
+    enrollment_date: date
+    status: str
+    
+    student_first_name: str | None = None
+    student_last_name: str | None = None
+    class_name: str | None = None
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        alias_generator=to_camel,
+        populate_by_name=True
+    )

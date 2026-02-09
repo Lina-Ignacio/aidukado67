@@ -5,6 +5,7 @@ import {
   MdAccountCircle,
   MdAssignmentInd,
   MdClass,
+  MdPerson,
 
 } from "react-icons/md";
 import { IoLogOut, IoHelpCircle, IoLibrary, IoSchool, IoPeople, IoClipboard } from "react-icons/io5";
@@ -163,7 +164,7 @@ export default function Sidebar({closeMobile}) {
             </NavLink>
             {location.pathname === '/termPage' && (
               <NavLink to="/studentList" className={linkClasses}>
-                <MdBarChart size={40} />
+                <MdPerson size={40} />
                 <h2 className="font-extrabold text-2xl md:text-[3xl] xl:text-[4xl]">Student List</h2>
               </NavLink>
             )}

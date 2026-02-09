@@ -122,7 +122,6 @@ export default function EditClass({ classId, onClose, onSuccess }) {
     const getClass = async () => {
         try {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/classes/getById/${classId}`)
-            console.log("Class data:", response.data);
             
             // Parse schedule if it exists
             const scheduleData = response.data.schedule 
@@ -140,8 +139,8 @@ export default function EditClass({ classId, onClose, onSuccess }) {
                 section: response.data.section || "",         
                 academic_year: response.data.academicYear || response.data.academic_year || "",  
                 semester: response.data.semester || "",
-                lecture_units: response.data.lecture_units || 0,  // NEW
-                lab_units: response.data.lab_units || 0           // NEW
+                lecture_units: response.data.lectureUnits || 0,  
+                lab_units: response.data.labUnits || 0           
             });
         } catch (err) {
             if (err.response?.data?.detail) {

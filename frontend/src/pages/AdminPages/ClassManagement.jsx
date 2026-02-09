@@ -137,7 +137,7 @@ export default function ClassManagement() {
                 </div>
 
                 {/* Modal for uploading classes */}
-                <Modal isOpen={isOpenUploadModal} onClose={() => setIsOpenUploadModal(false)} title="Upload Classes via CSV" panelStyle={panelStyleUpload}>
+                <Modal isOpen={isOpenUploadModal} onClose={() => setIsOpenUploadModal(false)} title="" panelStyle={panelStyleUpload}>
                     <UploadClasses 
                         onClose={() => setIsOpenUploadModal(false)}
                         onSuccess={() => {
