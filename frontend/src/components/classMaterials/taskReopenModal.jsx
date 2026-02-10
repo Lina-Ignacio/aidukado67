@@ -334,8 +334,8 @@ export default function TaskReopenModal({ materialId, onClose, onSuccess }) {
                                 onClick={handleSubmit}
                                 disabled={selectedStudents.length === 0 || !newDueDate || submitting}
                                 className="min-w-[140px]"
-                                mainColor="#E78B48"
-                                darkColor="#D97C38"
+                                mainColor="#8E9DCC" 
+                                darkColor="#6B7CB2"
                             />
                         </div>
                     </div>

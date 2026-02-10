@@ -7,9 +7,11 @@ from app.schemas.user import UserCreate, UserResponse, UserLogin, TokenResponse
 from app.database import get_db
 from app.utils.auth import hash_password, verify_password, create_access_token, get_current_user
 from app.config import SECRET_KEY, ALGORITHM
+import os
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
+IS_PRODUCTION = os.getenv("ENVIRONMENT") == "production"
 
 @router.post("/signup", response_model=UserResponse)
 def signup(user: UserCreate, db: Session = Depends(get_db)):
@@ -78,8 +80,8 @@ def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
         key="access_token",
         value=access_token,
         httponly=True,
-        secure=False,  
-        samesite="lax",
+        secure=IS_PRODUCTION,  
+        samesite="none" if IS_PRODUCTION else "lax",
         max_age=1800,  
         path="/"
     )
@@ -89,8 +91,8 @@ def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
         key="refresh_token",
         value=refresh_token,
         httponly=True,
-        secure=False,  
-        samesite="Lax",
+        secure=IS_PRODUCTION,
+        samesite="none" if IS_PRODUCTION else "lax",
         max_age=604800,  
         path="/"
     )
@@ -104,14 +106,14 @@ def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
         "first_name": db_user.first_name
     }
 
-
-@router.post("/refresh", response_model=TokenResponse)
-def refresh_token(refresh_token: str = None):
+@router.post("/refresh")
+def refresh_token(request: Request, response: Response, db: Session = Depends(get_db)):
     """
-    Refresh access token using refresh token
-    Can be passed as parameter or cookie
+    Refresh access token using refresh token from cookie
     """
-    # If no refresh token provided, try to get from cookies
+    # Get refresh token from cookie
+    refresh_token = request.cookies.get("refresh_token")
+    
     if not refresh_token:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -122,13 +124,19 @@ def refresh_token(refresh_token: str = None):
         # Decode the refresh token
         payload = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
-        role = payload.get("role")
-        email = payload.get("email")
         
-        if not user_id or not email:
+        if not user_id:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid refresh token"
+            )
+            
+        # Get user from database
+        user = db.query(Users).filter(Users.id == int(user_id)).first()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found"
             )
             
     except jwt.ExpiredSignatureError:
@@ -143,12 +151,30 @@ def refresh_token(refresh_token: str = None):
         )
 
     # Create new access token
+    new_payload = {
+        "sub": str(user.id),
+        "role": user.role,
+        "email": user.email
+    }
+    
     new_access_token = create_access_token(
-        data={"sub": user_id, "role": role, "email": email},
+        data=new_payload,
         expires_delta=timedelta(minutes=30)
     )
 
+    # FIXED: Set the new access token cookie with proper settings
+    response.set_cookie(
+        key="access_token",
+        value=new_access_token,
+        httponly=True,
+        secure=IS_PRODUCTION,
+        samesite="none" if IS_PRODUCTION else "lax",
+        max_age=1800,
+        path="/"
+    )
+
     return {
+        "message": "Token refreshed successfully",
         "access_token": new_access_token,
         "token_type": "bearer"
     }
