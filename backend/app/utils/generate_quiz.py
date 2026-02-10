@@ -1,108 +1,174 @@
 import asyncio
-from fastapi.responses import JSONResponse
 from .parse_questions import parse_questions
-from dotenv import load_dotenv
-from pathlib import Path
 from app.core.gemini import get_gemini_model
-from app.core.quiz_groq import get_quiz_model  
+from app.core.quiz_groq_optimized import get_quiz_generator
 
 async def generate_quiz(lesson_content, num_items, question_type):
     """
-    Generates a quiz using Groq with strict enforcement of valid answers.
+    Smart quiz generation with context window awareness
     """
-    model = get_quiz_model()  # Use the new quiz model instead of Gemini
+    # Get the smart generator
+    generator = get_quiz_generator()
     
-    # 1. Map question_type to user-friendly format
+    num_items_int = int(num_items)
+    
+    print(f"\n" + "="*50)
+    print(f"🧠 QUIZ GENERATION STARTED")
+    print(f"📋 Type: {num_items_int} {question_type} questions")
+    print(f"📊 Model: {generator.current_model}")
+    print(f"📐 Context window: {generator.model_config.context_window:,} tokens")
+    print("="*50)
+    
+    # Get status
+    status = generator.get_status()
+    print(f"🔑 Keys: {status['keys_available']}/{status['keys_total']} available")
+    
+    # SMART truncation based on model context window
+    if "compound" in generator.current_model:
+        # Compound models: 8192 context window
+        if num_items_int <= 5:
+            max_lesson_length = 6000
+        elif num_items_int <= 10:
+            max_lesson_length = 4000
+        elif num_items_int <= 15:
+            max_lesson_length = 2500
+        elif num_items_int <= 20:
+            max_lesson_length = 1500
+        else:
+            max_lesson_length = 1000  # Very short for 20+ questions
+    else:
+        # Llama models: 32768 context window
+        if num_items_int <= 10:
+            max_lesson_length = 10000
+        elif num_items_int <= 20:
+            max_lesson_length = 6000
+        else:
+            max_lesson_length = 3000
+    
+    if len(lesson_content) > max_lesson_length:
+        print(f"📝 Truncating lesson from {len(lesson_content):,} to {max_lesson_length:,} chars")
+        lesson_content = lesson_content[:max_lesson_length] + "..."
+    else:
+        print(f"📝 Lesson length: {len(lesson_content):,} chars (OK)")
+    
+    # Your prompt
     type_map = {
         "multiple_choice": "multiple choice",
         "true_false": "True/False"
     }
     formatted_type = type_map.get(question_type, question_type)
     
-    # 2. Define the format example based on type
     if question_type == "true_false":
-        format_example = """
-1. Question text here?
+        format_example = """1. Question?
 Answer: True
 
-2. Another question text here?
-Answer: False
-"""
-    else:  # multiple_choice
-        format_example = """
-1. Question text here?
-    A. Option text
-    B. Option text
-    C. Option text
-    D. Option text
-Answer: B
-"""
+2. Another question?
+Answer: False"""
+    else:
+        format_example = """1. Question?
+A) Option 1
+B) Option 2  
+C) Option 3
+D) Option 4
+Answer: B"""
 
-    # 3. The Optimized Prompt
-    prompt = f"""
-ROLE: You are an expert Assessment Specialist and Educator.
+    prompt = f"""Generate exactly {num_items} {formatted_type} questions from this content:
 
-TASK: Generate a high-quality quiz based on the provided content. 
-You must produce exactly {num_items} questions in {formatted_type} format.
+{lesson_content}
 
-CONTENT:
-\"\"\"{lesson_content}\"\"\"
+Rules:
+- Every question must have exactly one correct answer
+- No N/A or None answers
+- Questions must test key concepts
+- Return only the questions and answers
 
-STRICT COMPLIANCE RULES:
-- MANDATORY ANSWERS: Every question must include a correct answer.
-- NO NULL ENTRIES: Under no circumstances will you return "N/A", "None", "Unknown", or "Not provided" as an answer.
-- INTELLIGENT INFERENCE: If the content is slightly ambiguous, use your internal knowledge base to determine the most factual and logical correct answer.
-- QUESTION QUALITY: Ensure questions are pedagogical and directly related to the key concepts of the content.
-- OUTPUT ONLY: Return only the questions and answers. Do not include introductory text like "Sure, here is your quiz."
-
-FORMAT YOUR RESPONSE EXACTLY LIKE THIS EXAMPLE:
+Format each question like this:
 {format_example}
 
-BEGIN GENERATING {num_items} QUESTIONS:
-"""
+Generate {num_items} questions now:"""
 
     try:
-        # 4. Generate Content using Groq
-        raw_questions = await model.generate(
-            prompt,
-            temperature=0.2,    # Lower temp for consistent quizzes
-            max_tokens=8000     # Adjust based on number of questions
+        # Smart timeout based on question count
+        base_timeout = 60  # Base 1 minute
+        timeout_seconds = base_timeout + (num_items_int * 2)
+        timeout_seconds = min(timeout_seconds, 240)  # Max 4 minutes
+        
+        print(f"⏱️  Timeout: {timeout_seconds}s")
+        print(f"🚀 Starting generation...")
+        
+        raw_questions = await generator.generate_quiz(
+            prompt=prompt,
+            num_questions=num_items_int,
+            timeout=timeout_seconds,
         )
         
         if not raw_questions:
-            print("Error: Groq returned an empty response.")
+            print("❌ Error: Empty response")
             return []
 
-        # 5. Parse the raw text into Python objects
         parsed_questions = parse_questions(raw_questions)
         
-        # 6. Validation Logic
-        if len(parsed_questions) != int(num_items):
-            print(f"Warning: Requested {num_items} questions, but AI generated {len(parsed_questions)}.")
-            
-        # Optional: Final check for N/A in the parsed results
-        for q in parsed_questions:
-            if str(q.get("answer")).upper() in ["N/A", "NONE", "NULL"]:
-                # Force a fallback or log a specific error
-                print(f"Detected invalid answer in question: {q.get('question')}")
-
-        return parsed_questions
+        print(f"\n" + "="*50)
+        print(f"✅ GENERATION COMPLETE")
+        print(f"📊 Final model: {generator.current_model}")
+        print(f"📈 Questions generated: {len(parsed_questions)}/{num_items_int}")
+        print("="*50)
+        
+        # Show key statistics
+        key_stats = generator.get_key_stats()
+        print(f"🔑 Key Statistics:")
+        for key_id, stats in key_stats.items():
+            print(f"   {key_id}: {stats['requests']} req, {stats['success_rate']}")
+        
+        return parsed_questions[:num_items_int]
     
     except Exception as e:
-        print(f"Error generating quiz with Groq: {str(e)}")
+        error_msg = str(e)
+        print(f"\n❌ Groq failed: {error_msg[:200]}")
         
-        # Fallback to Gemini if Groq fails
-        try:
-            print("Falling back to Gemini...")
-            gemini_model = get_gemini_model()
-            response = await gemini_model.generate_content_async(prompt)
-            raw_questions = response.text
-            
-            if raw_questions:
-                parsed_questions = parse_questions(raw_questions)
-                return parsed_questions
-        except Exception as gemini_error:
-            print(f"Gemini fallback also failed: {str(gemini_error)}")
+        # Check if it's a context window error
+        if "8192" in error_msg or "max_tokens" in error_msg:
+            print(f"💡 Compound model limit is 8192 tokens")
+            print(f"💡 Try: 1) Fewer questions (<15), 2) Shorter lesson content")
         
-        # Return empty or raise based on your needs
+        # Try Gemini fallback
+        print(f"🔄 Attempting Gemini fallback...")
+        return await _fallback_to_gemini(prompt, num_items_int)
+
+async def _fallback_to_gemini(prompt: str, num_items: int):
+    """Fallback to Gemini with correct model name"""
+    try:
+        print("🔀 Switching to Gemini...")
+        gemini_model = get_gemini_model()
+        
+        # Try different model names
+        model_names = [
+            "gemini-1.5-flash",
+            "gemini-1.5-pro", 
+            "gemini-1.0-pro",
+            "models/gemini-1.5-flash"
+        ]
+        
+        for model_name in model_names:
+            try:
+                print(f"   Trying model: {model_name}")
+                response = await gemini_model.generate_content_async(
+                    prompt,
+                    # Add model name if your gemini.py supports it
+                )
+                raw_questions = response.text
+                
+                if raw_questions:
+                    parsed_questions = parse_questions(raw_questions)
+                    print(f"✅ Gemini ({model_name}) generated {len(parsed_questions)} questions")
+                    return parsed_questions[:num_items]
+            except Exception as model_error:
+                print(f"   ❌ {model_name} failed: {str(model_error)[:80]}")
+                continue
+        
+        print("❌ All Gemini models failed")
+        return []
+        
+    except Exception as gemini_error:
+        print(f"❌ Gemini failed: {gemini_error}")
         return []

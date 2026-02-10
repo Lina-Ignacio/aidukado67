@@ -3,9 +3,9 @@ import {
   FaClock, 
   FaHourglassHalf,
 } from "react-icons/fa";
-import { FiCheckCircle, FiClock, FiAlertCircle } from "react-icons/fi";
+import { FiCheckCircle, FiClock, FiAlertCircle, FiBookOpen, FiTarget, FiCalendar } from "react-icons/fi";
 import { useState, useEffect } from "react";
-import axios from "axios"; // Import axios
+import axios from "axios";
 
 export default function ExamCard({ 
   examData,
@@ -32,7 +32,8 @@ export default function ExamCard({
     passingScore: examData.passing_score,
     shuffleQuestions: examData.shuffle_questions,
     createdAt: examData.created_at,
-    isArchive: examData.is_archive || false
+    isArchive: examData.is_archive || false,
+    closingTime: examData.closing_time
   } : null;
   
   // Student data structure - based on API responses
@@ -136,100 +137,154 @@ export default function ExamCard({
     }
   };
 
-
   // Status badge styling for students
   const getStatusBadge = (status) => {
     const statusConfig = {
       "assigned": {
         text: "Not Started",
-        bgColor: "bg-blue-100",
-        textColor: "text-blue-800",
+        bgColor: "bg-gradient-to-r from-blue-50 to-blue-100",
+        textColor: "text-blue-700",
+        borderColor: "border border-blue-200",
         icon: <FiClock className="text-blue-600" />,
         buttonText: "Start Exam",
-        buttonColor: "bg-blue-600 hover:bg-blue-700"
+        buttonColor: "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white"
       },
       "in_progress": {
         text: "In Progress",
-        bgColor: "bg-yellow-100",
-        textColor: "text-yellow-800",
-        icon: <FaHourglassHalf className="text-yellow-600" />,
+        bgColor: "bg-gradient-to-r from-amber-50 to-amber-100",
+        textColor: "text-amber-700",
+        borderColor: "border border-amber-200",
+        icon: <FaHourglassHalf className="text-amber-600" />,
         buttonText: "Continue",
-        buttonColor: "bg-yellow-600 hover:bg-yellow-700"
+        buttonColor: "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white"
       },
       "submitted": {
         text: "Completed",
-        bgColor: "bg-green-100",
-        textColor: "text-green-800",
-        icon: <FiCheckCircle className="text-green-600" />,
+        bgColor: "bg-gradient-to-r from-emerald-50 to-emerald-100",
+        textColor: "text-emerald-700",
+        borderColor: "border border-emerald-200",
+        icon: <FiCheckCircle className="text-emerald-600" />,
         buttonText: "View Results",
-        buttonColor: "bg-green-600 hover:bg-green-700"
+        buttonColor: "bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white"
       }
     };
     
     return statusConfig[status] || statusConfig.assigned;
   };
+
+  // Format due date
+  const formatDueDate = (dateString) => {
+    if (!dateString) return "No deadline";
+    const date = new Date(dateString);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return `Today, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return `Tomorrow, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    } else {
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+  };
+
   // Teacher view 
   if (isTeacher && teacherData) {
     return (
       <div 
-        className="p-5 rounded-2xl relative bg-blue-50 border
-          hover:shadow-md transition-shadow cursor-pointer w-full border-blue-100"
+        className="relative w-full rounded-xl border transition-all duration-200 
+                   bg-gradient-to-br from-slate-50 to-white border-slate-200 
+                   hover:border-blue-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer"
         onClick={handleClick}
       >
-        {/* Shadow at bottom */}
-        <div 
-          className={`absolute h-[4%] w-full bg-[#E78B48]/20 bottom-0 left-0
-            rounded-br-2xl rounded-bl-2xl`}
-        ></div>
-
-        {/* Archive badge if archived */}
-        {teacherData.isArchive && (
-          <div className="absolute top-2 right-2">
-            <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
-              Archived
-            </span>
+        {/* Bottom accent bar */}
+        <div className="absolute h-1.5 w-full bottom-0 left-0 rounded-b-xl bg-gradient-to-r from-blue-500 to-indigo-600" />
+        
+        {/* Main content */}
+        <div className="p-5">
+          {/* Header */}
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1 pr-12">
+              <h3 className="text-lg font-bold text-slate-800 line-clamp-2 leading-tight">
+                {teacherData.title}
+              </h3>
+              
+              {/* Exam type badge */}
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 border border-blue-200">
+                  <FiBookOpen className="text-blue-600 text-xs" />
+                  <span className="text-xs font-medium text-blue-700">Exam</span>
+                </div>
+                
+                {/* Archive badge if archived */}
+                {teacherData.isArchive && (
+                  <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 border border-slate-300">
+                    <span className="text-xs font-medium text-slate-600">Archived</span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        )}
 
-        <h3 className="font-bold text-lg text-gray-800 truncate mb-1 text-[#102E50]">
-          {teacherData.title}
-        </h3>
-    
-        {/* Exam Details */}
-        <div className="flex justify-between mb-3">
-          {teacherData.totalPoints > 0 && (
-            <div className="flex items-center gap-2 text-sm text-[#102E50]">
-              <span className="text-gray-700">
-                Total: <span className="font-semibold">{teacherData.totalPoints} points</span>
-              </span>
+          {/* Exam details */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <p className="text-xs text-slate-500 mb-1">Total Points</p>
+              <p className="text-lg font-bold text-blue-600">{teacherData.totalPoints}</p>
             </div>
-          )}
-          
-          {teacherData.duration > 0 && (
-            <div className="flex items-center justify-center gap-1 text-sm text-[#102E50]">
-              <FaClock className="text-gray-400 text-xs" />
-              <span className="text-gray-700">{teacherData.duration} minutes</span>
+            
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <p className="text-xs text-slate-500 mb-1">Duration</p>
+              <p className="text-lg font-bold text-slate-800">{teacherData.duration} min</p>
             </div>
-          )}
+          </div>
+
+          {/* Additional info */}
+          <div className="space-y-2">
+            {teacherData.passingScore > 0 && (
+              <div className="flex items-center gap-2">
+                <FiTarget className="text-slate-400 text-sm" />
+                <span className="text-sm text-slate-600">
+                  Passing: <span className="font-semibold text-slate-800">{teacherData.passingScore} points</span>
+                </span>
+              </div>
+            )}
+            
+            {teacherData.closingTime && (
+              <div className="flex items-center gap-2">
+                <FiCalendar className="text-slate-400 text-sm" />
+                <span className="text-sm text-slate-600">
+                  Due: <span className="font-semibold text-slate-800">{formatDueDate(teacherData.closingTime)}</span>
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
+            <div className="flex items-center gap-2">
+              <div className="text-sm text-slate-500">Created</div>
+              <div className="text-sm font-medium text-slate-700">
+                {teacherData.createdAt ? 
+                  new Date(teacherData.createdAt).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                  }) : 'Recently'
+                }
+              </div>
+            </div>
+            
+            <div className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+              <span className="text-xs font-semibold">Monitor</span>
+            </div>
+          </div>
         </div>
-
-        {/* Passing score if available */}
-        {teacherData.passingScore > 0 && (
-          <div className="text-sm text-gray-700 mb-2">
-            Passing: {teacherData.passingScore} points
-          </div>
-        )}
-
-
-        {/* Created date */}
-        {teacherData.createdAt && (
-          <div className="text-xs text-gray-500 mt-2">
-           Created: {new Date(teacherData.createdAt).toLocaleDateString('en-US', { 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-          </div>
-        )}
       </div>
     );
   }
@@ -246,153 +301,208 @@ export default function ExamCard({
       : null;
 
     return (
-      <div 
-        className="p-5 rounded-2xl shadow-md relative bg-blue-50 relative
-          hover:shadow-md transition-shadow w-full border border-blue-100"
-      >
-        {/* Shadow at bottom */}
-        <div 
-          className="absolute h-[2%] w-full bg-[#102E50]/20 bottom-0 left-0
-            rounded-2xl"
-        >
-        </div>
-
-        <div className="flex justify-between items-start mb-3">
-          <div className="flex-1">
-            <div className="flex items-center justify-end mb-1">
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                studentData.status === "submitted" 
-                  ? "bg-green-100 text-green-800" 
-                  : studentData.status === "in_progress"
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-blue-100 text-blue-800"
-              }`}>
-                <div className="flex items-center gap-1">
-                  {statusBadge.icon}
-                  {statusBadge.text}
-                </div>
-              </span>
-            </div>
-            <h3 className="font-bold text-lg text-gray-800 truncate text-[#102E50]">
-              {studentData.examTitle}
-            </h3>
-          </div>
-        </div>
-
-        {/* Exam Details */}
-        <div className="flex justify-between mb-3">
-          {studentData.examTotalPoints > 0 && (
-            <div className="flex items-center gap-2 text-sm text-[#102E50]">
-              <span className="text-gray-700 text-sm">
-                Total: <span className="font-semibold">{studentData.examTotalPoints} points</span>
-              </span>
-            </div>
-          )}
-          
-          {studentData.examDuration > 0 && (
-            <div className="flex items-center justify-center gap-1 text-sm text-[#102E50]">
-              <FaClock className="text-gray-400 text-sm" />
-              <span className="text-gray-700">{studentData.examDuration} minutes</span>
-            </div>
-          )}
-        </div>
-
-        {/* Passing score if available */}
-        {studentData.examPassingScore > 0 && (
-          <div className="text-sm text-gray-600 mb-2">
-            Passing Score: {studentData.examPassingScore} points
-          </div>
-        )}
-
-        {/* Score display for submitted exams */}
-        {studentData.status === "submitted" && studentData.score !== null && studentData.score !== undefined && (
-          <div className="mb-3">
-            <div className="flex items-center gap-2 text-sm text-[#102E50]">
+      <div className="relative w-full rounded-xl border transition-all duration-200 
+                      bg-gradient-to-br from-slate-50 to-white border-slate-200 
+                      hover:border-slate-300 hover:shadow-lg hover:scale-[1.02] cursor-pointer">
+        
+        {/* Bottom accent bar based on status */}
+        <div className={`absolute h-1.5 w-full bottom-0 left-0 rounded-b-xl ${
+          studentData.status === "submitted" ? 'bg-gradient-to-r from-emerald-500 to-green-600' :
+          studentData.status === "in_progress" ? 'bg-gradient-to-r from-amber-500 to-orange-600' :
+          'bg-gradient-to-r from-blue-500 to-indigo-600'
+        }`} />
+        
+        {/* Main content */}
+        <div className="p-5">
+          {/* Header with title and status */}
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex-1 pr-12">
+              <h3 className="text-lg font-bold text-slate-800 line-clamp-2 leading-tight">
+                {studentData.examTitle}
+              </h3>
               
-              <span className="text-gray-700">
-                Score: <span className={`font-semibold ${isPassing ? 'text-green-600' : 'text-red-600'}`}>
-                  {studentData.score}
-                  {percentage !== null && ` (${percentage}%)`}
-                </span>
+              {/* Exam type badge */}
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 border border-blue-200">
+                  <FiBookOpen className="text-blue-600 text-xs" />
+                  <span className="text-xs font-medium text-blue-700">Exam</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Status badge */}
+            <div className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 ${statusBadge.bgColor} ${statusBadge.borderColor}`}>
+              <div className="h-2 w-2 rounded-full bg-current opacity-75" />
+              <span className={`text-xs font-semibold ${statusBadge.textColor}`}>
+                {statusBadge.text}
               </span>
             </div>
           </div>
-        )}
 
-        {/* Start time if in progress */}
-        {studentData.status === "in_progress" && studentData.startTime && (
-          <div className="text-xs text-gray-500 mb-2">
-            Started: {new Date(studentData.startTime).toLocaleDateString()}
+          {/* Exam details */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <p className="text-xs text-slate-500 mb-1">Total Points</p>
+              <p className="text-lg font-bold text-blue-600">{studentData.examTotalPoints}</p>
+            </div>
+            
+            <div className="bg-white p-3 rounded-lg border border-slate-200">
+              <p className="text-xs text-slate-500 mb-1">Duration</p>
+              <div className="flex items-center gap-1">
+                <FaClock className="text-slate-400 text-sm" />
+                <p className="text-lg font-bold text-slate-800">{studentData.examDuration} min</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Score display for submitted exams */}
+          {studentData.status === "submitted" && studentData.score !== null && studentData.score !== undefined && (
+            <div className="mb-4 p-3 rounded-lg bg-gradient-to-r from-emerald-50 to-green-50 border border-emerald-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-emerald-700 mb-1">Your Score</p>
+                  <p className="text-xl font-bold text-emerald-800">
+                    {studentData.score}
+                    <span className="text-lg text-emerald-600">/{studentData.examTotalPoints}</span>
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className={`text-sm font-bold px-2 py-0.5 rounded-full ${
+                    isPassing ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                  }`}>
+                    {percentage}%
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1">
+                    {isPassing ? 'Passed ✓' : 'Needs Improvement'}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Progress bar */}
+              <div className="mt-2 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                <div 
+                  className={`h-full rounded-full ${
+                    isPassing ? 'bg-emerald-500' : 'bg-red-500'
+                  }`}
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Additional info */}
+          <div className="space-y-2 mb-4">
+            {studentData.examPassingScore > 0 && (
+              <div className="flex items-center gap-2">
+                <FiTarget className="text-slate-400 text-sm" />
+                <span className="text-sm text-slate-600">
+                  Passing: <span className="font-semibold text-slate-800">{studentData.examPassingScore} points</span>
+                </span>
+              </div>
+            )}
+            
+            {studentData.closingTime && (
+              <div className="flex items-center gap-2">
+                <FiCalendar className="text-slate-400 text-sm" />
+                <span className="text-sm text-slate-600">
+                  Due: <span className="font-semibold text-slate-800">{formatDueDate(studentData.closingTime)}</span>
+                </span>
+              </div>
+            )}
+            
+            {studentData.status === "in_progress" && studentData.startTime && (
+              <div className="flex items-center gap-2">
+                <FiClock className="text-slate-400 text-sm" />
+                <span className="text-sm text-slate-600">
+                  Started: <span className="font-semibold text-slate-800">
+                    {new Date(studentData.startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  </span>
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Footer with action button */}
+          <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-200">
+            <div className="flex items-center gap-2">
+              <div className="text-sm text-slate-500">Assigned</div>
+              <div className="text-sm font-medium text-slate-700">
+                {studentData.createdAt ? 
+                  new Date(studentData.createdAt).toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric' 
+                  }) : 'Recently'
+                }
+              </div>
+            </div>
+            
+            {/* Action button */}
+            {studentData.status === "assigned" ? (
+              <>
+                {isChecking ? (
+                  <button
+                    disabled
+                    className="px-4 py-1.5 rounded-lg bg-slate-200 text-slate-600 text-xs font-semibold cursor-not-allowed"
+                  >
+                    Checking...
+                  </button>
+                ) : isExamClosed ? (
+                  <button
+                    disabled
+                    className="px-4 py-1.5 rounded-lg bg-slate-200 text-slate-600 text-xs font-semibold cursor-not-allowed"
+                  >
+                    Exam Closed
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleExam}
+                    className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all"
+                  >
+                    Start Exam
+                  </button>
+                )}
+              </>
+            ) : (
+              <button
+                onClick={handleExam}
+                className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition-all ${statusBadge.buttonColor}`}
+              >
+                {statusBadge.buttonText}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Closed exam overlay */}
+        {studentData.status === "assigned" && isExamClosed && !isChecking && (
+          <div className="absolute inset-0 bg-white/90 backdrop-blur-sm rounded-xl flex flex-col items-center justify-center p-4">
+            <div className="text-center">
+              <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center mx-auto mb-3">
+                <FiAlertCircle className="text-slate-500 text-2xl" />
+              </div>
+              <h4 className="font-bold text-slate-700 mb-1">Exam Closed</h4>
+              <p className="text-sm text-slate-500 mb-3">Submission period has ended</p>
+              {studentData.closingTime && (
+                <div className="text-xs text-slate-400">
+                  Was due: {formatDueDate(studentData.closingTime)}
+                </div>
+              )}
+            </div>
           </div>
         )}
-
-        {/* Action buttons */}
-        <div className="flex justify-between items-center text-sm text-gray-500 border-t border-gray-100 pt-3">
-          <span className="text-sm">
-            {studentData.createdAt ? 
-              `${new Date(studentData.createdAt).toLocaleDateString('en-US', { 
-                month: 'long', 
-                day: 'numeric' 
-              })}` : 'Recently assigned'
-            }
-          </span>
-          
-          {studentData.status === "assigned" && (
-            <>
-              {isChecking ? (
-                <button
-                  disabled
-                  className="text-white bg-gray-400 text-xs px-3 py-1 rounded-full font-medium cursor-not-allowed opacity-60"
-                >
-                  Checking...
-                </button>
-              ) : isExamClosed ? (
-                <button
-                  disabled
-                  className="text-white bg-gray-400 text-xs px-3 py-1 rounded-full font-medium cursor-not-allowed opacity-60"
-                >
-                  Exam Closed
-                </button>
-              ) : (
-                <button
-                  onClick={handleExam}
-                  className="text-white bg-blue-600 hover:bg-blue-700 text-xs px-3 py-1 rounded-full font-medium transition-colors"
-                >
-                  Start Exam
-                </button>
-              )}
-            </>
-          )}
-          
-          {studentData.status === "in_progress" && (
-            <button
-              onClick={handleExam}
-              className="text-white bg-yellow-600 hover:bg-yellow-700 text-xs px-3 py-1 rounded-full font-medium transition-colors"
-            >
-              Continue
-            </button>
-          )}
-          
-          {studentData.status === "submitted" && (
-            <button
-              onClick={handleExam}
-              className="text-white bg-[#102E50] text-md px-3 py-1 rounded-full font-medium 
-                hover:brightness-110 transition-colors"
-            >
-              View Results
-            </button>
-          )}
-        </div>
       </div>
     );
   }
 
   // Fallback for invalid data
   return (
-    <div className="bg-gray-100 p-5 rounded-xl border border-gray-300 w-full max-w-xs">
-      <div className="text-center text-gray-500">
-        <FiAlertCircle className="text-2xl mx-auto mb-2" />
-        <p>Invalid exam data</p>
+    <div className="w-full rounded-xl border border-slate-200 bg-gradient-to-br from-slate-50 to-white p-5">
+      <div className="text-center">
+        <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center mx-auto mb-3">
+          <FiAlertCircle className="text-slate-400 text-xl" />
+        </div>
+        <p className="text-slate-600 font-medium">Invalid exam data</p>
+        <p className="text-sm text-slate-400 mt-1">Unable to load exam information</p>
       </div>
     </div>
   );

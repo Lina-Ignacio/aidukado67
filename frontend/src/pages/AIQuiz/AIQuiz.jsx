@@ -39,8 +39,8 @@ export default function AIQuiz() {
     if (!duration || duration <= 0) {
       return "Please enter a valid duration";
     }
-    if (duration > 120) {
-      return "Maximum time is 120 mins"
+    if (duration > 60) {
+      return "Maximum time is 60 mins"
     }
     if (!question_type) {
       return "Please select a question type";

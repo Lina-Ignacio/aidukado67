@@ -4,12 +4,13 @@ import useClassStore from "../../store/useClassStore";
 import axios from "axios";
 
 import { FaExclamationCircle, FaCloudUploadAlt, FaTimes, FaHeading, FaTag, FaPen, FaChevronDown, FaAlignLeft, 
-FaStar, FaChartBar, FaCalendarAlt, FaClock } from 'react-icons/fa';
+FaStar, FaChartBar, FaCalendarAlt, FaClock, FaSpinner } from 'react-icons/fa';
 
 export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMessage }) {
   const classId = useClassStore((state) => state.classId);
   const [uploadError, setUploadError] = useState("");
   const [file, setFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false); // Add upload state
 
   // Function to get default due date (tomorrow at 11:59 PM)
   // Function to get default due date (today's date and current time)
@@ -86,6 +87,9 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
     formData.append("file", file);
 
     try {
+      setIsUploading(true); // Start uploading
+      setUploadError(""); // Clear any previous errors
+
       const baseUrl = `${import.meta.env.VITE_API_URL}`;
       const url = `${baseUrl}/class_material/upload`;
 
@@ -95,12 +99,15 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
 
       setSuccessMessage(response.data.message);
       if (onSuccess) onSuccess();
+      setIsOpen(false); // Close the modal on success
     } catch (err) {
       if (err.response?.data?.detail) {
         setUploadError(err.response.data.detail);
       } else {
         setUploadError("Network Error");
       }
+    } finally {
+      setIsUploading(false); // Stop uploading regardless of success or error
     }
   };
 
@@ -271,16 +278,26 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
       <div className="flex gap-3 mt-6 pt-4 border-t border-gray-200">
         <button
           onClick={() => setIsOpen(false)}
-          className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-white font-semibold text-[#102E50] rounded-lg border border-gray-300 transition-all duration-200 hover:bg-gray-50 hover:border-gray-400 active:scale-95 shadow-sm"
+          disabled={isUploading}
+          className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-white font-semibold text-[#102E50] rounded-lg border border-gray-300 transition-all duration-200 hover:bg-gray-50 hover:border-gray-400 active:scale-95 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
           type="button"
         >
           <FaTimes className="mr-1" />CANCEL
         </button>
         <button
-          className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-[#102E50] text-white font-semibold rounded-lg border border-[#102E50] transition-all duration-200 hover:bg-[#0e2642] hover:shadow-md active:scale-95 shadow"
+          className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-[#102E50] text-white font-semibold rounded-lg border border-[#102E50] transition-all duration-200 hover:bg-[#0e2642] hover:shadow-md active:scale-95 shadow disabled:opacity-70 disabled:cursor-wait disabled:active:scale-100"
           onClick={handleUpload}
+          disabled={isUploading}
         >
-          <FaCloudUploadAlt className="mr-1" />UPLOAD
+          {isUploading ? (
+            <>
+              <FaSpinner className="mr-1 animate-spin" />UPLOADING...
+            </>
+          ) : (
+            <>
+              <FaCloudUploadAlt className="mr-1" />UPLOAD
+            </>
+          )}
         </button>
       </div>
     </form>

@@ -34,9 +34,22 @@ async def gen_quiz(lesson: str = Form(...), items: int = Form(...), question_typ
 
 
 # For assigning upon quiz creation
+from datetime import datetime, timezone, timedelta
+
 @router.post("/assignQuiz")
 def assign_quiz(quiz: CreateQuiz, db: Session = Depends(get_db)):
-
+    # If opening_time is None from frontend, set it to current time
+    if quiz.opening_time is None:
+        opening_time = datetime.now(timezone.utc)
+    else:
+        opening_time = quiz.opening_time
+    
+    # If closing_time is None from frontend, set it to 7 days from opening_time
+    if quiz.closing_time is None:
+        closing_time = opening_time + timedelta(days=7)
+    else:
+        closing_time = quiz.closing_time
+    
     new_quiz = Quiz(
         lesson_id=quiz.lesson_id,
         title=quiz.title,
@@ -48,8 +61,8 @@ def assign_quiz(quiz: CreateQuiz, db: Session = Depends(get_db)):
         is_archive=quiz.is_archive,
         assessment_type=quiz.assessment_type,
         term_id=quiz.term_id,
-        opening_time=quiz.opening_time,  
-        closing_time=quiz.closing_time
+        opening_time=opening_time,  # Will never be None
+        closing_time=closing_time   # Will never be None
     )
 
     db.add(new_quiz)

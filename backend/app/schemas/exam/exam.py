@@ -13,12 +13,21 @@ class TOSRequest(BaseModel):
     total_items: int
     
     
+from datetime import datetime
+from pydantic import BaseModel, Field, validator
+from typing import List, Any, Optional
+
+from datetime import datetime, timezone
+from typing import List, Optional, Any, Dict
+from pydantic import BaseModel, validator, Field
+import json
+
 class CreateExam(BaseModel):
-    title: str
-    total_points: int
-    instructions: str
-    exam_content: Any  
-    duration: int
+    title: str = Field(..., min_length=3, max_length=100)
+    total_points: int = Field(..., gt=0)
+    instructions: str = ""
+    exam_content: Optional[Dict] = None  # Changed from Any to Dict
+    duration: int = Field(..., ge=15, le=90)
     class_id: int
     term_id: int
     is_archive: bool = False
@@ -27,6 +36,52 @@ class CreateExam(BaseModel):
     assigned_students: Optional[List[int]] = []
     class_material_ids: Optional[List[int]] = []
     lesson_ids: List[int] = []
+    closing_time: datetime
+    
+    @validator('closing_time', pre=True)
+    def parse_closing_time(cls, value):
+        if isinstance(value, str):
+            # Handle the datetime string format from frontend
+            try:
+                # Remove timezone if present and parse
+                if 'T' in value:
+                    # Format: "2024-01-01T23:59"
+                    if 'Z' in value:
+                        value = value.replace('Z', '+00:00')
+                    elif '+' not in value and '-' not in value[-6:]:
+                        # No timezone info, assume local
+                        value = value + '+00:00'
+                return datetime.fromisoformat(value)
+            except ValueError:
+                try:
+                    return datetime.strptime(value, '%Y-%m-%dT%H:%M')
+                except ValueError:
+                    raise ValueError(f"Invalid datetime format: {value}. Expected format: YYYY-MM-DDTHH:MM")
+        elif isinstance(value, datetime):
+            return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
+        return value
+    
+    @validator('exam_content', pre=True)
+    def validate_exam_content(cls, v):
+        if v is None:
+            return None
+        # Ensure it's serializable JSON
+        try:
+            json.dumps(v)
+            return v
+        except (TypeError, ValueError):
+            raise ValueError("exam_content must be JSON serializable")
+    
+    @validator('passing_score', always=True)
+    def set_passing_score(cls, v, values):
+        if v is None and 'total_points' in values:
+            return round(values['total_points'] * 0.75)
+        return v
+    
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }   
     
 class ExamOut(BaseModel):
     id: int
@@ -61,6 +116,7 @@ class ExamUpdate(BaseModel):
     shuffle_questions: Optional[bool] = None
     is_archive: Optional[bool] = None
     class_material_ids: Optional[List[int]] = None
+    closing_time: Optional[datetime] = None
 
 class ArchiveExam(BaseModel):
     is_archive: bool = True

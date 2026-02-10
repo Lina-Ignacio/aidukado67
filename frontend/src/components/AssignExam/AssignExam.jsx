@@ -1,8 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import classStore from "../../store/useClassStore";
-import useTermStore from "../../store/useTermStore";
 import ExamQuestionEditor from "./ExamQuestionEditor";
 import StudentSelectModal from "./StudentSelectModal";
 import { 
@@ -30,6 +28,7 @@ export default function AssignExam({
   total_items = 0,
   classId = "",
   termId = "",
+  closing_time = "", // ADDED: Closing time prop
   onReset = () => {}
 }) {
   const navigate = useNavigate();
@@ -43,9 +42,8 @@ export default function AssignExam({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  
-  const class_id = classId 
-  const term_id = termId 
+  const class_id = classId;
+  const term_id = termId;
 
   const optionLetters = useMemo(() => ["A", "B", "C", "D"], []);
 
@@ -59,7 +57,6 @@ export default function AssignExam({
     if (!text) return "";
     return text.replace(/^[A-Da-d][\s.)-]+\s*/, "");
   };
-
 
   useEffect(() => {
     if (!class_id) {
@@ -98,9 +95,7 @@ export default function AssignExam({
     }
 
     const normalized = questions.map((q, index) => {
-      
       const cleanQuestion = stripQuestionPrefix(q.question || `Question ${index + 1}`);
-      
       
       const rawOptions = Array.isArray(q.options) ? q.options : [];
       const options = rawOptions.map((opt, optIndex) => {
@@ -114,14 +109,12 @@ export default function AssignExam({
         };
       });
       
-      
       while (options.length < 2) {
         options.push({
           text: `Option ${optionLetters[options.length]}`,
           image: null
         });
       }
-      
       
       const finalOptions = options.slice(0, 4);
       
@@ -170,10 +163,8 @@ export default function AssignExam({
     if (students.length === 0) return;
     
     if (selectedStudents.length === students.length) {
-      // Deselect all
       setSelectedStudents([]);
     } else {
-      // Select all
       setSelectedStudents(students.map(s => s.id || s._id));
     }
   };
@@ -227,6 +218,25 @@ export default function AssignExam({
       return "Select at least one student";
     }
     
+    // Validate closing_time
+    if (!closing_time || closing_time.trim().length === 0) {
+      return "Closing time is required";
+    }
+    
+    try {
+      const closingDate = new Date(closing_time);
+      if (isNaN(closingDate.getTime())) {
+        return "Invalid closing time format";
+      }
+      
+      const now = new Date();
+      if (closingDate < now) {
+        return "Closing time must be in the future";
+      }
+    } catch (error) {
+      return "Invalid closing time format";
+    }
+    
     return null;
   };
 
@@ -243,11 +253,9 @@ export default function AssignExam({
     setAssigning(true);
 
     try {
-      const payload = {
-        title: title.trim(),
-        total_points: parseInt(totalPoints, 10),
-        instructions: (instructions || "Complete all questions carefully.").trim(),
-        exam_content: editableQuestions.map((q, index) => ({
+      // Prepare exam_content properly
+      const exam_content = {
+        questions: editableQuestions.map((q, index) => ({
           number: index + 1,
           question: q.question.trim(),
           options: q.options.map(opt => opt.text.trim()),
@@ -255,15 +263,46 @@ export default function AssignExam({
           points: q.points || 1,
           lesson_id: q.lesson_id || lesson_ids[0] || 0,
         })),
+        metadata: {
+          total_questions: editableQuestions.length,
+          total_points: totalPoints,
+          generated_at: new Date().toISOString(),
+          version: "1.0"
+        }
+      };
+
+      // Calculate passing score (75% of total points)
+      const passing_score = Math.round(totalPoints * 0.75);
+
+      // Format closing_time correctly
+      let formattedClosingTime = closing_time;
+      if (closing_time && !closing_time.includes('T')) {
+        // Convert to ISO format if needed
+        const date = new Date(closing_time);
+        if (!isNaN(date.getTime())) {
+          formattedClosingTime = date.toISOString();
+        }
+      }
+
+      const payload = {
+        title: title.trim(),
+        total_points: totalPoints,
+        instructions: (instructions || "Complete all questions carefully.").trim(),
+        exam_content: exam_content,
         duration: parseInt(duration, 10) || 60,
         class_id: parseInt(class_id, 10),
         term_id: parseInt(term_id, 10),
         is_archive: false,
+        passing_score: passing_score,
+        shuffle_questions: false,
         assigned_students: selectedStudents.map(id => parseInt(id, 10)),
+        class_material_ids: [],
         lesson_ids: lesson_ids.map(id => parseInt(id, 10)),
+        closing_time: formattedClosingTime // CRITICAL: Include closing_time
       };
 
-      console.log("Assigning exam with payload:", payload);
+      console.log("Assigning exam with payload:", JSON.stringify(payload, null, 2));
+      console.log("Closing time being sent:", formattedClosingTime);
 
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/exam/assignExam`,
@@ -291,9 +330,25 @@ export default function AssignExam({
       let errorMessage = "Failed to assign exam. Please try again.";
       
       if (err.response) {
-        errorMessage = err.response.data?.detail || 
-                      err.response.data?.message || 
-                      `Server error: ${err.response.status}`;
+        console.error("Error response:", err.response.data);
+        console.error("Error status:", err.response.status);
+        
+        if (err.response.data) {
+          // Handle validation errors from FastAPI
+          if (err.response.data.detail) {
+            if (Array.isArray(err.response.data.detail)) {
+              errorMessage = err.response.data.detail
+                .map(e => e.msg || `${e.loc ? e.loc.join('.') : ''}: ${e.msg || 'Invalid'}`)
+                .join(', ');
+            } else {
+              errorMessage = err.response.data.detail;
+            }
+          } else if (err.response.data.message) {
+            errorMessage = err.response.data.message;
+          }
+        }
+        
+        errorMessage = `Error ${err.response.status}: ${errorMessage}`;
       } else if (err.request) {
         errorMessage = "No response from server. Please check your connection.";
       } else if (err.message) {
@@ -309,235 +364,160 @@ export default function AssignExam({
   /* =========================
      Print Exam
   ========================== */
-const handlePrint = () => {
-  const win = window.open("", "_blank");
-  if (!win) {
-    setError("Popup blocked. Please allow popups to print.");
-    return;
-  }
+  const handlePrint = () => {
+    const win = window.open("", "_blank");
+    if (!win) {
+      setError("Popup blocked. Please allow popups to print.");
+      return;
+    }
 
-  // Generate answer key
-  const answerKey = editableQuestions.map((q, i) => 
-    `${i + 1}. ${q.answer}`
-  ).join("<br>");
+    const answerKey = editableQuestions.map((q, i) => 
+      `${i + 1}. ${q.answer}`
+    ).join("<br>");
 
-  const content = editableQuestions
-    .map((q, i) => {
-      // Handle question image
-      const questionImageHtml = q.questionImage 
-        ? `<div style="margin-bottom: 8px;">
-            <img src="${q.questionImage}" alt="Question Image ${i + 1}" style="max-width: 100%; max-height: 200px; display: block; margin: 6px 0; border-radius: 4px; border: 1px solid #ddd;" />
-           </div>`
-        : '';
-
-      // Handle option images
-      const optionsHtml = q.options.map((o, idx) => {
-        const optionImageHtml = o.image 
-          ? `<div style="margin-top: 4px;">
-              <img src="${o.image}" alt="Option ${optionLetters[idx]} Image" style="max-width: 150px; max-height: 100px; display: block; border-radius: 4px; border: 1px solid #eee;" />
+    const content = editableQuestions
+      .map((q, i) => {
+        const questionImageHtml = q.questionImage 
+          ? `<div style="margin-bottom: 8px;">
+              <img src="${q.questionImage}" alt="Question Image ${i + 1}" style="max-width: 100%; max-height: 200px; display: block; margin: 6px 0; border-radius: 4px; border: 1px solid #ddd;" />
              </div>`
           : '';
-        
+
+        const optionsHtml = q.options.map((o, idx) => {
+          const optionImageHtml = o.image 
+            ? `<div style="margin-top: 4px;">
+                <img src="${o.image}" alt="Option ${optionLetters[idx]} Image" style="max-width: 150px; max-height: 100px; display: block; border-radius: 4px; border: 1px solid #eee;" />
+               </div>`
+            : '';
+          
+          return `
+            <div style="margin: 6px 0;">
+              <p style="margin: 0 0 4px 0; font-size: 13px; line-height: 1.3;">
+                ${optionLetters[idx]}. ${o.text}
+              </p>
+              ${optionImageHtml}
+            </div>
+          `;
+        }).join("");
+
         return `
-          <div style="margin: 6px 0;">
-            <p style="margin: 0 0 4px 0; font-size: 13px; line-height: 1.3;">
-              ${optionLetters[idx]}. ${o.text}
-            </p>
-            ${optionImageHtml}
+          <div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #ddd; page-break-inside: avoid;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+              <div style="flex: 1;">
+                <p style="margin: 0 0 6px 0; font-size: 14px; line-height: 1.4; font-weight: 600;">
+                  ${i + 1}. ${q.question}
+                </p>
+                ${questionImageHtml}
+              </div>
+              <span style="background: #f0f0f0; padding: 2px 8px; border-radius: 8px; font-size: 12px; color: #666; flex-shrink: 0; margin-left: 10px; align-self: flex-start;">
+                ${q.points || 1} point${q.points !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <div style="margin-left: 12px;">
+              ${optionsHtml}
+            </div>
           </div>
         `;
-      }).join("");
+      })
+      .join("");
 
-      return `
-        <div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #ddd; page-break-inside: avoid;">
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-            <div style="flex: 1;">
-              <p style="margin: 0 0 6px 0; font-size: 14px; line-height: 1.4; font-weight: 600;">
-                ${i + 1}. ${q.question}
-              </p>
-              ${questionImageHtml}
-            </div>
-            <span style="background: #f0f0f0; padding: 2px 8px; border-radius: 8px; font-size: 12px; color: #666; flex-shrink: 0; margin-left: 10px; align-self: flex-start;">
-              ${q.points || 1} point${q.points !== 1 ? 's' : ''}
-            </span>
-          </div>
-          <div style="margin-left: 12px;">
-            ${optionsHtml}
-          </div>
-        </div>
-      `;
-    })
-    .join("");
-
-  win.document.write(`
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <title>${title || "Exam"}</title>
-        <style>
-          @page {
-            margin: 0.25in;
-            size: auto;
-          }
-          
-          body { 
-            font-family: 'Arial', sans-serif; 
-            margin: 0;
-            padding: 15px;
-            line-height: 1.3;
-            color: #000;
-            max-width: 800px;
-            margin: 0 auto;
-            font-size: 12px;
-          }
-          h1 { 
-            text-align: center; 
-            color: #000; 
-            margin: 0 0 10px 0;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #ccc;
-            font-size: 18px;
-            font-weight: bold;
-          }
-          .header-info {
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #eee;
-          }
-          .stats {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin: 8px 0;
-          }
-          .stat-item {
-            background: #f0f0f0;
-            color: #000;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            border: 1px solid #ccc;
-          }
-          @media print {
+    win.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${title || "Exam"}</title>
+          <style>
+            @page { margin: 0.25in; size: auto; }
             body { 
-              margin: 0;
-              padding: 10px;
+              font-family: 'Arial', sans-serif; 
+              margin: 0; padding: 15px;
+              line-height: 1.3; color: #000;
+              max-width: 800px; margin: 0 auto;
+              font-size: 12px;
+            }
+            h1 { 
+              text-align: center; color: #000; 
+              margin: 0 0 10px 0; padding-bottom: 8px;
+              border-bottom: 1px solid #ccc;
+              font-size: 18px; font-weight: bold;
+            }
+            .header-info { margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; }
+            .stats { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+            .stat-item {
+              background: #f0f0f0; color: #000; padding: 3px 8px;
+              border-radius: 10px; font-size: 10px; border: 1px solid #ccc;
+            }
+            @media print {
+              body { margin: 0; padding: 10px; font-size: 11px; }
+              .no-print { display: none; }
+              h1, .header-info, .instructions { page-break-after: avoid; }
+              .question-container { page-break-inside: auto; }
+              img { max-width: 100% !important; height: auto !important; page-break-inside: avoid; }
+              @page { margin: 0.2in; }
+            }
+            .instructions {
+              background: #f8f8f8; padding: 10px; border-radius: 4px;
+              margin-bottom: 12px; border-left: 2px solid #2196F3;
               font-size: 11px;
             }
-            .no-print { display: none; }
-            
-            /* Better page breaks */
-            h1, .header-info, .instructions {
-              page-break-after: avoid;
+            .instructions h3 { margin: 0 0 6px 0; color: #000; font-size: 14px; font-weight: bold; }
+            .instructions p { margin: 0; font-size: 11px; }
+            .questions-header {
+              font-size: 14px; font-weight: bold; margin: 15px 0 10px 0;
+              color: #000; padding-bottom: 6px; border-bottom: 1px solid #ccc;
             }
-            
-            /* Allow questions to break if needed */
-            .question-container {
-              page-break-inside: auto;
+            .answer-key {
+              background: #f8f8f8; padding: 12px; border-radius: 4px;
+              margin-top: 20px; border-left: 2px solid #4CAF50;
+              font-size: 11px; page-break-before: always;
             }
-            
-            /* Ensure images print properly */
-            img {
-              max-width: 100% !important;
-              height: auto !important;
-              page-break-inside: avoid;
-            }
-            
-            /* Reduce margins for print */
-            @page {
-              margin: 0.2in;
-            }
-          }
-          .instructions {
-            background: #f8f8f8;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 12px;
-            border-left: 2px solid #2196F3;
-            font-size: 11px;
-          }
-          .instructions h3 {
-            margin: 0 0 6px 0;
-            color: #000;
-            font-size: 14px;
-            font-weight: bold;
-          }
-          .instructions p {
-            margin: 0;
-            font-size: 11px;
-          }
-          .questions-header {
-            font-size: 14px;
-            font-weight: bold;
-            margin: 15px 0 10px 0;
-            color: #000;
-            padding-bottom: 6px;
-            border-bottom: 1px solid #ccc;
-          }
-          .answer-key {
-            background: #f8f8f8;
-            padding: 12px;
-            border-radius: 4px;
-            margin-top: 20px;
-            border-left: 2px solid #4CAF50;
-            font-size: 11px;
-            page-break-before: always;
-          }
-          .answer-key h3 {
-            color: #000;
-            margin: 0 0 8px 0;
-            font-size: 14px;
-            font-weight: bold;
-          }
-          .answer-key p {
-            margin: 0;
-            font-size: 11px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="no-print" style="text-align: center; margin-bottom: 10px; padding: 6px; background: #f5f5f5; border-radius: 3px;">
-          <button onclick="window.print()" style="background: #183D65; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px;">
-            📄 Print Exam
-          </button>
-          <button onclick="window.close()" style="background: #666; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-left: 6px;">
-            ✕ Close
-          </button>
-        </div>
-        
-        <h1>${title || "Exam"}</h1>
-        
-        <div class="header-info">
-          <div class="stats">
-            <span class="stat-item">${editableQuestions.length} Questions</span>
-            <span class="stat-item">${totalPoints} Total Points</span>
-            <span class="stat-item">${duration || 60} Minutes</span>
-            ${lesson_ids.length > 0 ? `<span class="stat-item">${lesson_ids.length} Lesson${lesson_ids.length !== 1 ? 's' : ''}</span>` : ''}
+            .answer-key h3 { color: #000; margin: 0 0 8px 0; font-size: 14px; font-weight: bold; }
+            .answer-key p { margin: 0; font-size: 11px; }
+          </style>
+        </head>
+        <body>
+          <div class="no-print" style="text-align: center; margin-bottom: 10px; padding: 6px; background: #f5f5f5; border-radius: 3px;">
+            <button onclick="window.print()" style="background: #183D65; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px;">
+              📄 Print Exam
+            </button>
+            <button onclick="window.close()" style="background: #666; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; margin-left: 6px;">
+              ✕ Close
+            </button>
           </div>
-        </div>
-        
-        ${instructions ? `
-          <div class="instructions">
-            <h3>Instructions</h3>
-            <p style="white-space: pre-line;">${instructions}</p>
+          
+          <h1>${title || "Exam"}</h1>
+          
+          <div class="header-info">
+            <div class="stats">
+              <span class="stat-item">${editableQuestions.length} Questions</span>
+              <span class="stat-item">${totalPoints} Total Points</span>
+              <span class="stat-item">${duration || 60} Minutes</span>
+              ${lesson_ids.length > 0 ? `<span class="stat-item">${lesson_ids.length} Lesson${lesson_ids.length !== 1 ? 's' : ''}</span>` : ''}
+            </div>
           </div>
-        ` : ''}
-        
-        <div class="questions-header">Exam Questions</div>
-        <div class="question-container">
-          ${content}
-        </div>
-        
-        <div class="answer-key">
-          <h3>Answer Key</h3>
-          <p>${answerKey}</p>
-        </div>
-      </body>
-    </html>
-  `);
+          
+          ${instructions ? `
+            <div class="instructions">
+              <h3>Instructions</h3>
+              <p style="white-space: pre-line;">${instructions}</p>
+            </div>
+          ` : ''}
+          
+          <div class="questions-header">Exam Questions</div>
+          <div class="question-container">
+            ${content}
+          </div>
+          
+          <div class="answer-key">
+            <h3>Answer Key</h3>
+            <p>${answerKey}</p>
+          </div>
+        </body>
+      </html>
+    `);
 
-  win.document.close();
-};
+    win.document.close();
+  };
 
   /* =========================
      Back to TOS
@@ -551,7 +531,7 @@ const handlePrint = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4">
       <div className="max-w-6xl mx-auto">
-        {/* Header with stats - Improved Design */}
+        {/* Header with stats */}
         <div className="mb-8 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
           {/* Header Banner */}
           <div className="bg-gradient-to-r from-[#102E50] to-[#1a3f6e] px-8 py-6 text-white">
@@ -580,7 +560,7 @@ const handlePrint = () => {
 
           {/* Stats Grid */}
           <div className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
               <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
                 <div className="flex items-center">
                   <div className="p-2.5 bg-blue-100 rounded-lg mr-3">
@@ -628,9 +608,23 @@ const handlePrint = () => {
                   </div>
                 </div>
               </div>
+              
+              <div className="bg-red-50 p-4 rounded-xl border border-red-100">
+                <div className="flex items-center">
+                  <div className="p-2.5 bg-red-100 rounded-lg mr-3">
+                    <FiClock className="text-red-700 text-lg" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Closes</p>
+                    <p className="text-lg font-bold text-red-700">
+                      {closing_time ? new Date(closing_time).toLocaleDateString() : "Not set"}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Instructions with improved design */}
+            {/* Instructions */}
             {instructions && (
               <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-5 rounded-xl border border-blue-200">
                 <div className="flex items-center mb-3">
@@ -647,7 +641,7 @@ const handlePrint = () => {
           </div>
         </div>
 
-        {/* Action Bar - Improved Layout */}
+        {/* Action Bar */}
         <div className="mb-8 bg-white rounded-2xl shadow-md border border-gray-100 p-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
@@ -706,7 +700,7 @@ const handlePrint = () => {
           </div>
         </div>
 
-        {/* Error and Success Messages - Improved Design */}
+        {/* Error and Success Messages */}
         {error && (
           <div className="mb-8 animate-fade-in">
             <div className="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 rounded-r-xl p-5 shadow-sm">
@@ -765,7 +759,7 @@ const handlePrint = () => {
           </div>
         </div>
 
-        {/* Questions List - Improved Spacing and Design */}
+        {/* Questions List */}
         <div className="space-y-6">
           {editableQuestions.map((q, i) => (
             <div key={q.id || i} className="transform transition-all duration-200 hover:translate-x-1">
@@ -807,13 +801,17 @@ const handlePrint = () => {
                     {students.length} students in class
                   </span>
                 </div>
-                <div className="hidden md:block text-gray-300">•</div>
-                <div className="hidden md:flex items-center">
-                  <FiClock className="text-gray-500 mr-2" />
-                  <span className="text-gray-700">
-                    Generated on {new Date().toLocaleDateString()}
-                  </span>
-                </div>
+                {closing_time && (
+                  <>
+                    <div className="hidden md:block text-gray-300">•</div>
+                    <div className="hidden md:flex items-center">
+                      <FiClock className="text-gray-500 mr-2" />
+                      <span className="text-gray-700">
+                        Closes: {new Date(closing_time).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
               <div className="text-right">
                 <p className="text-sm text-gray-500 mb-1">Total Exam Value</p>

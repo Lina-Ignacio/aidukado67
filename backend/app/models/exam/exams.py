@@ -23,8 +23,7 @@ class Exam(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     opening_time = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
-    closing_time = Column(DateTime(timezone=True), nullable=False, 
-                          default=lambda: datetime.utcnow() + timedelta(days=1))
+    closing_time = Column(DateTime(timezone=True), nullable=False)
     allow_reopen = Column(Boolean, default=False, nullable=False)
     
     __table_args__ = (

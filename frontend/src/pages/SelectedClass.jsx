@@ -215,7 +215,6 @@ export default function SelectedClass() {
             icon={PiExport}
           />
 
-          {successMessage && (<p className="text-green-800 self-end">{successMessage}</p>)}
         </div>
       )}
 

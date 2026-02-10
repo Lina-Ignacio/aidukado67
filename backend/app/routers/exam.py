@@ -482,6 +482,8 @@ def assign_exam(exam: CreateExam, db: Session = Depends(get_db)):
             term_id=exam.term_id,
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
+            closing_time=exam.closing_time,  
+            
         )
 
         db.add(new_exam)

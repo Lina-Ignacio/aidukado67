@@ -12,7 +12,8 @@ import {
   FaBook, 
   FaTimes, 
   FaMagic,
-  FaExclamationCircle
+  FaExclamationCircle,
+  FaCalendarAlt
 } from 'react-icons/fa';
 
 export default function AIExam() {
@@ -30,9 +31,54 @@ export default function AIExam() {
     duration: "",
     totalItems: null,
     hours: {},
+    closing_time: "",
     error: "",
     success: ""
   });
+
+  // Set default datetime (tomorrow at 23:59)
+  const setDefaultDateTime = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(23, 59, 0, 0);
+    
+    // Format to YYYY-MM-DDTHH:MM
+    const year = tomorrow.getFullYear();
+    const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const day = String(tomorrow.getDate()).padStart(2, '0');
+    const hours = String(tomorrow.getHours()).padStart(2, '0');
+    const minutes = String(tomorrow.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  // Calculate minimum datetime (30 minutes from now)
+  const getMinDateTime = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 30);
+    
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  // Format date for display
+  const formatDateTime = (dateTimeString) => {
+    if (!dateTimeString) return "";
+    const date = new Date(dateTimeString);
+    return date.toLocaleString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
 
   // Fetch lessons on component mount
   useEffect(() => {
@@ -58,7 +104,13 @@ export default function AIExam() {
         filtered.forEach(lesson => {
           initialHours[lesson.id] = 0;
         });
-        setFormData(prev => ({ ...prev, hours: initialHours }));
+        
+        // Initialize closing_time with default value
+        setFormData(prev => ({ 
+          ...prev, 
+          hours: initialHours,
+          closing_time: setDefaultDateTime()
+        }));
         
       } catch (error) {
         console.error("Failed to fetch lessons:", error);
@@ -76,7 +128,7 @@ export default function AIExam() {
 
   // Validation helper
   const validateForm = () => {
-    const { title, totalItems, duration } = formData;
+    const { title, totalItems, duration, closing_time } = formData;
 
     if (!title.trim()) {
       return "Please enter an exam title";
@@ -112,6 +164,18 @@ export default function AIExam() {
     
     if (duration > 90) {
       return "Maximum duration is 90 minutes";
+    }
+
+    // Validate closing time
+    if (!closing_time) {
+      return "Please select a closing time";
+    }
+
+    const closingDate = new Date(closing_time);
+    const minDate = new Date(getMinDateTime());
+    
+    if (closingDate < minDate) {
+      return "Closing time must be at least 30 minutes from now";
     }
 
     // Check if at least one lesson has hours > 0
@@ -165,6 +229,7 @@ export default function AIExam() {
       // Prepare payload
       const payload = {
         total_items: parseInt(formData.totalItems, 10),
+        closing_time: formData.closing_time, 
         lessons: lessonsWithHours.map((lesson) => ({
           lesson_id: lesson.id,
           title: lesson.title,
@@ -304,6 +369,7 @@ export default function AIExam() {
       duration: "",
       totalItems: "",
       hours: {},
+      closing_time: setDefaultDateTime(),
       error: "",
       success: ""
     });
@@ -454,6 +520,40 @@ export default function AIExam() {
                     <p className="text-xs text-gray-500">Minimum: 1, Maximum: 100</p>
                   </div>
                 </div>
+
+                {/* Closing Time Section */}
+                <div className="mt-4 p-4 bg-[#0B2239]/10 rounded-lg border border-[#102E50]/20">
+                  <div className="flex items-center gap-2 mb-2">
+                    <FaCalendarAlt className="w-5 h-5 text-[#102E50]" />
+                    <label className="font-semibold text-[#102E50]">
+                      Closing Time (Deadline) *
+                    </label>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <input
+                      type="datetime-local"
+                      value={formData.closing_time || setDefaultDateTime()}
+                      onChange={(e) => handleFormChange('closing_time', e.target.value)}
+                      min={getMinDateTime()}
+                      className="flex-1 px-4 py-3 border border-[#102E50] rounded-lg bg-[#102E50]
+                        focus:outline-none focus:ring-2 focus:ring-[#E78B48] focus:border-transparent
+                        text-white placeholder:text-white/70
+                        shadow-inner"
+                      disabled={generating}
+                      required
+                    />
+                  </div>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-[#102E50]/70">
+                      Must be at least 30 minutes from now
+                    </p>
+                    {formData.closing_time && (
+                      <p className="text-xs font-medium text-[#102E50]">
+                        {formatDateTime(formData.closing_time)}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -563,6 +663,7 @@ export default function AIExam() {
             title={formData.title} 
             instructions={formData.instruction} 
             duration={parseInt(formData.duration, 10)} 
+            closing_time={formData.closing_time}
             lesson_ids={filteredLessons.filter(l => {
               const hours = parseFloat(formData.hours[l.id]);
               return !isNaN(hours) && hours > 0;
