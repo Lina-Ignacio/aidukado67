@@ -18,13 +18,17 @@ class Users(Base):
     is_archive = Column(Boolean, default=False, nullable=False)
     must_change_password = Column(Boolean, default=False, nullable=False)
     
-    # For relationships
+    #relationships
     classes_ = relationship("Classes", back_populates="user_teacher") 
     class_enrollments = relationship("ClassEnrollment", back_populates="student")
+    
     activity_progress = relationship("StudentActivityProgress", back_populates="student")
+    task_reopens = relationship("StudentTaskReopen", back_populates="student")
     submissions = relationship("StudentSubmission", back_populates="student", cascade="all, delete")
     
     quiz_progress = relationship("StudentQuizProgress", back_populates="student")
+    quiz_reopens = relationship("StudentQuizReopen", back_populates="student")
+    
     exam_progress = relationship(
         "StudentExamProgress", 
         back_populates="student",
@@ -36,12 +40,8 @@ class Users(Base):
         cascade="all, delete-orphan"
     )
     
-    task_reopens = relationship(
-        "StudentTaskReopen",
-        back_populates="student"
-    )
     
-    # For index
+    #index
     __table_args__ = (
         Index(
             "idx_users_active", 

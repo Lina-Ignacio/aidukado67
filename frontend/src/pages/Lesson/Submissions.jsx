@@ -213,7 +213,7 @@ export default function Submissions() {
             <div>
               <button
                 onClick={handleGoBack}
-                className="flex items-center gap-2 bg-[#102E50] text-white hover:text-[#E78B48] transition-colors mb-3 group"
+                className="flex items-center gap-2 bg-[#102E50] text-white hover:text-[#E78B48] transition-colors mb-3 group p-2"
               >
                 <MdArrowBackIos className="text-lg group-hover:-translate-x-1 transition-transform" />
                 <span className="font-medium">Go Back</span>

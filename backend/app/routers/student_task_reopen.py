@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
@@ -7,15 +6,13 @@ from app.database import get_db
 from app.models import ClassMaterial, Users, StudentSubmission, ClassEnrollment
 from app.models.submission.student_task_reopens import StudentTaskReopen
 from app.schemas.student_task_reopen import EligibleStudentResponse, ReopenTaskRequest, ReopenTaskResponse
-from app.utils.auth import get_current_user
 
 router = APIRouter(prefix="/task_reopen", tags=["Task Reopen"])
 
 @router.get("/{material_id}/reopen-eligible", response_model=List[EligibleStudentResponse])
 def get_reopen_eligible_students(
     material_id: int,
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     """
     Get students eligible for task reopening
@@ -26,7 +23,7 @@ def get_reopen_eligible_students(
     4. Are enrolled in the class
     """
     
-    # Verify material exists and teacher has access
+    # Verify material exists
     material = db.query(ClassMaterial).filter(ClassMaterial.id == material_id).first()
     if not material:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -122,8 +119,7 @@ def get_reopen_eligible_students(
 def reopen_task_for_students(
     material_id: int,
     request: ReopenTaskRequest,
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     """
     Reopen task for selected students with new due date
@@ -266,8 +262,7 @@ def reopen_task_for_students(
 def get_student_reopen_info(
     material_id: int,
     student_id: int,
-    db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    db: Session = Depends(get_db)
 ):
     """
     Get reopen information for a specific student and material

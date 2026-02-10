@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Form, Query
 from app.database import SessionLocal
 from sqlalchemy.orm import Session
 from app.models.quiz import Quiz
-from app.schemas.quiz import CreateQuiz, QuizOut, AddStudentsRequest, QuizOutSimple
+from app.schemas.quiz import CreateQuiz, QuizOut, AddStudentsRequest, QuizOutSimple, QuizMonitoringResponse, QuizMonitoringStudent
 from ..utils.generate_quiz import generate_quiz
 from app.models.lesson_content import LessonContent
 from app.models.class_material import ClassMaterial
@@ -47,7 +47,9 @@ def assign_quiz(quiz: CreateQuiz, db: Session = Depends(get_db)):
         class_id=quiz.class_id,
         is_archive=quiz.is_archive,
         assessment_type=quiz.assessment_type,
-        term_id=quiz.term_id
+        term_id=quiz.term_id,
+        opening_time=quiz.opening_time,  
+        closing_time=quiz.closing_time
     )
 
     db.add(new_quiz)
@@ -173,7 +175,9 @@ def get_student_quizzes(
             assessment_type=quiz.assessment_type,
             created_at=quiz.created_at,
             score=progress.score,
-            status=progress.status
+            status=progress.status,
+            closing_time=quiz.closing_time,  
+            opening_time=quiz.opening_time   
         )
         quizzes_out.append(quiz_out)
     
@@ -193,30 +197,79 @@ def archive_quiz(quiz_id: int, db: Session = Depends(get_db)):
 
 @router.get('/quizMonitoring/{quizId}')
 def quiz_monitoring(quizId: int, db: Session = Depends(get_db)):
-
-    header_info = (
-        db.query(Quiz.title, Quiz.total_points, ClassMaterial.title.label("material_title"))
-        .join(LessonContent, Quiz.lesson_id == LessonContent.id)
-        .join(ClassMaterial, LessonContent.material_id == ClassMaterial.id)
-        .filter(Quiz.id == quizId)
-        .first()
+    # Get quiz details including class_id
+    quiz = db.query(Quiz).filter(Quiz.id == quizId).first()
+    if not quiz:
+        raise HTTPException(status_code=404, detail="Quiz not found")
+    
+    # Get class material title
+    material = db.query(ClassMaterial).filter(ClassMaterial.id == quiz.lesson_id).first()
+    
+    # Get all students enrolled in the class
+    enrolled_students = (
+        db.query(Users.id, Users.first_name, Users.last_name)
+        .join(ClassEnrollment, ClassEnrollment.student_id == Users.id)
+        .filter(ClassEnrollment.class_id == quiz.class_id)
+        .all()
     )
-
-    if not header_info:
-        raise HTTPException(status_code=404, detail="Quiz or associated lesson not found")
-
-    results = (
-        db.query(Users.first_name, Users.last_name, StudentQuizProgress.score)
-        .join(StudentQuizProgress, StudentQuizProgress.student_id == Users.id)
+    
+    # Get all quiz progress records for this quiz
+    progress_records = (
+        db.query(
+            StudentQuizProgress.student_id,
+            StudentQuizProgress.score,
+            StudentQuizProgress.status,
+            StudentQuizProgress.start_time,
+            StudentQuizProgress.answers  # Check answers to see if submitted
+        )
         .filter(StudentQuizProgress.quiz_id == quizId)
         .all()
     )
-
+    
+    # Convert to dict for easy lookup
+    progress_dict = {record.student_id: record for record in progress_records}
+    
+    # Build response
+    scores = []
+    for student in enrolled_students:
+        progress = progress_dict.get(student.id)
+        
+        if progress:
+            # Determine status based on score and answers
+            if progress.score is not None:
+                status = "completed"
+                submission_status = "Submitted"
+            elif progress.answers is not None:
+                # Has answers but no score yet (maybe being graded)
+                status = "submitted"
+                submission_status = "Submitted (Ungraded)"
+            elif progress.start_time is not None:
+                status = "started"
+                submission_status = "In Progress"
+            else:
+                status = progress.status if progress.status else "assigned"
+                submission_status = "Assigned"
+        else:
+            status = "not_assigned"
+            submission_status = "Not Assigned"
+        
+        scores.append({
+            "studentId": student.id,
+            "studentName": f"{student.first_name} {student.last_name}",
+            "score": progress.score if progress else None,
+            "status": status,
+            "submissionStatus": submission_status,
+            "startTime": progress.start_time if progress else None,
+            "hasAnswers": progress.answers is not None if progress else False
+        })
+    
     return {
-        "quizTitle": header_info.title,
-        "lessonTitle": header_info.material_title,
-        "totalPoints": header_info.total_points,
-        "scores": [{"studentName": f"{r.first_name} {r.last_name}", "score": r.score} for r in results]
+        "quizTitle": quiz.title,
+        "lessonTitle": material.title if material else "No material",
+        "totalPoints": quiz.total_points,
+        "closingTime": quiz.closing_time,
+        "openingTime": quiz.opening_time,
+        "scores": scores
     }
 
 @router.get('/getStudentsByClass/{class_id}')

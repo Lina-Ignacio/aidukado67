@@ -18,6 +18,8 @@ class CreateQuiz(BaseModel):
     assessment_type: str
     term_id: int
     assigned_students: Optional[List[int]] = []
+    opening_time: Optional[datetime] = None  
+    closing_time: Optional[datetime] = None  
 
 
 class QuizOut(BaseModel):
@@ -33,6 +35,8 @@ class QuizOut(BaseModel):
     is_archive:bool
     assessment_type:str
     term_id:int
+    opening_time: Optional[datetime] = None  
+    closing_time: Optional[datetime] = None  
        
 class QuizOutSimple(BaseModel):
     id: int
@@ -43,7 +47,29 @@ class QuizOutSimple(BaseModel):
     assessment_type:str
     status: str
     score: Optional[int] = None
+    closing_time: Optional[datetime] = None  
+    opening_time: Optional[datetime] = None  
     
 class AddStudentsRequest(BaseModel):
     quiz_id: int
     student_ids: List[int]
+    
+class QuizMonitoringStudent(BaseModel):
+    studentId: int
+    studentName: str
+    score: Optional[int] = None
+    status: str  # "completed", "submitted", "started", "assigned", "not_assigned"
+    submissionStatus: str  # More descriptive status
+    startTime: Optional[datetime] = None
+    hasAnswers: bool = False
+    
+    class Config:
+        from_attributes = True
+
+class QuizMonitoringResponse(BaseModel):
+    quizTitle: str
+    lessonTitle: str
+    totalPoints: int
+    closingTime: Optional[datetime] = None
+    openingTime: Optional[datetime] = None
+    scores: List[QuizMonitoringStudent]
