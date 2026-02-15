@@ -12,10 +12,7 @@ export default function StudentExam() {
   const [isHydrated, setIsHydrated] = useState(false);
 
   // States
-  const [exam, setExam] = useState({ exam_content: {
-    metadata: {}, 
-    questions: []
-  } });
+  const [exam, setExam] = useState({ exam_content: [] });
   const [userAnswers, setUserAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
@@ -123,18 +120,13 @@ export default function StudentExam() {
         );
         
         console.log("✅ Exam API response:", examData);
-        console.log("🔍 exam_content type:", typeof examData.exam.exam_content);
-        console.log("🔍 exam_content value:", examData.exam.exam_content);
         
         const examInfo = examData.exam;
         const progress = examData.progress;
         
         setExam({
           ...examInfo,
-          exam_content: {
-          metadata: examInfo.exam_content?.metadata || {},
-          questions: examInfo.exam_content?.questions || []
-        }
+          exam_content: examInfo.exam_content || []
         });
         examRef.current = examInfo;
         
@@ -372,7 +364,7 @@ export default function StudentExam() {
 
         {/* Main Content - Questions List */}
         <main className="flex-1 overflow-y-auto scrollbar-hide p-6 md:p-12 space-y-10 bg-[#F8FAFC]">
-          {exam.exam_content.questions.map((q, index) => {
+          {exam.exam_content.map((q, index) => {
             const studentSelection = userAnswers[index] || "";
             const correctAnswer = q.answer || q.correct_answer || "";
             const isCorrect = submitted && 
