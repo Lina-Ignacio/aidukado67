@@ -250,7 +250,7 @@ export default function StudentTest() {
           ) : (
             <div className="text-center">
               <div className="text-4xl font-black text-[#102E50] mb-4">Score: {score} / {quiz.quiz_content.length}</div>
-              <button onClick={() => navigate(-2)} className="bg-[#102E50] text-white py-4 px-16 rounded-2xl font-bold hover:bg-[#E78B48]">Return to Dashboard</button>
+              <button onClick={() => navigate(-1)} className="bg-[#102E50] text-white py-4 px-16 rounded-2xl font-bold hover:bg-[#E78B48]">Return to Dashboard</button>
             </div>
           )}
         </footer>

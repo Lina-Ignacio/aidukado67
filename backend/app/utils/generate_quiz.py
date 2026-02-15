@@ -1,11 +1,53 @@
 import asyncio
-from .parse_questions import parse_questions
-from app.core.gemini import get_gemini_model
+import re
 from app.core.quiz_groq_optimized import get_quiz_generator
+from .parse_questions import parse_questions, validate_questions
+
+async def generate_with_retry(generator, prompt, num_items, timeout, max_retries=3):
+    """
+    Generate quiz with retry logic and key rotation
+    """
+    for attempt in range(max_retries):
+        try:
+            print(f"\n🎯 Attempt {attempt + 1}/{max_retries} - Using key #{attempt}")
+            
+            raw_questions = await generator.generate_quiz(
+                prompt=prompt,
+                num_questions=num_items,
+                timeout=timeout,
+            )
+            
+            if not raw_questions:
+                print(f"❌ Attempt {attempt + 1}: Empty response")
+                # Rotate to next key
+                if hasattr(generator, 'rotate_key'):
+                    generator.rotate_key()
+                continue
+            
+            # Show raw response preview
+            print("\n🔍 RAW RESPONSE PREVIEW:")
+            preview_lines = raw_questions.strip().split('\n')[:10]
+            for i, line in enumerate(preview_lines, 1):
+                # Truncate long lines for display
+                display_line = line if len(line) < 80 else line[:77] + "..."
+                print(f"  {i}: {repr(display_line)}")
+            
+            return raw_questions
+            
+        except Exception as e:
+            print(f"❌ Attempt {attempt + 1} failed: {str(e)[:100]}")
+            if hasattr(generator, 'rotate_key'):
+                generator.rotate_key()
+            if attempt == max_retries - 1:
+                raise
+            await asyncio.sleep(1)  # Brief pause before retry
+    
+    return None
+
 
 async def generate_quiz(lesson_content, num_items, question_type):
     """
-    Smart quiz generation with context window awareness
+    Smart quiz generation with context window awareness, retry logic, and validation
     """
     # Get the smart generator
     generator = get_quiz_generator()
@@ -27,23 +69,23 @@ async def generate_quiz(lesson_content, num_items, question_type):
     if "compound" in generator.current_model:
         # Compound models: 8192 context window
         if num_items_int <= 5:
-            max_lesson_length = 6000
-        elif num_items_int <= 10:
             max_lesson_length = 4000
-        elif num_items_int <= 15:
+        elif num_items_int <= 10:
             max_lesson_length = 2500
-        elif num_items_int <= 20:
+        elif num_items_int <= 15:
             max_lesson_length = 1500
+        elif num_items_int <= 20:
+            max_lesson_length = 800
         else:
-            max_lesson_length = 1000  # Very short for 20+ questions
+            max_lesson_length = 500
     else:
         # Llama models: 32768 context window
         if num_items_int <= 10:
-            max_lesson_length = 10000
+            max_lesson_length = 7000
         elif num_items_int <= 20:
-            max_lesson_length = 6000
+            max_lesson_length = 4000
         else:
-            max_lesson_length = 3000
+            max_lesson_length = 2000
     
     if len(lesson_content) > max_lesson_length:
         print(f"📝 Truncating lesson from {len(lesson_content):,} to {max_lesson_length:,} chars")
@@ -51,7 +93,7 @@ async def generate_quiz(lesson_content, num_items, question_type):
     else:
         print(f"📝 Lesson length: {len(lesson_content):,} chars (OK)")
     
-    # Your prompt
+    # Create type-specific prompt
     type_map = {
         "multiple_choice": "multiple choice",
         "true_false": "True/False"
@@ -59,116 +101,115 @@ async def generate_quiz(lesson_content, num_items, question_type):
     formatted_type = type_map.get(question_type, question_type)
     
     if question_type == "true_false":
-        format_example = """1. Question?
-Answer: True
+        prompt = f"""Generate {num_items} True/False questions based on this content:
 
-2. Another question?
-Answer: False"""
-    else:
-        format_example = """1. Question?
-A) Option 1
-B) Option 2  
-C) Option 3
-D) Option 4
-Answer: B"""
-
-    prompt = f"""Generate exactly {num_items} {formatted_type} questions from this content:
-
+CONTENT:
 {lesson_content}
 
-Rules:
-- Every question must have exactly one correct answer
-- No N/A or None answers
-- Questions must test key concepts
-- Return only the questions and answers
+CRITICAL RULES - YOU MUST FOLLOW EXACTLY:
+- Each question must be a clear statement
+- Answer MUST be EXACTLY "True" or "False" (without asterisks, bold, or quotes)
+- DO NOT add any explanations after the answer
+- DO NOT use letters (A, B, C, D) as answers
+- DO NOT use any formatting like ** or *
 
-Format each question like this:
-{format_example}
+FORMAT (use exactly this - NO EXTRA TEXT):
+1. [Question statement]?
+Answer: True
 
-Generate {num_items} questions now:"""
+2. [Next statement]?
+Answer: False
+
+Generate {num_items} True/False questions now. Follow the format exactly. Start directly with question 1:"""
+    else:
+        prompt = f"""Generate {num_items} multiple choice questions based on this content:
+
+CONTENT:
+{lesson_content}
+
+REQUIREMENTS:
+- Each question must have EXACTLY 4 options (A, B, C, D)
+- Answer must be a single letter (A, B, C, or D)
+- Options should be plausible but only one correct
+- Questions should test key concepts from the content
+- DO NOT use True/False as answers
+
+FORMAT (use exactly this - each question MUST have A, B, C, D options):
+1. [Question]?
+A) [Option 1 text]
+B) [Option 2 text]
+C) [Option 3 text]
+D) [Option 4 text]
+Answer: B
+
+2. [Next question]?
+A) [Option 1 text]
+B) [Option 2 text]
+C) [Option 3 text]
+D) [Option 4 text]
+Answer: C
+
+Generate {num_items} multiple choice questions now. Start directly with question 1:"""
 
     try:
-        # Smart timeout based on question count
-        base_timeout = 60  # Base 1 minute
-        timeout_seconds = base_timeout + (num_items_int * 2)
+        # Calculate timeout (more generous for larger question sets)
+        base_timeout = 60
+        timeout_seconds = base_timeout + (num_items_int * 5)  # 5 seconds per question
         timeout_seconds = min(timeout_seconds, 240)  # Max 4 minutes
         
-        print(f"⏱️  Timeout: {timeout_seconds}s")
-        print(f"🚀 Starting generation...")
+        print(f"\n⏱️  Timeout: {timeout_seconds}s")
+        print(f"🚀 Starting generation with retry logic...")
         
-        raw_questions = await generator.generate_quiz(
+        # Generate with retry
+        raw_questions = await generate_with_retry(
+            generator=generator,
             prompt=prompt,
-            num_questions=num_items_int,
+            num_items=num_items_int,
             timeout=timeout_seconds,
+            max_retries=3
         )
         
         if not raw_questions:
-            print("❌ Error: Empty response")
+            print("\n❌ All retry attempts failed. No questions generated.")
             return []
-
+        
+        # Parse questions
         parsed_questions = parse_questions(raw_questions)
+        print(f"\n📊 Raw parsed: {len(parsed_questions)} questions")
+        
+        # Validate questions based on type
+        valid_questions = validate_questions(
+            parsed_questions, 
+            question_type, 
+            num_items_int
+        )
         
         print(f"\n" + "="*50)
         print(f"✅ GENERATION COMPLETE")
         print(f"📊 Final model: {generator.current_model}")
-        print(f"📈 Questions generated: {len(parsed_questions)}/{num_items_int}")
+        print(f"📈 Valid questions: {len(valid_questions)}/{num_items_int}")
         print("="*50)
         
         # Show key statistics
         key_stats = generator.get_key_stats()
-        print(f"🔑 Key Statistics:")
+        print(f"\n🔑 Key Statistics:")
         for key_id, stats in key_stats.items():
             print(f"   {key_id}: {stats['requests']} req, {stats['success_rate']}")
         
-        return parsed_questions[:num_items_int]
+        # If we have valid questions, return them
+        if valid_questions:
+            return valid_questions[:num_items_int]
+        
+        # If no valid questions but we have parsed questions, show error
+        if parsed_questions and not valid_questions:
+            print("\n❌ No valid questions passed validation.")
+            print("   This usually means the format was incorrect.")
+            print("   Check the raw response preview above for formatting issues.")
+        
+        return []
     
     except Exception as e:
         error_msg = str(e)
-        print(f"\n❌ Groq failed: {error_msg[:200]}")
-        
-        # Check if it's a context window error
-        if "8192" in error_msg or "max_tokens" in error_msg:
-            print(f"💡 Compound model limit is 8192 tokens")
-            print(f"💡 Try: 1) Fewer questions (<15), 2) Shorter lesson content")
-        
-        # Try Gemini fallback
-        print(f"🔄 Attempting Gemini fallback...")
-        return await _fallback_to_gemini(prompt, num_items_int)
-
-async def _fallback_to_gemini(prompt: str, num_items: int):
-    """Fallback to Gemini with correct model name"""
-    try:
-        print("🔀 Switching to Gemini...")
-        gemini_model = get_gemini_model()
-        
-        # Try different model names
-        model_names = [
-            "gemini-1.5-flash",
-            "gemini-1.5-pro", 
-            "gemini-1.0-pro",
-            "models/gemini-1.5-flash"
-        ]
-        
-        for model_name in model_names:
-            try:
-                print(f"   Trying model: {model_name}")
-                response = await gemini_model.generate_content_async(
-                    prompt,
-                    # Add model name if your gemini.py supports it
-                )
-                raw_questions = response.text
-                
-                if raw_questions:
-                    parsed_questions = parse_questions(raw_questions)
-                    print(f"✅ Gemini ({model_name}) generated {len(parsed_questions)} questions")
-                    return parsed_questions[:num_items]
-            except Exception as model_error:
-                print(f"   ❌ {model_name} failed: {str(model_error)[:80]}")
-                continue
-        
-        print("❌ All Gemini models failed")
-        return []
-        
-    except Exception as gemini_error:
-        print(f"❌ Gemini failed: {gemini_error}")
+        print(f"\n❌ Generation failed: {error_msg[:200]}")
+        print("   Please check your Groq configuration.")
         return []
