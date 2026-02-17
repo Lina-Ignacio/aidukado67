@@ -85,7 +85,7 @@ export default function Login() {
             if (must_change_password) {
                 navigate("/force-change-password");
             } else {
-                navigate("/dashboard");
+                navigate("/dashboard"); 
             }
 
         } catch (err) {

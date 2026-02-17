@@ -50,7 +50,9 @@ export default function StudentExam() {
   const handleSubmit = useCallback(async () => {
     if (submitted || !examRef.current) return;
 
-    const content = examRef.current.exam_content;
+    const content = Array.isArray(examRef.current.exam_content)
+  ? examRef.current.exam_content.questions
+  : [];
     console.log("🎯 SUBMITTING EXAM - Debug Info:");
     console.log("Exam content length:", content.length);
     console.log("User answers:", answersRef.current);
@@ -123,11 +125,21 @@ export default function StudentExam() {
         
         const examInfo = examData.exam;
         const progress = examData.progress;
-        
-        setExam({
+
+        //change
+        const normalizedExam = {
           ...examInfo,
-          exam_content: examInfo.exam_content || []
-        });
+          exam_content: Array.isArray(examInfo.exam_content?.questions)
+            ? examInfo.exam_content.questions
+            : []
+        };
+
+        setExam(normalizedExam)
+        
+        //setExam({
+          //...examInfo,
+          //exam_content: Array.isArray(examInfo.exam_content) ? examInfo.exam_content.questions : []
+        //});
         examRef.current = examInfo;
         
         // SET DURATION
@@ -454,7 +466,7 @@ export default function StudentExam() {
                 {exam.passing_score && ` (Minimum: ${exam.passing_score} points)`}
               </div>
               <button 
-                onClick={() => navigate(-2)} 
+                onClick={() => navigate(-1)} 
                 className="bg-[#102E50] text-white py-4 px-16 rounded-2xl font-bold hover:bg-[#E78B48]"
               >
                 Return to Dashboard

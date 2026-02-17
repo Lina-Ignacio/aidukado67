@@ -649,4 +649,34 @@ def assign_exam_students(
             detail=f"Failed to assign students: {str(e)}"
         )
         
+@router.post("/compute_tos")
+async def generate_tos(data: TOSRequest):
+    """
+    Generate exam from Table of Specifications (async version)
+    """
+    try:
+        lessons_data = [lesson.dict() for lesson in data.lessons]
+        result = compute_tos(lessons_data, data.total_items)
+
+        exam_questions = await generate_exam_realistic(result, target_total=data.total_items)
+
+        print(f"✅ Generated {len(exam_questions)}/{data.total_items} questions")
+
+        return {
+            "success": True,
+            "total_questions": len(exam_questions),
+            "requested_items": data.total_items,
+            "generated_items": len(exam_questions),
+            "tos_distribution": result,
+            "questions": exam_questions
+        }
+
+    except Exception as e:
+        print(f"❌ Error in generate_tos endpoint: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to generate exam: {str(e)}"
+        )
 

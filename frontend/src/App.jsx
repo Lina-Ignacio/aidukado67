@@ -46,7 +46,14 @@ function AppContent() {
            ========================================== */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/admin/reset-password" element={<PasswordResetSearch />} />
+
+        <Route path="/admin/reset-password" element={
+          <RoleProtectedRoute allowed_roles={["admin"]}>
+              <PasswordResetSearch />
+            </RoleProtectedRoute>
+        } />
+  
+
         <Route path="/force-change-password" element={<ForceChangePassword />} />
         
         
@@ -169,10 +176,44 @@ function AppContent() {
           />
 
           {/* Admin Management */}
-          <Route path='/userManagement' element={<UserManagement />} />
-          <Route path='/classManagement' element={<ClassManagement />} />
-          <Route path='/subjectManagement' element={<SubjectManagement />} />
-          <Route path="/enrollmentManagement" element={<EnrollmentManagement />} />
+
+          <Route 
+            path='/userManagement'
+            element={
+              <RoleProtectedRoute allowed_roles={["admin"]}>
+                <UserManagement />
+              </RoleProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path='/classManagement'
+            element={
+              <RoleProtectedRoute allowed_roles={["admin"]}>
+                <ClassManagement />
+              </RoleProtectedRoute>
+            } 
+          />
+
+          {/*<RoleProtectedRoute allowed_roles={["admin"]}></RoleProtectedRoute> */}
+          
+          <Route 
+            path='/subjectManagement'
+            element={
+              <RoleProtectedRoute allowed_roles={["admin"]}>
+                <SubjectManagement  />
+              </RoleProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/enrollmentManagement" 
+            element={
+              <RoleProtectedRoute allowed_roles={["admin"]}>
+                <EnrollmentManagement  />
+              </RoleProtectedRoute>
+            } 
+          />
 
           {/* Classes & Subjects */}
           <Route 
