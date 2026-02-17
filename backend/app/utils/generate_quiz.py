@@ -32,6 +32,13 @@ async def generate_with_retry(generator, prompt, num_items, timeout, max_retries
                 display_line = line if len(line) < 80 else line[:77] + "..."
                 print(f"  {i}: {repr(display_line)}")
             
+            # ADD THIS: Print the complete raw response
+            print("\n" + "="*80)
+            print("📄 COMPLETE RAW RESPONSE FROM AI:")
+            print("="*80)
+            print(raw_questions)
+            print("="*80)
+            
             return raw_questions
             
         except Exception as e:
@@ -109,9 +116,10 @@ CONTENT:
 CRITICAL RULES - YOU MUST FOLLOW EXACTLY:
 - Each question must be a clear statement
 - Answer MUST be EXACTLY "True" or "False" (without asterisks, bold, or quotes)
-- DO NOT add any explanations after the answer
+- DO NOT add any explanations, notes, or additional text after the answer
 - DO NOT use letters (A, B, C, D) as answers
 - DO NOT use any formatting like ** or *
+- The answer line should contain ONLY the word "True" or "False" - nothing else
 
 FORMAT (use exactly this - NO EXTRA TEXT):
 1. [Question statement]?
@@ -122,17 +130,24 @@ Answer: False
 
 Generate {num_items} True/False questions now. Follow the format exactly. Start directly with question 1:"""
     else:
-        prompt = f"""Generate {num_items} multiple choice questions based on this content:
+        prompt = f"""Generate {num_items} multiple choice questions based on this content. 
+IMPORTANT: DO NOT include any reasoning, explanations, or introductory text. 
+Start directly with question 1 and end with question {num_items}. No other text.
 
 CONTENT:
 {lesson_content}
 
-REQUIREMENTS:
+CRITICAL RULES - YOU MUST FOLLOW EXACTLY:
+- OUTPUT ONLY the questions and answers - NO introductory text, NO reasoning, NO explanations
 - Each question must have EXACTLY 4 options (A, B, C, D)
-- Answer must be a single letter (A, B, C, or D)
+- Answer must be a single letter (A, B, C, or D) - NO explanations after it
 - Options should be plausible but only one correct
 - Questions should test key concepts from the content
 - DO NOT use True/False as answers
+- DO NOT add any explanations, notes, or additional text after the answer
+- DO NOT use asterisks, bold, or any formatting
+- DO NOT include "–" or any extra punctuation after the answer
+- The answer line should contain ONLY "Answer: X" where X is A, B, C, or D - nothing else
 
 FORMAT (use exactly this - each question MUST have A, B, C, D options):
 1. [Question]?
@@ -148,6 +163,9 @@ B) [Option 2 text]
 C) [Option 3 text]
 D) [Option 4 text]
 Answer: C
+
+IMPORTANT: After "Answer: B", do not add any spaces, dashes, or explanations. Stop right there.
+YOUR ENTIRE RESPONSE MUST CONSIST ONLY OF THESE {num_items} QUESTIONS IN THIS EXACT FORMAT - NO OTHER TEXT.
 
 Generate {num_items} multiple choice questions now. Start directly with question 1:"""
 
@@ -204,7 +222,7 @@ Generate {num_items} multiple choice questions now. Start directly with question
         if parsed_questions and not valid_questions:
             print("\n❌ No valid questions passed validation.")
             print("   This usually means the format was incorrect.")
-            print("   Check the raw response preview above for formatting issues.")
+            print("   Check the raw response above for formatting issues.")
         
         return []
     

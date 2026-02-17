@@ -1,4 +1,3 @@
-
 export default function StudentSelectModal({ 
   students, 
   selectedStudents, 
@@ -10,6 +9,30 @@ export default function StudentSelectModal({
   confirmText = "Confirm Assign",
   cancelText = "Cancel"
 }) {
+  // Check if all selectable students are selected
+  const selectableStudents = students.filter(s => !disabledStudents.includes(s.id));
+  const allSelectableSelected = selectableStudents.length > 0 && 
+    selectableStudents.every(s => selectedStudents.includes(s.id));
+
+  const handleSelectAll = () => {
+    // Toggle all selectable students
+    if (allSelectableSelected) {
+      // Deselect all selectable students
+      selectableStudents.forEach(student => {
+        if (selectedStudents.includes(student.id)) {
+          onToggle(student.id);
+        }
+      });
+    } else {
+      // Select all selectable students
+      selectableStudents.forEach(student => {
+        if (!selectedStudents.includes(student.id)) {
+          onToggle(student.id);
+        }
+      });
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
       <div className="bg-white text-black rounded-xl p-6 w-full max-w-md max-h-[80vh] overflow-hidden flex flex-col">
@@ -32,6 +55,18 @@ export default function StudentSelectModal({
             </div>
           ) : (
             <div className="space-y-1">
+              {/* Select All Button */}
+              {selectableStudents.length > 0 && (
+                <div className="flex justify-end mb-2 pb-2 border-b border-gray-200">
+                  <button
+                    onClick={handleSelectAll}
+                    className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors font-medium"
+                  >
+                    {allSelectableSelected ? 'Deselect All' : 'Select All'}
+                  </button>
+                </div>
+              )}
+
               {students.map((student) => {
                 const isDisabled = disabledStudents.includes(student.id);
                 const isSelected = selectedStudents.includes(student.id);

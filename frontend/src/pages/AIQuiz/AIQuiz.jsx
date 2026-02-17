@@ -20,7 +20,8 @@ export default function AIQuiz() {
     instruction: "",
     question_type: "",
     assessment_type: "",
-    error: ""
+    error: "",
+    closing_time: "",
   });
 
   // Validation helper
@@ -134,6 +135,7 @@ export default function AIQuiz() {
             instructions={formData.instruction} 
             duration={formData.duration} 
             assessment_type={formData.assessment_type}
+            closing_time={formData.closing_time}
           />
         </div>
       )}

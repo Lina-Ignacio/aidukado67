@@ -16,6 +16,7 @@ export default function AssignQuiz({
   instructions = "",
   duration = 0,
   assessment_type = "",
+  closing_time = "",
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editableQuestions, setEditableQuestions] = useState([]);
@@ -102,6 +103,11 @@ export default function AssignQuiz({
     if (!selectedStudents.length)
       return alert("Select at least one student");
 
+    const formattedClosingTime = closing_time ? new Date(closing_time).toISOString() : null;
+    
+    // Also set opening_time to current time
+    const openingTime = new Date().toISOString();
+
     const payload = {
       lesson_id,
       title,
@@ -114,6 +120,8 @@ export default function AssignQuiz({
       assessment_type,
       term_id,
       assigned_students: selectedStudents,
+      opening_time: openingTime,
+      closing_time: formattedClosingTime,
     };
 
     try {

@@ -53,6 +53,7 @@ export default function QuizForm({ formData, onChange, onSubmit, loading }) {
   };
 
   const handleChange = (field, value) => {
+    console.log(`Field: ${field}, Value: ${value}`);
     onChange({ ...formData, [field]: value });
   };
 

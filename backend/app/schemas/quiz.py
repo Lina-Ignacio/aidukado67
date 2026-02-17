@@ -18,8 +18,8 @@ class CreateQuiz(BaseModel):
     assessment_type: str
     term_id: int
     assigned_students: Optional[List[int]] = []
-    opening_time: Optional[datetime] = None  
-    closing_time: Optional[datetime] = None  
+    opening_time: Optional[datetime]  # No default
+    closing_time: Optional[datetime]
 
 
 class QuizOut(BaseModel):
