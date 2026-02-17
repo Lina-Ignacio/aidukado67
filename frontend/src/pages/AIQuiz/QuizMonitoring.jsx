@@ -339,7 +339,7 @@ export default function QuizMonitoring() {
                                 <div>
                                     <p className="text-sm uppercase tracking-widest opacity-80 mb-1">Assessment</p>
                                     <h2 className="text-xl font-bold">{quizTitle}</h2>
-                                    <p className="text-sm opacity-90">Lesson: {lessonTitle}</p>
+                                    
                                 </div>
                                 
                                 {quizDetails?.closing_time && (
@@ -489,7 +489,7 @@ export default function QuizMonitoring() {
                                 <tr style={{ backgroundColor: COLORS.primary }}>
                                     <th className="px-6 py-4 text-left font-medium text-sm uppercase tracking-widest text-white">Student</th>
                                     <th className="px-6 py-4 text-center font-medium text-sm uppercase tracking-widest text-white">Status</th>
-                                    <th className="px-6 py-4 text-center font-medium text-sm uppercase tracking-widest text-white">Progress</th>
+                                    <th className="px-6 py-4 text-center font-medium text-sm uppercase tracking-widest text-white">Performance</th>
                                     <th className="px-6 py-4 text-right font-medium text-sm uppercase tracking-widest text-white">Score</th>
                                 </tr>
                             </thead>
