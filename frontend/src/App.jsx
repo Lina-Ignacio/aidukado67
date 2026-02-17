@@ -57,9 +57,15 @@ function AppContent() {
         <Route path="/force-change-password" element={<ForceChangePassword />} />
         
         
-        <Route path="/submissions/:materialId/:totalScore" element={<Submissions />} />
-        
-        
+        <Route 
+          path="/submissions/:materialId/:totalScore" 
+          element={
+            <RoleProtectedRoute allowed_roles={["teacher"]}>
+              <Submissions  />
+            </RoleProtectedRoute>
+          } 
+        />
+
         <Route 
           path="/AIQuiz/:materialId" 
           element={
