@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import { MdClose } from "react-icons/md";
 
 export default function AddUser({ onSuccess, onClose }) {

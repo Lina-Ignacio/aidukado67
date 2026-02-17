@@ -1,11 +1,15 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
+import axios from "../services/axiosConfig";
 import useUserStore from "../store/useUserStore";
 import { MdPerson, MdEmail, MdSecurity, MdVisibility, MdVisibilityOff } from "react-icons/md";
 
 
 export default function Login() {
+    console.log('Axios test:', {
+        withCredentials: axios.defaults?.withCredentials,
+        isConfigured: !!axios.interceptors?.request
+    });
 
     const navigate = useNavigate();
 

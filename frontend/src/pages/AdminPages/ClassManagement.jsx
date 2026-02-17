@@ -1,7 +1,7 @@
 import SearchForm from "../../components/SearchForm"
 import Table from "../../components/Table"
 import { useState, useEffect } from "react"
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import Modal from "../../components/Modal";
 import AddClass from "../SchoolClasses/AddClass";
 import EditClass from "../SchoolClasses/EditClass";
@@ -81,7 +81,7 @@ export default function ClassManagement() {
     const panelStyleDelete = "w-full h-auto max-w-lg rounded-xl shadow-xl rounded-xl"
     const panelStyleUpload = "w-full h-auto max-w-2xl rounded-xl shadow-xl" 
 
-    const pagination = [8, 10]
+    const pagination = [7, 10]
     
     return (
         <>

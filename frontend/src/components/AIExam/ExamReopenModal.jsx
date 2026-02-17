@@ -1,6 +1,6 @@
 // components/ExamMonitoring/ExamReopenModal.jsx
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../../services/axiosConfig';
 import ClassicButton from '../classicButton';
 import { PiClockCounterClockwise, PiCalendar, PiCheck } from "react-icons/pi";
 import { MdClose } from "react-icons/md";

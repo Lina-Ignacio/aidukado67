@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { MdClose } from "react-icons/md";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 
 export default function EditUser({ userId, onClose, onSuccess }) {
 

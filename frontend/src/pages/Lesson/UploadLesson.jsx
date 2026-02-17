@@ -1,7 +1,7 @@
 import FileUploader from "../../components/FileUploader";
 import { useState, useEffect } from "react";
 import useClassStore from "../../store/useClassStore";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 
 import { FaExclamationCircle, FaCloudUploadAlt, FaTimes, FaHeading, FaTag, FaPen, FaChevronDown, FaAlignLeft, 
 FaStar, FaChartBar, FaCalendarAlt, FaClock, FaSpinner } from 'react-icons/fa';

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../services/axiosConfig";
 import { MdQuiz, MdOutlineEditNote, MdLock, MdCheckCircle, MdAccessTime, MdCalendarToday } from "react-icons/md";
 import userRole from "../store/useUserStore";
 

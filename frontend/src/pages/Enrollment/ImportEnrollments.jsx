@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import * as XLSX from "xlsx";
 import FileUploader from "../../components/FileUploader";
 import ClassicButton from "../../components/classicButton";

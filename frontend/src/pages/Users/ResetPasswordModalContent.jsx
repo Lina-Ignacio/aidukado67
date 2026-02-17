@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import { MdContentCopy, MdCheckCircle, MdError } from "react-icons/md";
 
 export default function ResetPasswordModalContent({ user, onClose }) {

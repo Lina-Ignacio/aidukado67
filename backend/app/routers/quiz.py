@@ -13,18 +13,10 @@ from app.models.quiz_attempts import StartTime
 from app.schemas.quiz_attempts import CreateStartTime
 from datetime import datetime
 from sqlalchemy import desc
-
+from app.database import get_db
 router = APIRouter()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    except Exception as e:
-        print(f"Database error: {e}")
-        raise   
-    finally:
-        db.close()
+
 
 #get generated quiz
 @router.post("/generateQuiz")

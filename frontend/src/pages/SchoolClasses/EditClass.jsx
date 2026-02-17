@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 
 export default function EditClass({ classId, onClose, onSuccess }) {
 

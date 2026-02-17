@@ -2,10 +2,10 @@ import React from "react";
 import {
   MdMenuBook,
   MdBarChart,
-  MdAccountCircle,
-  MdAssignmentInd,
+  MdDashboardCustomize,
   MdClass,
   MdPerson,
+
 
 } from "react-icons/md";
 import { IoLogOut, IoHelpCircle, IoLibrary, IoSchool, IoPeople, IoClipboard } from "react-icons/io5";
@@ -14,7 +14,7 @@ import useUserStore from "../store/useUserStore";
 import useClassStore from "../store/useClassStore";
 import useTermStore from "../store/useTermStore";
 import useLessonStore from "../store/useLessonStore";
-import axios from "axios";
+import axios from "../services/axiosConfig";
 import UserDropup from "./DropUp/UserDropUp";
 
 
@@ -103,6 +103,12 @@ export default function Sidebar({closeMobile}) {
           <h2 className="font-bold">Dashboard</h2>
         </NavLink> */}
 
+        {userRole == "admin" && (
+          <NavLink to="/adminDashboard" className={linkClasses}>
+            <MdDashboardCustomize className={iconClasses}/>
+            <h2 className="font-extrabold text-2xl md:text[3xl] xl:text[4xl]">Dashboard</h2>
+          </NavLink>
+        )}
 
         {userRole == "admin" && (
           <NavLink to="/userManagement" className={linkClasses}>
@@ -131,6 +137,8 @@ export default function Sidebar({closeMobile}) {
             <h2 className="font-extrabold text-2xl md:text[3xl] xl:text[4xl]">Courses</h2>
           </NavLink>
         )}
+
+        
 
         
 

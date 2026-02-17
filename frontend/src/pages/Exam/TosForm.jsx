@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import AssignExam from "../../components/AssignExam/AssignExam";
 import { 
   FaClock, 

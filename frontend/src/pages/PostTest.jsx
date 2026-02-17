@@ -2,7 +2,7 @@ import Test from '../components/Test'
 import storePostTestLesson from '../store/storePostTestLesson'
 import storeGeneratedLesson from '../store/storeGeneratedLesson'
 import React, {useState, useEffect} from 'react'
-import axios from 'axios'
+import axios from '../services/axiosConfig'
 
 export default function PostTest() {
     const [questions, setQuestions] = useState([]);

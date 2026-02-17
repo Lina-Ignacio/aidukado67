@@ -125,3 +125,13 @@ class StudentSimpleResponse(BaseModel):
     
     class Config:
         from_attributes = True
+        
+
+class UserStatistics(BaseModel):
+    total_users: int
+    total_teachers: int
+    total_students: int
+    total_admins: int
+    
+    class Config:
+        from_attributes = True

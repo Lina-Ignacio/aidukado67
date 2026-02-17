@@ -1,16 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from typing import List
 from sqlalchemy.orm import Session
-from sqlalchemy import or_
+from sqlalchemy import or_, func
 from app.models import Users, ClassEnrollment
-from app.schemas.user import UserCreate, UserOut, UserUpdate, TeacherOut, PasswordChangeRequest, StudentSimpleResponse
+from app.schemas.user import UserCreate, UserOut, UserUpdate, TeacherOut, PasswordChangeRequest, StudentSimpleResponse, AdminPasswordReset, UserStatistics
 from app.database import SessionLocal
 from app.utils.auth import hash_password, get_current_user
-from app.schemas.user import AdminPasswordReset 
 from app.database import get_db
 
 router = APIRouter(prefix="/user", tags=["User"])
-
 
 
 @router.get("/get", response_model=list[UserOut])
@@ -289,3 +287,42 @@ async def get_students_by_class_id(
         ))
     
     return result
+
+@router.get("/statistics", response_model=UserStatistics)
+async def get_user_statistics(db: Session = Depends(get_db)):
+    """
+    Get user statistics counts for dashboard
+    """
+    try:
+        # Get total users count (excluding archived)
+        total_users = db.query(func.count(Users.id)).filter(
+            Users.is_archive == False
+        ).scalar() or 0
+        
+        # Get teachers count
+        total_teachers = db.query(func.count(Users.id)).filter(
+            Users.is_archive == False,
+            Users.role == "teacher"
+        ).scalar() or 0
+        
+        # Get students count
+        total_students = db.query(func.count(Users.id)).filter(
+            Users.is_archive == False,
+            Users.role == "student"
+        ).scalar() or 0
+        
+        # Get admins count
+        total_admins = db.query(func.count(Users.id)).filter(
+            Users.is_archive == False,
+            Users.role == "admin"
+        ).scalar() or 0
+        
+        return UserStatistics(
+            total_users=total_users,
+            total_teachers=total_teachers,
+            total_students=total_students,
+            total_admins=total_admins
+        )
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

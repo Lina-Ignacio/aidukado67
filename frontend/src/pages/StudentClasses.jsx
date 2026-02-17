@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react"
-import axios from 'axios'
+import axios from "../services/axiosConfig";
 import ClassCardStudent from "../components/ClassCardStudent";
 import useUserStore from "../store/useUserStore";
 

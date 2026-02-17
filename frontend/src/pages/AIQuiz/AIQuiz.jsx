@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import AssignQuiz from '../../components/AssignQuiz/AssignQuiz';

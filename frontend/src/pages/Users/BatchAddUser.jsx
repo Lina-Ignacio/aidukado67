@@ -1,6 +1,6 @@
 import * as XLSX from "xlsx";
 import { useState } from "react";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import { MdClose } from "react-icons/md";
 import FileUploader from "../../components/FileUploader";
 

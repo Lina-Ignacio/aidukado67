@@ -11,16 +11,12 @@ from app.models import StudentSubmission
 from app.utils.r2_helper import upload_file_async, generate_presigned_url_async, delete_file
 from app.models.class_enrollment import ClassEnrollment
 import logging
+from app.database import get_db
 
 router = APIRouter(prefix="/student_submission", tags=["student_submission"])
 logger = logging.getLogger(__name__)
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
 
 # ✅ Check submission
 @router.get("/check/{material_id}/{student_id}", response_model=Optional[SubmissionOut])

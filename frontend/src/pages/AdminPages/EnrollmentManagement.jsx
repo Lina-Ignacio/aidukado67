@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import SearchForm from "../../components/SearchForm";
 import { MoonLoader } from "react-spinners";
 import AddEnrollment from "../Enrollment/AddEnrollment";

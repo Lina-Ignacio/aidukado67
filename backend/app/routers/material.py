@@ -10,7 +10,7 @@ from app.utils.extract_text_from_file import extract_text_from_file
 from app.models import ClassMaterial, LessonContent, Classes, Term
 from app.models.summary import Summary
 from app.schemas.summary import CreateSummary, SummaryOut
-
+from app.database import get_db
 import requests
 from datetime import datetime
 
@@ -18,13 +18,7 @@ from datetime import datetime
 router = APIRouter(prefix="/class_material", tags=["class_material"])
 
 
-def get_db():
-    db = SessionLocal()
-    
-    try:
-        yield db
-    finally:
-        db.close()
+
         
 @router.post("/upload")
 async def upload_material(metadata: str = Form(...), file: UploadFile = File(...), db: Session = Depends(get_db)):
@@ -110,7 +104,9 @@ def get_lessons_by_class(class_id: int, db: Session = Depends(get_db)):
                 ClassMaterial.title,
                 ClassMaterial.term_id,
                 ClassMaterial.type,
-                ClassMaterial.created_at
+                ClassMaterial.created_at,
+                ClassMaterial.total_score,
+                ClassMaterial.due_date
             ))
             .filter(
                 ClassMaterial.class_id == class_id,
@@ -127,6 +123,7 @@ def get_lessons_by_class(class_id: int, db: Session = Depends(get_db)):
             status_code=500,
             detail=f"Internal server error: {str(e)}"
         )
+        
         
 @router.get("/getByClassId/{class_id}/term/{term_id}", response_model=list[MaterialTitleOut])
 def get_lessons_by_class_and_term(

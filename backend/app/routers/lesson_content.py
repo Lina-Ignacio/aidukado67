@@ -4,19 +4,11 @@ from sqlalchemy.orm import Session
 from app.models.lesson_content import LessonContent
 from app.schemas.lesson_content import LessonOut
 from ..utils.generate_summary import generate_summary
-
+from app.database import get_db
 
 router = APIRouter()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    except Exception as e:
-        print(f"Database error: {e}")
-        raise   
-    finally:
-        db.close()
+
 
 @router.get('/getLesson/{materialId}', response_model = LessonOut)
 def get_lesson(materialId: int, db:Session = Depends(get_db)):

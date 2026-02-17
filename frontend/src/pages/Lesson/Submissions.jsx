@@ -1,6 +1,6 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import StudentSubmissionCard from "../../components/classMaterials/studentSubmissionCard";
 import FileView from "./FileView";
 import ClassicButton from "../../components/classicButton";

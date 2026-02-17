@@ -4,15 +4,11 @@ from sqlalchemy.orm import Session
 from app.models.student_quiz_progress import StudentQuizProgress
 from app.schemas.student_quiz_progress import CreateScore, ScoreOut, StartTimeRequest, StartTimeResponse
 from datetime import datetime, timezone
+from app.database import get_db
 
 router = APIRouter()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
 
 
 

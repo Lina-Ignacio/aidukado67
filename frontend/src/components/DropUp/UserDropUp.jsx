@@ -5,7 +5,7 @@ import useUserStore from "../../store/useUserStore";
 import useTermStore from "../../store/useTermStore";
 import useLessonStore from "../../store/useLessonStore";
 import useClassStore from "../../store/useClassStore";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 
 export default function UserDropup() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,6 +16,9 @@ export default function UserDropup() {
   const firstName = useUserStore((state) => state.email)
   const userRole = useUserStore((state) => state.userRole)
   const teacherEmail = useClassStore((state) => state.teacherEmail)
+
+  // Check if user is not admin (student or teacher)
+  const showClassesButton = userRole === "student" || userRole === "teacher";
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -114,37 +117,43 @@ export default function UserDropup() {
 
           {/* Menu Items Container */}
           <div className="p-4 bg-gray-50">
-            {/* Classes Button */}
-            <button
-              onClick={goToClasses}
-              className="flex items-center w-full p-4 rounded-xl bg-white hover:bg-white/90 transition-all duration-200 group mb-3 border border-gray-100 hover:border-[#E78B48]/20 hover:shadow-lg hover:translate-y-[-2px]"
-            >
-              <div className="mr-4 p-3 bg-[#102E50]/5 rounded-xl group-hover:bg-[#102E50]/10 transition-colors">
-                <FaChalkboardTeacher className="w-6 h-6 text-[#102E50]" />
-              </div>
-              <div className="text-left flex-1">
-                <p className="font-semibold text-gray-900 group-hover:text-[#102E50]">My Classes</p>
-                <p className="text-sm text-gray-500 mt-1">Access your courses and materials</p>
-              </div>
-              <div className="ml-2 p-2 rounded-lg bg-gray-50 group-hover:bg-[#102E50]/5">
-                <span className="text-xs font-medium text-[#102E50]">→</span>
-              </div>
-            </button>
+            {/* Classes Button - Only show for students and teachers */}
+            {showClassesButton && (
+              <button
+                onClick={goToClasses}
+                className="flex items-center w-full p-4 rounded-xl bg-white hover:bg-white/90 transition-all duration-200 group mb-3 border border-gray-100 hover:border-[#E78B48]/20 hover:shadow-lg hover:translate-y-[-2px]"
+              >
+                <div className="mr-4 p-3 bg-[#102E50]/5 rounded-xl group-hover:bg-[#102E50]/10 transition-colors">
+                  <FaChalkboardTeacher className="w-6 h-6 text-[#102E50]" />
+                </div>
+                <div className="text-left flex-1">
+                  <p className="font-semibold text-gray-900 group-hover:text-[#102E50]">My Classes</p>
+                  <p className="text-sm text-gray-500 mt-1">Access your courses and materials</p>
+                </div>
+                <div className="ml-2 p-2 rounded-lg bg-gray-50 group-hover:bg-[#102E50]/5">
+                  <span className="text-xs font-medium text-[#102E50]">→</span>
+                </div>
+              </button>
+            )}
 
-            {/* Divider */}
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
+            {/* Divider - Only show if Classes button is visible */}
+            {showClassesButton && (
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200"></div>
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="px-3 bg-gray-50 text-xs text-gray-400">Account</span>
+                </div>
               </div>
-              <div className="relative flex justify-center">
-                <span className="px-3 bg-gray-50 text-xs text-gray-400">Account</span>
-              </div>
-            </div>
+            )}
 
             {/* Logout Button */}
             <button
               onClick={handleLogout}
-              className="flex items-center w-full p-4 rounded-xl bg-white hover:bg-white/90 transition-all duration-200 group border border-gray-100 hover:border-red-100 hover:shadow-lg hover:translate-y-[-2px]"
+              className={`flex items-center w-full p-4 rounded-xl bg-white hover:bg-white/90 transition-all duration-200 group border border-gray-100 hover:border-red-100 hover:shadow-lg hover:translate-y-[-2px] ${
+                !showClassesButton ? 'mt-0' : ''
+              }`}
             >
               <div className="mr-4 p-3 bg-red-50 rounded-xl group-hover:bg-red-100 transition-colors">
                 <FaSignOutAlt className="w-6 h-6 text-red-500" />
@@ -159,7 +168,7 @@ export default function UserDropup() {
             </button>
           </div>
 
-          {/* Footer */}
+          {/* Footer - Only for students */}
           {userRole === "student" && (
             <div className="px-6 py-4 border-t border-gray-100 bg-white">
               <div className="flex items-center justify-between">
@@ -180,7 +189,6 @@ export default function UserDropup() {
           )}
         </div>
       )}
-
     </div>
   );
 }

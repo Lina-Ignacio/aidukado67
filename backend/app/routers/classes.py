@@ -7,15 +7,11 @@ from app.models.subject import Subject
 from app.models.class_enrollment import ClassEnrollment
 from app.models.users import Users
 from app.schemas.classes import ClassCreate, ClassUpdate, ClassOut, ClassWithTeacherOut, BulkUploadResponse, BulkClassUpload
+from app.database import get_db
 
 router = APIRouter(prefix="/classes", tags=["classes"])
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db 
-    finally:
-        db.close()
+
 
 
 

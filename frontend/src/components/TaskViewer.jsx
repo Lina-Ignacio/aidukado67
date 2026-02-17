@@ -6,7 +6,7 @@ import { PiClockCounterClockwise } from "react-icons/pi";
 import FileView from "../pages/Lesson/FileView";
 import FileUploader from "./FileUploader";
 import useUserStore from "../store/useUserStore";
-import axios from "axios";
+import axios from "../services/axiosConfig";
 import { useNavigate } from "react-router-dom";
 import ClassicButton from "./classicButton";
 import useClassStore from "../store/useClassStore";

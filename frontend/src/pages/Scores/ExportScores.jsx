@@ -1,7 +1,7 @@
 // pages/ExportScores.jsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import ClassicButton from "../../components/classicButton";
 import ScoresTable from "../../components/Scores/ScoresTable";
 import { PiExport } from "react-icons/pi";

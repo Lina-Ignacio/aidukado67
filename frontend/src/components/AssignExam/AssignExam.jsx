@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import { useNavigate } from "react-router-dom";
 import ExamQuestionEditor from "./ExamQuestionEditor";
 import StudentSelectModal from "./StudentSelectModal";

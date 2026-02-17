@@ -5,17 +5,10 @@ from app.database import SessionLocal
 from app.schemas.subject import SubjectCreate, SubjectOut, SubjectUpdate
 from app.models.subject import Subject
 from app.models.classes import Classes
-
+from app.database import get_db
 
 router = APIRouter(prefix="/subject", tags=["subject"])
 
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
         
 
 @router.get("/get", response_model=list[SubjectOut])

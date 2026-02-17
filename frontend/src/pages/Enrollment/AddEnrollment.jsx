@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Select from "react-select";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 
 export default function AddEnrollment({ studentOptions, classOptions, setSuccess, onClose, onSuccess }) {
   const [formData, setFormData] = useState({

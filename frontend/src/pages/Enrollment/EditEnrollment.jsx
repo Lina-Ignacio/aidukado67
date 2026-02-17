@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import Select from "react-select";
 
 export default function EditEnrollment({ enrollmentId, classOptions, studentOptions, setSuccess, onClose, onSuccess }) {

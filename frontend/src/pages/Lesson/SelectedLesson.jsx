@@ -1,6 +1,6 @@
 import PdfViewer from "../../components/PdfViewer";
 import FileViewer from "../../components/FileViewer";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate} from "react-router-dom";
 import useUserStore from "../../store/useUserStore";

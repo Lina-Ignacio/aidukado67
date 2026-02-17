@@ -1,7 +1,7 @@
 import FileUploader from "../../components/FileUploader";
 import { useState, useEffect } from "react";
 import useClassStore from "../../store/useClassStore";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 
 export default function EditMaterial({materialId, setEditMaterialOpen, setSuccessMessage, onSuccess}) {
 

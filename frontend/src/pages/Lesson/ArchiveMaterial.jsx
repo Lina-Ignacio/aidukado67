@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import ClassicButton from "../../components/classicButton";
 import { MdClose } from "react-icons/md";
 

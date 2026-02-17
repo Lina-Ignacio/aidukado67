@@ -1,5 +1,4 @@
-
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import { useState } from "react";
 import { MdClose } from "react-icons/md";
 

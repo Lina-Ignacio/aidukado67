@@ -23,15 +23,11 @@ from app.models.term import Term
 from app.models.users import Users
 from sqlalchemy.orm import joinedload
 from app.database import SessionLocal
+from app.database import get_db
 
 router = APIRouter(prefix="/exam", tags=["exam"])
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
 
 # For Teachers
 @router.get("/getExams/{class_id}", response_model=List[SimpleExamResponse])

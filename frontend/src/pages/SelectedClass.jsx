@@ -1,6 +1,6 @@
 import React from "react";
 import { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import axios from "../services/axiosConfig";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import Modal from "../components/Modal";
 import UploadLesson from "./Lesson/UploadLesson";
@@ -223,7 +223,7 @@ export default function SelectedClass() {
         <h2 className="text-[#E78B48] font-bold text-2xl place-self-center uppercase">{termName}</h2>
       </div>
 
-      {/* Lesson Section */}
+      {/* Lesson Section - No scores */}
       {materialsByType.lesson.length > 0 && (
         <>
           <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
@@ -239,13 +239,14 @@ export default function SelectedClass() {
                 creationDate={lesson.createdAt}
                 materialType={lesson.type}
                 classId={classId}
+                // No totalScore for lessons
               />
             ))}
           </div>
         </>
       )}
 
-      {/* Activity Section */}
+      {/* Activity Section - Can have scores */}
       {materialsByType.activity.length > 0 && (
         <>
           <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
@@ -261,13 +262,16 @@ export default function SelectedClass() {
                 creationDate={activity.createdAt}
                 materialType={activity.type}
                 classId={classId}
+                totalScore={activity.total_score} // Pass score for gradable materials
+                status={activity.status} // Pass status if available
+                dueDate={activity.due_date} // Pass due date if available
               />
             ))}
           </div>
         </>
       )}
 
-      {/* Project Section */}
+      {/* Project Section - Can have scores */}
       {materialsByType.project.length > 0 && (
         <>
           <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
@@ -283,13 +287,16 @@ export default function SelectedClass() {
                 creationDate={project.createdAt}
                 materialType={project.type}
                 classId={classId}
+                totalScore={project.total_score} // Pass score for gradable materials
+                status={project.status} // Pass status if available
+                dueDate={project.due_date} // Pass due date if available
               />
             ))}
           </div>
         </>
       )}
 
-      {/* Experiment Section */}
+      {/* Experiment Section - Can have scores */}
       {materialsByType.experiment.length > 0 && (
         <>
           <div className="w-3/4 sm:w-[70%] mt-4 h-auto">
@@ -305,6 +312,9 @@ export default function SelectedClass() {
                 creationDate={experiment.createdAt}
                 materialType={experiment.type}
                 classId={classId}
+                totalScore={experiment.total_score} // Pass score for gradable materials
+                status={experiment.status} // Pass status if available
+                dueDate={experiment.due_date} // Pass due date if available
               />
             ))}
           </div>

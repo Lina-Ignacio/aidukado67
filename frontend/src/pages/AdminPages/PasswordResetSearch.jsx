@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import { MdArrowBack, MdSearch, MdVpnKey } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import Modal from "../../components/Modal";

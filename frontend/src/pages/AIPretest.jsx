@@ -1,5 +1,5 @@
 import { MdDriveFolderUpload } from "react-icons/md";
-import axios from "axios";
+import axios from "../services/axiosConfig";
 import React, {useState} from "react";
 import Test from "../components/Test";
 import storePostTestLesson from "../store/storePostTestLesson";

@@ -7,15 +7,11 @@ from datetime import datetime, timezone
 from pydantic import BaseModel
 from typing import Dict, Any, Optional
 from app.schemas.exam.student_exam_progress import ExamStartRequest, ExamProgressSave, ExamSubmission
+from app.database import get_db
 
 router = APIRouter()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
 
 
 

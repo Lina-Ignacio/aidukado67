@@ -34,6 +34,8 @@ import useUserStore from './store/useUserStore';
 import AIExam from './pages/Exam/AIExam';
 import ExportScores from './pages/Scores/ExportScores';
 import StudentList from './pages/StudentList';
+import AdminDashboard from './pages/AdminPages/AdminDashboard'
+
 
 function AppContent() {
   const role = useUserStore((state) => state.userRole);
@@ -176,7 +178,7 @@ function AppContent() {
             element={
               role === "student" ? <Navigate to="/studentClasses" replace /> :
               role === "teacher" ? <Navigate to="/teacherClasses" replace /> :
-              role === "admin" ? <Navigate to="/userManagement" replace /> :
+              role === "admin" ? <Navigate to="/adminDashboard" replace /> :
               <Navigate to="/login" replace />
             }
           />
@@ -217,6 +219,15 @@ function AppContent() {
             element={
               <RoleProtectedRoute allowed_roles={["admin"]}>
                 <EnrollmentManagement  />
+              </RoleProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/adminDashboard" 
+            element={
+              <RoleProtectedRoute allowed_roles={["admin"]}>
+                  <AdminDashboard />
               </RoleProtectedRoute>
             } 
           />

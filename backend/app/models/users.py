@@ -3,8 +3,6 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 from app import models
 
-
-
 class Users(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
@@ -39,6 +37,8 @@ class Users(Base):
         back_populates="student",
         cascade="all, delete-orphan"
     )
+    
+    audit_logs = relationship("AuditLog", back_populates="user", foreign_keys="[AuditLog.changed_by]")
     
     
     #index

@@ -5,7 +5,7 @@ import {
 } from "react-icons/fa";
 import { FiCheckCircle, FiClock, FiAlertCircle, FiBookOpen, FiTarget, FiCalendar } from "react-icons/fi";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 
 export default function ExamCard({ 
   examData,

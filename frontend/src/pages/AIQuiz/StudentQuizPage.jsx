@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import { useNavigate, useParams } from "react-router-dom";
 import useUserStore from "../../store/useUserStore";
 import { MdTimer, MdCheckCircle, MdError, MdWarning } from "react-icons/md";

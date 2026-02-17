@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../services/axiosConfig";
 import { useNavigate } from "react-router-dom";
 import StudentTable from "../components/StudentTable";
 import { 

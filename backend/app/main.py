@@ -20,7 +20,8 @@ from .routers import (
     exam_reopen,
     export_scores,
     student_task_reopen,
-    student_quiz_reopen
+    student_quiz_reopen,
+    audit_log
 )
 
 from dotenv import load_dotenv
@@ -31,6 +32,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
+from app.middleware.audit_middleware import AuditMiddleware
 
 # Import your database engine
 from app.database import engine
@@ -83,6 +85,7 @@ app.add_middleware(
     expose_headers=["*"],  
 )
 
+app.add_middleware(AuditMiddleware)
 
 # ✅ Add rate limiting setup AFTER CORS
 app.state.limiter = limiter
@@ -92,6 +95,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 @limiter.limit("1000/hour")
 async def global_rate_limit(request: Request, call_next):
     return await call_next(request)
+
 
 # ✅ Include routers
 app.include_router(auth.router)
@@ -111,6 +115,7 @@ app.include_router(exam_reopen.router)
 app.include_router(export_scores.router)
 app.include_router(student_task_reopen.router)
 app.include_router(student_quiz_reopen.router)
+app.include_router(audit_log.router)
 
 @app.get("/")
 def health():

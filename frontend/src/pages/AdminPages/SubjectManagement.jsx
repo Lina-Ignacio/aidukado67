@@ -1,7 +1,7 @@
 
 import Table from "../../components/Table"
 import { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../../services/axiosConfig";
 import Modal from "../../components/Modal";
 import SearchForm from "../../components/SearchForm";
 import AddSubject from "../Subjects/AddSubject";
@@ -53,7 +53,7 @@ export default function SubjectManagement() {
 
     const panelStyleAdd = "w-full h-auto max-w-lg rounded-xl shadow-xl"
     const panelStyleDelete = "w-full h-auto max-w-lg rounded-xl shadow-xl"
-    const pagination = [4, 6]
+    const pagination = [6, 8]
 
     return (
         <>
