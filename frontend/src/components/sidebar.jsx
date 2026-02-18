@@ -127,7 +127,7 @@ export default function Sidebar({closeMobile}) {
         {userRole == "admin" && (
           <NavLink to="/classManagement" className={linkClasses}>
             <IoSchool className={iconClasses} />
-            <h2 className="font-extrabold text-2xl md:text[3xl] xl:text[4xl]">Course Code</h2>
+            <h2 className="font-extrabold text-2xl md:text[3xl] xl:text[4xl]">Course Schedule</h2>
           </NavLink>
         )}
 
