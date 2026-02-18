@@ -5,7 +5,7 @@ from sqlalchemy import or_, func
 from app.models import Users, ClassEnrollment
 from app.schemas.user import UserCreate, UserOut, UserUpdate, TeacherOut, PasswordChangeRequest, StudentSimpleResponse, AdminPasswordReset, UserStatistics
 from app.database import SessionLocal
-from app.utils.auth import hash_password, get_current_user
+from app.utils.auth import hash_password, get_current_user, hash_email, encrypt_data, decrypt_data
 from app.database import get_db
 
 router = APIRouter(prefix="/user", tags=["User"])
@@ -58,7 +58,6 @@ def get_all_students(db: Session = Depends(get_db)):
     return students
 
 
-
 @router.post("/batch_create")
 def create_multiple_users(users: list[UserCreate], db: Session = Depends(get_db)):
     try:
@@ -102,21 +101,27 @@ def create_multiple_users(users: list[UserCreate], db: Session = Depends(get_db)
 @router.post("/create")
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     
-    existing_user = db.query(Users).filter(Users.email == user.email).first()
+    hashed_email = hash_email(user.email)
+
+    existing_user = db.query(Users).filter(Users.email == hashed_email).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="A user with this email already exists."
         )
 
+    encrypted_last_name = encrypt_data(user.last_name)
+    encrypted_first_name = encrypt_data(user.first_name)
+    encrypted_middle_name = encrypt_data(user.middle_name)
     hashed_pass = hash_password(user.password)
-
+    
+    
     
     new_user = Users(
-        last_name = user.last_name,
-        first_name = user.first_name,
-        middle_name = user.middle_name,
-        email = user.email.lower(),  
+        last_name = encrypted_last_name,
+        first_name = encrypted_first_name,
+        middle_name = encrypted_middle_name,
+        email = hashed_email,  
         password_hash = hashed_pass,
         role = user.role,
         must_change_password = True
@@ -142,8 +147,6 @@ def patch_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get_
     db.refresh(user)
 
     return {"message" : f"user with {user_id} updated successfully"}
-
-
 
 
 @router.patch("/reset-password/{user_id}")

@@ -35,6 +35,7 @@ def get_classes(query: str | None = None, db: Session = Depends(get_db)):
             or_(
                 Classes.name.ilike(f"%{query}%"),
                 Classes.academic_year.ilike(f"%{query}%"),
+                Classes.semester.ilike(f"%{query}%"),
                 Subject.name.ilike(f"%{query}%")
             )
         )

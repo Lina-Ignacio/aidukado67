@@ -8,20 +8,81 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models import Users
 from app.database import get_db
+from cryptography.fernet import Fernet
 # Load environment variables
 load_dotenv()
 
 
+
+def generate_key():
+    fernet_key = Fernet.generate_key()
+    print(f"Fernet key: {fernet_key.decode()}")
+    return(fernet_key.decode())
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
+ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+if not SECRET_KEY:
+    
+    print("Please make a secret key in env")
+
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=12)
+email_context = CryptContext(schemes=["bcrypt"], deprecated="auto", bcrypt__rounds=8)
 
 # Password hashing functions
 def hash_password(password: str) -> str:
     """Hash a password for storing"""
+
+    if not password:
+        raise ValueError("Password must not be empty")
     return pwd_context.hash(password)
+
+def hash_email(email: str) -> str:
+    """Hash email for storage and lookup"""
+    if not email:
+        raise ValueError("Email must not be empty")
+    return email_context.hash(email.lower())
+
+
+
+if not ENCRYPTION_KEY:
+    print("Please make an encryption key in env")
+
+try:
+    key = ENCRYPTION_KEY.encode() if isinstance(ENCRYPTION_KEY, str) else ENCRYPTION_KEY
+    cipher = Fernet(key)
+except Exception as e:
+    raise ValueError(f"Invalid ENCRYPTION_KEY format: {e}")
+
+# Encrypt and Decrypt functions
+def encrypt_data(data: str) -> str:
+    """Encrypt personal data for storage"""
+    if not data:
+        return None
+    try:
+        
+        encrypted = cipher.encrypt(data.encode())
+        return encrypted.decode()
+    except Exception as e:
+        print(f"Encryption error: {e}")
+        raise ValueError("Failed to encrypt data")
+
+def decrypt_data(encrypted_data: str) -> str:
+    """Decrypt personal data for display"""
+    if not encrypted_data:
+        return None
+    try:
+        # Convert from string, decrypt, then back to string
+        decrypted = cipher.decrypt(encrypted_data.encode())
+        return decrypted.decode()
+    except Exception as e:
+        print(f"Decryption error: {e}")
+        raise ValueError("Failed to decrypt data")
+    
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a stored password against a provided password"""

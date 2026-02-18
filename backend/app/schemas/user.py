@@ -3,7 +3,6 @@ from typing import Optional, List
 from pydantic import ConfigDict  
 
 
-
 def to_camel(string: str) -> str:
     parts = string.split('_')
     return parts[0] + ''.join(word.capitalize() for word in parts[1:])
@@ -13,6 +12,19 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str
     role: str
+    first_name: str 
+    last_name: str 
+    middle_name: str
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        extra="allow"
+    )
+
+class UserSignup(BaseModel):
+    email: EmailStr
+    password: str
     first_name: str 
     last_name: str 
     middle_name: str
