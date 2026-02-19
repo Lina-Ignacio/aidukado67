@@ -3,7 +3,6 @@ from ..utils.extractors import extract_pdf_text, extract_document_text
 from ..utils.role_required import role_required
 
 
-
 teacher_router = APIRouter (
     prefix="/teacher",
     tags=["teacher"],

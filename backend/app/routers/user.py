@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status, Request
 from typing import List
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
@@ -8,6 +8,7 @@ from app.database import SessionLocal
 from app.utils.auth import hash_password, get_current_user, encrypt_data, decrypt_data
 from app.database import get_db
 from app.utils.decryption import decrypt_user_to_dict, decrypt_users_to_dict_list
+from app.dependencies import limiter
 
 router = APIRouter(prefix="/user", tags=["User"])
 
@@ -178,7 +179,9 @@ def patch_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get_
 
 
 @router.patch("/reset-password/{user_id}")
+@limiter.limit("2/minute")
 def admin_reset_password(
+    request: Request,
     user_id: int, 
     payload: AdminPasswordReset, 
     db: Session = Depends(get_db)

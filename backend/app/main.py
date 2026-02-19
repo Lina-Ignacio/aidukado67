@@ -28,24 +28,24 @@ from dotenv import load_dotenv
 from pathlib import Path
 
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
+from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from sqlalchemy import text
 from app.middleware.audit_middleware import AuditMiddleware
+
+# Import limiter from dependencies instead
+from app.dependencies import limiter
 
 # Import your database engine
 from app.database import engine
 import time
+import os
 
 env_path = Path(__file__).resolve().parents[1] / ".env"
 load_dotenv(dotenv_path=env_path, override=True)
 
-# Initialize limiter BEFORE creating the app
-limiter = Limiter(key_func=get_remote_address)
-
 # lifespan context manager
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup - simple message only
@@ -86,16 +86,12 @@ app.add_middleware(
 )
 
 app.add_middleware(AuditMiddleware)
+# ✅ Add SlowAPI middleware
+app.add_middleware(SlowAPIMiddleware)
 
-# ✅ Add rate limiting setup AFTER CORS
+# ✅ Set up rate limiting exception handlers
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
-@app.middleware("http")
-@limiter.limit("1000/hour")
-async def global_rate_limit(request: Request, call_next):
-    return await call_next(request)
-
 
 # ✅ Include routers
 app.include_router(auth.router)
@@ -117,21 +113,27 @@ app.include_router(student_task_reopen.router)
 app.include_router(student_quiz_reopen.router)
 app.include_router(audit_log.router)
 
+# ✅ Health check - NO RATE LIMIT (for monitoring/pinger)
 @app.get("/")
+@limiter.exempt
 def health():
     return {"status": "ok"}
 
+# ✅ Health check - NO RATE LIMIT (for monitoring/pinger)
 @app.get("/health")
+@limiter.exempt
 def health_check():
     """Health check endpoint"""
     try:
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
         return {"status": "unhealthy", "database": "disconnected", "error": str(e)}
     
+# ✅ Detailed database health check - NO RATE LIMIT
 @app.get("/neon-health")
+@limiter.exempt
 def neon_health_check():
     """Check Neon database connection with details"""
     import time
@@ -139,16 +141,15 @@ def neon_health_check():
     
     try:
         with engine.connect() as conn:
-            # ✅ FIXED: Execute queries separately
             # Get database info in separate queries
-            db_name = conn.execute("SELECT current_database()").fetchone()[0]
-            db_user = conn.execute("SELECT current_user").fetchone()[0]
-            db_host = conn.execute("SELECT inet_server_addr()").fetchone()[0]
-            db_port = conn.execute("SELECT inet_server_port()").fetchone()[0]
-            db_version = conn.execute("SELECT version()").fetchone()[0]
+            db_name = conn.execute(text("SELECT current_database()")).fetchone()[0]
+            db_user = conn.execute(text("SELECT current_user")).fetchone()[0]
+            db_host = conn.execute(text("SELECT inet_server_addr()")).fetchone()[0]
+            db_port = conn.execute(text("SELECT inet_server_port()")).fetchone()[0]
+            db_version = conn.execute(text("SELECT version()")).fetchone()[0]
             
             # Test query performance
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
             
             latency = time.time() - start
             

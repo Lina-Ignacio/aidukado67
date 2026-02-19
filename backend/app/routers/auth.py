@@ -9,6 +9,7 @@ from app.database import get_db
 from app.utils.auth import hash_password, verify_password, create_access_token, get_current_user, decrypt_data, encrypt_data  
 from app.config import SECRET_KEY, ALGORITHM
 import os
+from app.dependencies import limiter
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -49,7 +50,8 @@ def signup(user: UserSignup, db: Session = Depends(get_db)):
 
 
 @router.post("/login")
-def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
+@limiter.limit("20/minute")
+def login(request: Request, user: UserLogin, response: Response, db: Session = Depends(get_db)):
     # Find user by plain email (case-insensitive)
     db_user = db.query(Users).filter(
         func.lower(Users.email) == user.email.lower(),
