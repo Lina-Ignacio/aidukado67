@@ -44,8 +44,8 @@ def signup(user: UserSignup, db: Session = Depends(get_db)):
 
 @router.post("/login")
 def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
-    hashed_email = hash_email(user.email.lower())
-    db_user = db.query(Users).filter(Users.email == hashed_email).first()
+    #hashed_email = hash_email(user.email.lower())
+    db_user = db.query(Users).filter(Users.email == user.email.lower()).first()
 
     if not db_user:
         raise HTTPException(
