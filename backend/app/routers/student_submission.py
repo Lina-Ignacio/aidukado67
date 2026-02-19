@@ -12,6 +12,7 @@ from app.utils.r2_helper import upload_file_async, generate_presigned_url_async,
 from app.models.class_enrollment import ClassEnrollment
 import logging
 from app.database import get_db
+from app.utils.decryption import safe_decrypt_data  # ADD THIS IMPORT
 
 router = APIRouter(prefix="/student_submission", tags=["student_submission"])
 logger = logging.getLogger(__name__)
@@ -249,6 +250,17 @@ def get_submissions_by_material(material_id: int, db: Session = Depends(get_db))
             status_code=404,
             detail=f"No submitted files found for material_id {material_id}"
         )
+
+    # Decrypt student names for sorting
+    for submission in submissions:
+        if submission.student:
+            # Decrypt name fields
+            if submission.student.first_name:
+                submission.student.first_name = safe_decrypt_data(submission.student.first_name)
+            if submission.student.last_name:
+                submission.student.last_name = safe_decrypt_data(submission.student.last_name)
+            if submission.student.middle_name:
+                submission.student.middle_name = safe_decrypt_data(submission.student.middle_name)
 
     # Sort submissions alphabetically by student name (last name, then first name, then middle name)
     submissions.sort(key=lambda x: (

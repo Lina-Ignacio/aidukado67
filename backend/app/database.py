@@ -36,16 +36,15 @@ def get_db():
         # Get the current user ID from context var (set by middleware)
         user_id = current_user_id.get()
         
-        if user_id:
-            # Set PostgreSQL session parameter for audit logging
-            db.execute(text(f"SET audit.user_id = {user_id}"))
-            db.commit()
-            logger.debug(f"Set audit.user_id = {user_id} for session")
-        else:
-            # Clear the PostgreSQL session parameter for unauthenticated requests
-            db.execute(text("RESET audit.user_id"))
-            db.commit()
-            logger.debug("Reset audit.user_id for session")
+        # For unauthenticated routes (like migrations), use system user ID 17
+        if user_id is None:
+            user_id = 17  # System user for background operations
+            logger.debug(f"No authenticated user, using system user ID: {user_id}")
+        
+        # Set PostgreSQL session parameter for audit logging
+        db.execute(text(f"SET audit.user_id = {user_id}"))
+        db.commit()
+        logger.debug(f"Set audit.user_id = {user_id} for session")
         
         yield db
         

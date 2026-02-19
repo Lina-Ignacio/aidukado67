@@ -13,9 +13,9 @@ import ImportEnrollments from "../Enrollment/ImportEnrollments";
 
 export default function EnrollmentManagement() {
   const enrollmentColumns = [
-    { id: 1, name: "ID", key: "id" },
-    { id: 2, name: "Course Code", key: "className" },
-    { id: 3, name: "Full Name", key: "fullName" },
+    { id: 1, name: "Course Code", key: "className" },
+    { id: 2, name: "Full Name", key: "fullName" },
+    { id: 3, name: "Enrollment Date", key: "enrollmentDate" },
     { id: 4, name: "Status", key: "status" }
   ];
 
@@ -148,6 +148,7 @@ export default function EnrollmentManagement() {
         id: data.id,
         className,
         fullName,
+        enrollmentDate: data.enrollmentDate, // ADD THIS LINE
         status: data.status || "",
         originalData: data
       };
@@ -193,7 +194,7 @@ export default function EnrollmentManagement() {
           <SearchForm 
             query={query} 
             setQuery={setQuery} 
-            inputPlaceholder="Search by course code, name, status"
+            inputPlaceholder="Search by course code, status"
           />
           <ClassicButton 
             buttonName="Import Enrollments"

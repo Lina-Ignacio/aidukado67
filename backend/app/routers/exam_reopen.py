@@ -7,6 +7,7 @@ from app.database import get_db
 from app.models import Exam, Users, StudentExamProgress, StudentExamReopen
 from app.schemas.exam.exam_reopen import EligibleStudentResponse, ReopenExamRequest, ReopenExamResponse
 from app.utils.auth import get_current_user
+from app.utils.decryption import safe_decrypt_data  
 
 router = APIRouter(prefix="/exam_reopen", tags=["Exam Reopen"])
 
@@ -62,18 +63,22 @@ def get_reopen_eligible_students(
         .all()
     )
     
-    # Format response
-    return [
-        {
+    # Format response with decrypted names
+    result = []
+    for student in eligible_students:
+        # Decrypt name fields
+        decrypted_first = safe_decrypt_data(student.first_name) if student.first_name else ""
+        decrypted_last = safe_decrypt_data(student.last_name) if student.last_name else ""
+        
+        result.append({
             "id": student.id,
-            "first_name": student.first_name,
-            "last_name": student.last_name,
-            "full_name": f"{student.first_name} {student.last_name}",
+            "first_name": decrypted_first,
+            "last_name": decrypted_last,
+            "full_name": f"{decrypted_first} {decrypted_last}".strip(),
             "status": student.status
-        }
-        for student in eligible_students
-    ]
+        })
     
+    return result
 
 
 @router.post("/{exam_id}/reopen")

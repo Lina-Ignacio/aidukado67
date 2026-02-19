@@ -6,6 +6,7 @@ from app.database import get_db
 from app.models import ClassMaterial, Users, StudentSubmission, ClassEnrollment
 from app.models.submission.student_task_reopens import StudentTaskReopen
 from app.schemas.student_task_reopen import EligibleStudentResponse, ReopenTaskRequest, ReopenTaskResponse
+from app.utils.decryption import safe_decrypt_data  # ADD THIS IMPORT
 
 router = APIRouter(prefix="/task_reopen", tags=["Task Reopen"])
 
@@ -61,6 +62,11 @@ def get_reopen_eligible_students(
     eligible_students = []
     
     for student in enrolled_students:
+        # Decrypt student names
+        decrypted_first = safe_decrypt_data(student.first_name) if student.first_name else ""
+        decrypted_last = safe_decrypt_data(student.last_name) if student.last_name else ""
+        full_name = f"{decrypted_first} {decrypted_last}".strip()
+        
         # Check if student has a submission
         submission = (
             db.query(StudentSubmission)
@@ -105,9 +111,9 @@ def get_reopen_eligible_students(
             status = "no_submission" if not has_submission else "late_submission"
             eligible_students.append({
                 "id": student.id,
-                "first_name": student.first_name,
-                "last_name": student.last_name,
-                "full_name": f"{student.first_name} {student.last_name}",
+                "first_name": decrypted_first,  # Decrypted first name
+                "last_name": decrypted_last,    # Decrypted last name
+                "full_name": full_name,          # Decrypted full name
                 "status": status,
                 "submission_status": "No submission" if not has_submission else "Late submission"
             })

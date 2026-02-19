@@ -7,6 +7,7 @@ from app.database import get_db
 from app.models import Users, ClassEnrollment, Quiz
 from app.models import StudentQuizProgress, StudentQuizReopen
 from app.schemas.student_quiz_reopen import QuizEligibleStudentResponse, QuizReopenRequest, QuizReopenResponse
+from app.utils.decryption import safe_decrypt_data  # ADD THIS IMPORT
 
 router = APIRouter(prefix="/quiz_reopen", tags=["Quiz Reopen"])
 
@@ -62,6 +63,11 @@ def get_quiz_reopen_eligible_students(
     eligible_students = []
     
     for student in enrolled_students:
+        # Decrypt student names
+        decrypted_first = safe_decrypt_data(student.first_name) if student.first_name else ""
+        decrypted_last = safe_decrypt_data(student.last_name) if student.last_name else ""
+        full_name = f"{decrypted_first} {decrypted_last}".strip()
+        
         # Check if student has quiz progress (submission)
         progress = (
             db.query(StudentQuizProgress)
@@ -101,9 +107,9 @@ def get_quiz_reopen_eligible_students(
             status = "no_submission" if not has_submission else "late_submission"
             eligible_students.append({
                 "id": student.id,
-                "first_name": student.first_name,
-                "last_name": student.last_name,
-                "full_name": f"{student.first_name} {student.last_name}",
+                "first_name": decrypted_first,  # Decrypted first name
+                "last_name": decrypted_last,    # Decrypted last name
+                "full_name": full_name,          # Decrypted full name
                 "status": status,
                 "submission_status": "No submission" if not has_submission else "Late submission"
             })
@@ -254,36 +260,6 @@ def reopen_quiz_for_students(
         reason=request.reason
     )
 
-
-@router.get("/student/{quiz_id}/{student_id}")
-def get_student_quiz_reopen_info(
-    quiz_id: int,
-    student_id: int,
-    db: Session = Depends(get_db)
-):
-    """
-    Get reopen information for a specific student and quiz
-    """
-    reopen_record = (
-        db.query(StudentQuizReopen)
-        .filter(
-            StudentQuizReopen.quiz_id == quiz_id,
-            StudentQuizReopen.student_id == student_id
-        )
-        .order_by(StudentQuizReopen.new_closing_time.desc())
-        .first()
-    )
-    
-    if not reopen_record:
-        raise HTTPException(status_code=404, detail="No reopen record found")
-    
-    return {
-        "id": reopen_record.id,
-        "new_closing_time": reopen_record.new_closing_time,
-        "reason": reopen_record.reason,
-        "created_at": reopen_record.created_at
-    }
-    
 
 @router.get("/student/{quiz_id}/{student_id}")
 def get_student_quiz_reopen_info(

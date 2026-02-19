@@ -32,11 +32,11 @@ export default function ClassCard({ subjectName, classId, schedule, room, sectio
       'S': 'Saturday',
       'SU': 'Sunday',
       'MW': 'Monday & Wednesday',
-      'TTH': 'Tuesday & Thursday',
+      'TR': 'Tuesday & Thursday',
       'MWF': 'Monday, Wednesday & Friday',
-      'TTHS': 'Tuesday, Thursday & Saturday',
+      'TRS': 'Tuesday, Thursday & Saturday',
       'MF': 'Monday & Friday',
-      'MTH': 'Monday & Thursday'
+      'MR': 'Monday & Thursday'
     };
     
     // Convert day codes to full names
@@ -54,50 +54,81 @@ export default function ClassCard({ subjectName, classId, schedule, room, sectio
   const displaySection = section ? section : "";
 
   return (
-    <div className="w-full h-[100px] lg:h-[150px] relative">
-      <div className="w-full h-full absolute z-10 bg-[#E78B48] left-[5px] top-[8px] rounded-2xl"></div>
+    <div className="w-full h-[120px] lg:h-[160px] relative group">
+      {/* Shadow/background layer with improved depth */}
+      <div className="w-full h-full absolute z-10 bg-[#E78B48] left-[6px] top-[8px] rounded-2xl opacity-80 group-hover:left-[8px] group-hover:top-[10px] transition-all duration-300"></div>
+      
+      {/* Main card with enhanced interaction */}
       <div 
-        className="bg-[#102E50] border border-gray-300 relative overflow-hidden
-          hover:scale-105 transition-transform duration-300 cursor-pointer
-          p-4 rounded-2xl shadow-xl w-full h-full z-20 flex flex-col"
+        className="bg-[#102E50] border-2 border-[#E78B48]/20 relative overflow-hidden
+          hover:scale-[1.02] hover:border-[#E78B48]/50 transition-all duration-300 cursor-pointer
+          p-5 rounded-2xl shadow-xl w-full h-full z-20 flex flex-col"
         onClick={handleClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleClick(e);
+          }
+        }}
       >
-        {/* Subject Name */}
-        <p className="text-sm sm:text-md md:text-lg lg:text-xl xl:text-2xl
-              font-medium text-white truncate mb-1 flex-shrink-0">
-          {subjectName}
-        </p>
+        {/* Decorative accent line */}
+        <div className="absolute top-0 left-0 w-1 h-12 bg-[#E78B48] rounded-tl-2xl"></div>
         
-        {/* Formatted Schedule */}
-        <div className="flex items-center gap-1 mb-1 flex-shrink-0">
-          <svg className="w-3 h-3 text-[#E78B48] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-          </svg>
-          <p className="text-xs text-[#E78B48] flex-1 truncate">{formattedSchedule}</p>
+        {/* Header section with subject and optional badge */}
+        <div className="flex items-start justify-between mb-2">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl
+                font-bold text-white truncate pr-2 flex-1 tracking-tight">
+            {subjectName}
+          </p>
+          {displaySection && (
+            <span className="bg-[#E78B48]/20 text-[#E78B48] text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 border border-[#E78B48]/30">
+              {displaySection}
+            </span>
+          )}
         </div>
         
-        {/* Room and Section (if available) */}
-        <div className="space-y-1">
+        {/* Schedule with enhanced styling */}
+        <div className="flex items-center gap-2 mb-3">
+          <div className="bg-[#E78B48]/20 p-1.5 rounded-lg flex-shrink-0">
+            <svg className="w-3.5 h-3.5 text-[#E78B48]" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <p className="text-sm text-[#E78B48] font-medium truncate">{formattedSchedule}</p>
+        </div>
+        
+        {/* Room and additional info with improved layout */}
+        <div className="flex items-center gap-4 mt-auto">
           {displayRoom && (
-            <div className="flex items-center gap-1">
-              <svg className="w-3 h-3 text-white flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <div className="flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clipRule="evenodd" />
               </svg>
-              <p className="text-xs text-gray-300 truncate">Room: {displayRoom}</p>
+              <p className="text-xs text-gray-300 font-medium">{displayRoom}</p>
             </div>
           )}
           
-          {displaySection && (
-            <div className="flex items-center gap-1">
-              <svg className="w-3 h-3 text-white flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16 1H4a1 1 0 00-1 1v16a1 1 0 001 1h12a1 1 0 001-1V2a1 1 0 00-1-1zM9 15v-2h2v2H9zm2-4V9h-2v2h2zm0-4V5h-2v2h2z" clipRule="evenodd" />
+          {/* Add a subtle divider if both room and classId exist */}
+          {displayRoom && classId && (
+            <span className="w-1 h-1 bg-gray-600 rounded-full"></span>
+          )}
+          
+          {classId && (
+            <div className="flex items-center gap-1.5">
+              <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
               </svg>
-              <p className="text-xs text-gray-300 truncate">Section: {displaySection}</p>
+              <p className="text-xs text-gray-400">ID: {classId}</p>
             </div>
           )}
         </div>
         
-        <div className="bg-[#EBECF1] h-1/2 w-1/2 absolute right-[-20%] bottom-[-50%] -rotate-45 z-10"></div>
+        {/* Decorative element with improved opacity and positioning */}
+        <div className="bg-gradient-to-tl from-[#E78B48]/10 to-transparent h-2/3 w-2/3 absolute right-[-15%] bottom-[-40%] -rotate-45 z-10 rounded-full blur-xl"></div>
+        
+        {/* Additional subtle decorative element */}
+        <div className="absolute top-2 right-2 w-16 h-16 bg-[#E78B48]/5 rounded-full blur-2xl"></div>
       </div>
     </div>
   );

@@ -13,19 +13,18 @@ import { FiUserPlus, FiUsers } from "react-icons/fi";
 import { MdUploadFile, MdVpnKey, MdSchool, MdAdminPanelSettings } from "react-icons/md";
 import { FaChalkboardTeacher } from "react-icons/fa";
 import ClassicButton from "../../components/classicButton";
-import StatCard from "../../components/StatCard"; // You'll need to create this component
+import StatCard from "../../components/StatCard"; 
 
 export default function UserManagement() {
     const navigate = useNavigate();
 
     const classesColumns = [
-    { id: 1, name: "ID", key: "id" },
-    { id: 2, name: "Email", key: "email" },
-    { id: 3, name: "Role", key: "role" },
-    { id: 4, name: "FirstName", key: "firstName" },
-    { id: 5, name: "LastName", key: "lastName" },
-    { id: 6, name: "MiddleName", key: "middleName" }
-  ];
+        { id: 1, name: "Email", key: "email" },
+        { id: 2, name: "Role", key: "role" },
+        { id: 3, name: "FirstName", key: "firstName" },
+        { id: 4, name: "LastName", key: "lastName" },
+        { id: 5, name: "MiddleName", key: "middleName" }
+    ];
 
     // for the table
     const [query, setQuery] = useState("");

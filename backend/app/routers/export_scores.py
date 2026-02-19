@@ -1,5 +1,3 @@
-
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy import func, select, case, or_, and_, literal, literal_column
@@ -14,6 +12,7 @@ from fastapi.responses import Response
 import csv
 import io
 from app.database import get_db
+from app.utils.decryption import safe_decrypt_data  # ADD THIS IMPORT
 
 router = APIRouter(prefix="/score", tags=["Score Export"])
 
@@ -24,10 +23,11 @@ async def export_scores(
     term_id: int,
     db: Session = Depends(get_db)
 ):
-    # STEP 1: Get all enrolled students
-    enrolled_students = db.query(
+    # STEP 1: Get all enrolled students with decrypted names
+    students_query = db.query(
         Users.id.label("student_id"),
-        func.concat(Users.first_name, ' ', Users.last_name).label("student_name")
+        Users.first_name,
+        Users.last_name
     ).join(
         ClassEnrollment, Users.id == ClassEnrollment.student_id
     ).filter(
@@ -40,8 +40,21 @@ async def export_scores(
         Users.first_name
     ).all()
     
-    if not enrolled_students:
+    if not students_query:
         raise HTTPException(status_code=404, detail="No students found in this class")
+    
+    # Decrypt names and create student list with full names
+    enrolled_students = []
+    for student in students_query:
+        decrypted_first = safe_decrypt_data(student.first_name) if student.first_name else ""
+        decrypted_last = safe_decrypt_data(student.last_name) if student.last_name else ""
+        
+        enrolled_students.append({
+            "student_id": student.student_id,
+            "first_name": decrypted_first,
+            "last_name": decrypted_last,
+            "student_name": f"{decrypted_first} {decrypted_last}".strip()
+        })
     
     # STEP 2: Get all activities
     
@@ -126,8 +139,8 @@ async def export_scores(
     # Create a mapping of student_id -> student data
     scores_data = {}
     for student in enrolled_students:
-        scores_data[student.student_id] = {
-            "student_name": student.student_name,
+        scores_data[student["student_id"]] = {
+            "student_name": student["student_name"],
             "scores": {}
         }
     

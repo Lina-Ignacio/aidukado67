@@ -24,6 +24,7 @@ from app.models.users import Users
 from sqlalchemy.orm import joinedload
 from app.database import SessionLocal
 from app.database import get_db
+from app.utils.decryption import safe_decrypt_data  # ADD THIS IMPORT
 
 router = APIRouter(prefix="/exam", tags=["exam"])
 
@@ -567,6 +568,18 @@ def exam_monitoring(exam_id: int, db: Session = Depends(get_db)):
         .all()
     )
     
+    # Decrypt student names
+    scores = []
+    for r in results:
+        decrypted_first = safe_decrypt_data(r.first_name) if r.first_name else ""
+        decrypted_last = safe_decrypt_data(r.last_name) if r.last_name else ""
+        
+        scores.append({
+            "studentName": f"{decrypted_first} {decrypted_last}".strip(),
+            "status": r.status,
+            "score": r.score,
+        })
+    
     return {
         "examTitle": exam.title,
         "totalPoints": exam.total_points,
@@ -577,14 +590,7 @@ def exam_monitoring(exam_id: int, db: Session = Depends(get_db)):
         "closing_time": exam.closing_time,  
         "allow_reopen": exam.allow_reopen,  
         "linkedMaterials": linked_materials,
-        "scores": [
-            {
-                "studentName": f"{r.first_name} {r.last_name}",
-                "status": r.status,
-                "score": r.score,
-            }
-            for r in results
-        ]
+        "scores": scores  # Now with decrypted names
     }
 
 
@@ -675,4 +681,3 @@ async def generate_tos(data: TOSRequest):
             status_code=500,
             detail=f"Failed to generate exam: {str(e)}"
         )
-

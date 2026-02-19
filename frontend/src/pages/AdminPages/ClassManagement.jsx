@@ -16,7 +16,7 @@ export default function ClassManagement() {
     const classesColumns = [
         { id: 1, name: "ID", key: "id" },
         { id: 2, name: "Course Code", key: "name" },
-        { id: 3, name: "Course Name", key: "subjectName" },
+        { id: 3, name: "Course Description", key: "subjectName" },
         { id: 4, name: "Teacher Name", key: "teacherName" },
         { id: 5, name: "Section", key: "section" }, 
         { id: 6, name: "Room", key: "room" },  

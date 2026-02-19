@@ -14,6 +14,8 @@ from app.schemas.quiz_attempts import CreateStartTime
 from datetime import datetime
 from sqlalchemy import desc
 from app.database import get_db
+from app.utils.decryption import safe_decrypt_data  # ADD THIS IMPORT
+
 router = APIRouter()
 
 
@@ -234,9 +236,14 @@ def quiz_monitoring(quizId: int, db: Session = Depends(get_db)):
     # Convert to dict for easy lookup
     progress_dict = {record.student_id: record for record in progress_records}
     
-    # Build response
+    # Build response with decrypted names
     scores = []
     for student in enrolled_students:
+        # Decrypt student names
+        decrypted_first = safe_decrypt_data(student.first_name) if student.first_name else ""
+        decrypted_last = safe_decrypt_data(student.last_name) if student.last_name else ""
+        full_name = f"{decrypted_first} {decrypted_last}".strip()
+        
         progress = progress_dict.get(student.id)
         
         if progress:
@@ -260,7 +267,7 @@ def quiz_monitoring(quizId: int, db: Session = Depends(get_db)):
         
         scores.append({
             "studentId": student.id,
-            "studentName": f"{student.first_name} {student.last_name}",
+            "studentName": full_name,  # Now with decrypted names
             "score": progress.score if progress else None,
             "status": status,
             "submissionStatus": submission_status,
@@ -274,7 +281,7 @@ def quiz_monitoring(quizId: int, db: Session = Depends(get_db)):
         "totalPoints": quiz.total_points,
         "closingTime": quiz.closing_time,
         "openingTime": quiz.opening_time,
-        "scores": scores
+        "scores": scores  # Now with decrypted names
     }
 
 @router.get('/getStudentsByClass/{class_id}')
@@ -285,14 +292,16 @@ def getStudents(class_id: int, db: Session = Depends(get_db)):
     .filter(ClassEnrollment.class_id == class_id).all()
     )
 
-    return [
-        {
-            'id': s.id,
-            'first_name': s.first_name,
-            'last_name' : s.last_name
-        }
-        for s in getStudents
-    ]
-
-
-
+    # Decrypt names before returning
+    result = []
+    for student in getStudents:
+        decrypted_first = safe_decrypt_data(student.first_name) if student.first_name else ""
+        decrypted_last = safe_decrypt_data(student.last_name) if student.last_name else ""
+        
+        result.append({
+            'id': student.id,
+            'first_name': decrypted_first,
+            'last_name': decrypted_last
+        })
+    
+    return result

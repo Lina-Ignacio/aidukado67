@@ -1,11 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from pydantic import ConfigDict  
-
-
-def to_camel(string: str) -> str:
-    parts = string.split('_')
-    return parts[0] + ''.join(word.capitalize() for word in parts[1:])
+from app.utils.to_camel import to_camel
 
 
 class UserCreate(BaseModel):

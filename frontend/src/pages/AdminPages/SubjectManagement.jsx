@@ -15,8 +15,8 @@ export default function SubjectManagement() {
     
     const subjectColumns = [
         {id: 1, name: "ID", key: "id"},
-        {id: 2, name: "Name", key: "name"},
-        {id: 3, name: "Description", key: "description"}
+        {id: 2, name: "Course Description", key: "name"},
+        {id: 3, name: "", key: "description"}
     ];
 
     const [query, setQuery] = useState("");

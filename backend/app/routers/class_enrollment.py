@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy import or_
 from sqlalchemy.orm import Session, joinedload
@@ -7,17 +6,92 @@ from app.schemas.class_enrollment import (EnrollmentCreate, EnrollmentOut,
     EnrollmentUpdate, EnrollmentClassOut, EnrollmentImportRequest, EnrollmentImportResponse, CSVRow, EnrollmentTableOut)
 from app.database import SessionLocal
 from app.database import get_db
+from app.utils.decryption import safe_decrypt_data, safe_decrypt_teacher
 import io
 import csv
 from datetime import date
 
 router = APIRouter(prefix="/enrollment", tags=["enrollment"])
 
+@router.get("/getByUserId/{user_id}", response_model=list[EnrollmentClassOut])
+def get_classes_by_user(user_id: int, db: Session = Depends(get_db)):
+    """
+    Get all classes for a specific user with safely decrypted teacher names.
+    """
+    # Query enrollments
+    enrollments = (
+        db.query(ClassEnrollment)
+        .options(
+            joinedload(ClassEnrollment.enrolled_class)
+            .joinedload(Classes.user_teacher)
+        )
+        .filter(ClassEnrollment.student_id == user_id)
+        .filter(ClassEnrollment.status == "enrolled")
+        .filter(ClassEnrollment.is_archive == False)
+        .all()
+    )
+    
+    # Convert to response model with safe decryption
+    result = []
+    for enrollment in enrollments:
+        # Base enrollment dict
+        enrollment_dict = {
+            "id": enrollment.id,
+            "class_id": enrollment.class_id,
+            "student_id": enrollment.student_id,
+            "enrollment_date": enrollment.enrollment_date,
+            "status": enrollment.status,
+            "is_archive": enrollment.is_archive,
+        }
+        
+        # Handle the enrolled class with ONLY fields that exist in your model
+        if enrollment.enrolled_class:
+            class_obj = enrollment.enrolled_class
+            class_dict = {
+                "id": class_obj.id,
+                "subject_id": class_obj.subject_id,
+                "teacher_id": class_obj.teacher_id,
+                "name": class_obj.name,
+                "is_archive": class_obj.is_archive,
+                "schedule": class_obj.schedule,
+                "room": class_obj.room,
+                "section": class_obj.section,
+                "academic_year": class_obj.academic_year,
+                "semester": class_obj.semester,
+                "lecture_units": class_obj.lecture_units,
+                "lab_units": class_obj.lab_units,
+            }
+            
+            # Handle the teacher with safe decryption
+            if class_obj.user_teacher:
+                teacher = class_obj.user_teacher
+                class_dict["user_teacher"] = {
+                    "id": teacher.id,
+                    "email": teacher.email,
+                    "first_name": safe_decrypt_data(teacher.first_name),
+                    "last_name": safe_decrypt_data(teacher.last_name),
+                    "middle_name": safe_decrypt_data(teacher.middle_name),
+                    "role": teacher.role,
+                    "is_archive": teacher.is_archive,
+                    "must_change_password": teacher.must_change_password,
+                    "created_at": teacher.created_at,
+                }
+            else:
+                class_dict["user_teacher"] = None
+            
+            enrollment_dict["enrolled_class"] = class_dict
+        else:
+            enrollment_dict["enrolled_class"] = None
+        
+        result.append(enrollment_dict)
+    
+    return result
+
+
 @router.get("/get", response_model=list[EnrollmentTableOut])
 def get_enrollments(db: Session = Depends(get_db)):
     """
-    Get all enrollments with ONLY the data needed for table display.
-    Very lightweight and fast.
+    Get all enrollments with safely decrypted student names.
     """
     enrollments = (
         db.query(
@@ -35,11 +109,23 @@ def get_enrollments(db: Session = Depends(get_db)):
         .filter(ClassEnrollment.is_archive == False)
         .filter(Users.is_archive == False)  
         .filter(Classes.is_archive == False)  
-        .order_by(ClassEnrollment.id.asc())
+        .order_by(ClassEnrollment.enrollment_date.desc())
         .all()
     )
     
-    return enrollments
+    # Safely decrypt student names
+    result = []
+    for enrollment in enrollments:
+        enrollment_dict = enrollment._asdict()
+        
+        # Use safe decryption
+        enrollment_dict['student_first_name'] = safe_decrypt_data(enrollment_dict.get('student_first_name'))
+        enrollment_dict['student_last_name'] = safe_decrypt_data(enrollment_dict.get('student_last_name'))
+        
+        result.append(enrollment_dict)
+    
+    return result
+
 
 @router.get("/get-filtered", response_model=list[EnrollmentTableOut])
 def get_enrollments_filtered(
@@ -47,8 +133,8 @@ def get_enrollments_filtered(
     db: Session = Depends(get_db)
 ):
     """
-    Get enrollments with backend filtering.
-    Still returns minimal data for table.
+    Get filtered enrollments with safely decrypted student names.
+    Filters only by class name and status (fields that aren't encrypted).
     """
     q = (
         db.query(
@@ -68,20 +154,30 @@ def get_enrollments_filtered(
         .filter(Classes.is_archive == False)
     )
     
+    
     if query and query.strip():
         search = f"%{query.strip()}%"
         q = q.filter(
             or_(
-                Users.first_name.ilike(search),
-                Users.last_name.ilike(search),
-                Classes.name.ilike(search),
-                ClassEnrollment.status.ilike(search)
+                Classes.name.ilike(search),      
+                ClassEnrollment.status.ilike(search)  
             )
         )
     
-    enrollments = q.order_by(ClassEnrollment.id.asc()).all()
+    enrollments = q.order_by(ClassEnrollment.enrollment_date.desc()).all()
     
-    return enrollments
+    # Safely decrypt student names
+    result = []
+    for enrollment in enrollments:
+        enrollment_dict = enrollment._asdict()
+        
+        enrollment_dict['student_first_name'] = safe_decrypt_data(enrollment_dict.get('student_first_name'))
+        enrollment_dict['student_last_name'] = safe_decrypt_data(enrollment_dict.get('student_last_name'))
+        
+        result.append(enrollment_dict)
+    
+    return result
+
 
 @router.get("/getById/{enrollment_id}", response_model=EnrollmentOut)
 def get_enrollment(enrollment_id: int, db: Session = Depends(get_db)):
@@ -90,30 +186,16 @@ def get_enrollment(enrollment_id: int, db: Session = Depends(get_db)):
     if not enrollment:
         raise HTTPException(status_code=404, detail="Enrollment Data not Found")
     
-    return enrollment
-
-@router.get("/getByUserId/{user_id}", response_model=list[EnrollmentClassOut])
-def get_classes_by_user(user_id: int, db: Session= Depends(get_db)):
-    enrollments = (
-        db.query(ClassEnrollment)
-        .options(
-            joinedload(ClassEnrollment.enrolled_class)
-            .joinedload(Classes.user_teacher)
-        )
-        .filter(ClassEnrollment.student_id == user_id)
-        .filter(ClassEnrollment.status == "enrolled")
-        .filter(ClassEnrollment.is_archive == False)
-        .all()
-    )
+    # Create a response dict with safely decrypted student names
+    if enrollment.student:
+        enrollment.student.first_name = safe_decrypt_data(enrollment.student.first_name)
+        enrollment.student.last_name = safe_decrypt_data(enrollment.student.last_name)
     
-    return enrollments
-
+    return enrollment
 
 
 @router.post("/create")
 def create_enrollment(new_enrollment: EnrollmentCreate, db: Session = Depends(get_db)):
-    
-    
     existing_enrollment = db.query(ClassEnrollment).filter(
         ClassEnrollment.class_id == new_enrollment.class_id,
         ClassEnrollment.student_id == new_enrollment.student_id
@@ -125,11 +207,10 @@ def create_enrollment(new_enrollment: EnrollmentCreate, db: Session = Depends(ge
             detail="Student is already enrolled in this class"
         )
     
-    # 2. Proceed with creation if not found
     enrollment = ClassEnrollment(
-        class_id = new_enrollment.class_id,
-        student_id = new_enrollment.student_id,
-        status = new_enrollment.status
+        class_id=new_enrollment.class_id,
+        student_id=new_enrollment.student_id,
+        status=new_enrollment.status
     )
     
     db.add(enrollment)
@@ -137,10 +218,10 @@ def create_enrollment(new_enrollment: EnrollmentCreate, db: Session = Depends(ge
     db.refresh(enrollment)
     
     return {"message": "Enrolled Successfully"}
-    
+
+
 @router.patch("/patch/{enrollment_id}")
 def patch_enrollment(enrollment_id: int, enrollment_update: EnrollmentUpdate, db: Session = Depends(get_db)):
-    
     enrollment_to_update = db.query(ClassEnrollment).filter(ClassEnrollment.id == enrollment_id).first()
     
     if not enrollment_to_update:
@@ -152,12 +233,11 @@ def patch_enrollment(enrollment_id: int, enrollment_update: EnrollmentUpdate, db
     db.commit()
     db.refresh(enrollment_to_update)
     
-    
-    return {"message" : f"EnrollmentData with id {enrollment_id} has been updated successfully"}
+    return {"message": f"EnrollmentData with id {enrollment_id} has been updated successfully"}
+
 
 @router.patch("/archive/{enrollment_id}")
 def archive_enrollment(enrollment_id: int, db: Session = Depends(get_db)):
-    
     enrollment = db.query(ClassEnrollment).filter(ClassEnrollment.id == enrollment_id).first()
     
     if not enrollment:
@@ -165,16 +245,15 @@ def archive_enrollment(enrollment_id: int, db: Session = Depends(get_db)):
     
     if enrollment.status == "enrolled":
         raise HTTPException(
-                status_code=400,
-                detail="Cannot Archive: student is still currently enrolled."
-            )
-        
+            status_code=400,
+            detail="Cannot Archive: student is still currently enrolled."
+        )
     
-    enrollment.is_archive= True
+    enrollment.is_archive = True
     db.commit()  
     db.refresh(enrollment)
     
-    return {"message" : f"Enrollment Data with id: {enrollment_id} has been archived"}
+    return {"message": f"Enrollment Data with id: {enrollment_id} has been archived"}
 
 
 @router.post("/import", response_model=EnrollmentImportResponse)
@@ -203,7 +282,7 @@ def import_enrollments(
         
         rows = []
         emails = []
-        for row_num, row in enumerate(reader, start=2):  # Start at 2 for header row
+        for row_num, row in enumerate(reader, start=2):
             if not row.get('email') or not row['email'].strip():
                 raise HTTPException(
                     status_code=400, 
@@ -330,3 +409,232 @@ def import_enrollments(
             status_code=500, 
             detail=f"Unexpected error: {str(e)}"
         )
+        
+        
+@router.get("/debug/check-user-enrollments/{user_id}")
+def debug_user_enrollments(user_id: int, db: Session = Depends(get_db)):
+    """
+    Debug route to check the exact enrollment path for a specific user
+    """
+    from app.utils.auth import decrypt_data
+    
+    # Get enrollments for the user
+    enrollments = (
+        db.query(ClassEnrollment)
+        .options(
+            joinedload(ClassEnrollment.enrolled_class)
+            .joinedload(Classes.user_teacher)
+        )
+        .filter(ClassEnrollment.student_id == user_id)
+        .filter(ClassEnrollment.status == "enrolled")
+        .filter(ClassEnrollment.is_archive == False)
+        .all()
+    )
+    
+    results = []
+    
+    for enrollment in enrollments:
+        enrollment_data = {
+            "enrollment_id": enrollment.id,
+            "class_id": enrollment.class_id,
+            "student_id": enrollment.student_id,
+            "class_name": enrollment.enrolled_class.name if enrollment.enrolled_class else None,
+        }
+        
+        # Check teacher data
+        if enrollment.enrolled_class and enrollment.enrolled_class.user_teacher:
+            teacher = enrollment.enrolled_class.user_teacher
+            teacher_data = {
+                "teacher_id": teacher.id,
+                "teacher_email": teacher.email,
+                "first_name_raw_preview": str(teacher.first_name)[:50] + "..." if teacher.first_name else None,
+                "last_name_raw_preview": str(teacher.last_name)[:50] + "..." if teacher.last_name else None,
+            }
+            
+            # Test decryption
+            try:
+                if teacher.first_name:
+                    decrypted_first = decrypt_data(teacher.first_name)
+                    teacher_data["first_name_decrypted"] = decrypted_first
+                    teacher_data["first_name_decrypt_success"] = True
+            except Exception as e:
+                teacher_data["first_name_decrypt_success"] = False
+                teacher_data["first_name_error"] = str(e)
+            
+            try:
+                if teacher.last_name:
+                    decrypted_last = decrypt_data(teacher.last_name)
+                    teacher_data["last_name_decrypted"] = decrypted_last
+                    teacher_data["last_name_decrypt_success"] = True
+            except Exception as e:
+                teacher_data["last_name_decrypt_success"] = False
+                teacher_data["last_name_error"] = str(e)
+            
+            enrollment_data["teacher"] = teacher_data
+        else:
+            enrollment_data["teacher"] = None
+        
+        results.append(enrollment_data)
+    
+    return {
+        "user_id": user_id,
+        "enrollment_count": len(enrollments),
+        "enrollments": results
+    }
+    
+@router.get("/debug/force-check-user-1")
+def force_check_user_1(db: Session = Depends(get_db)):
+    """
+    Force a fresh query for user 1 with detailed logging
+    """
+    from app.utils.auth import decrypt_data
+    import traceback
+    
+    results = {
+        "user_id": 1,
+        "steps": [],
+        "error": None,
+        "teachers_checked": []
+    }
+    
+    try:
+        # Step 1: Query the database
+        results["steps"].append("Querying database...")
+        enrollments = (
+            db.query(ClassEnrollment)
+            .options(
+                joinedload(ClassEnrollment.enrolled_class)
+                .joinedload(Classes.user_teacher)
+            )
+            .filter(ClassEnrollment.student_id == 1)
+            .filter(ClassEnrollment.status == "enrolled")
+            .filter(ClassEnrollment.is_archive == False)
+            .all()
+        )
+        
+        results["steps"].append(f"Found {len(enrollments)} enrollments")
+        
+        # Step 2: Check each enrollment
+        for idx, enrollment in enumerate(enrollments):
+            enrollment_info = {
+                "enrollment_id": enrollment.id,
+                "class_id": enrollment.class_id,
+                "class_name": enrollment.enrolled_class.name if enrollment.enrolled_class else "Unknown",
+            }
+            
+            if enrollment.enrolled_class and enrollment.enrolled_class.user_teacher:
+                teacher = enrollment.enrolled_class.user_teacher
+                
+                teacher_info = {
+                    "teacher_id": teacher.id,
+                    "teacher_email": teacher.email,
+                    "first_name_raw": str(teacher.first_name)[:50] + "..." if teacher.first_name and len(str(teacher.first_name)) > 50 else teacher.first_name,
+                    "first_name_type": str(type(teacher.first_name)),
+                    "first_name_length": len(teacher.first_name) if teacher.first_name else 0,
+                }
+                
+                # Try to decrypt with detailed error handling
+                if teacher.first_name:
+                    try:
+                        # Log the exact value being passed to decrypt
+                        print(f"Attempting to decrypt: {repr(teacher.first_name)}")
+                        
+                        # Check if it's a valid string
+                        if not isinstance(teacher.first_name, str):
+                            teacher_info["error"] = f"first_name is not a string: {type(teacher.first_name)}"
+                            results["teachers_checked"].append(teacher_info)
+                            continue
+                        
+                        # Try decryption
+                        decrypted = decrypt_data(teacher.first_name)
+                        teacher_info["decrypted"] = decrypted
+                        teacher_info["success"] = True
+                        
+                        # Actually modify the teacher object like the original endpoint
+                        teacher.first_name = decrypted
+                        
+                    except Exception as e:
+                        teacher_info["success"] = False
+                        teacher_info["error"] = str(e)
+                        teacher_info["error_type"] = type(e).__name__
+                        teacher_info["traceback"] = traceback.format_exc()
+                        
+                        # This is the key - if we get here, we found the problem teacher
+                        results["error"] = f"Failed on teacher ID {teacher.id}: {str(e)}"
+                
+                enrollment_info["teacher"] = teacher_info
+                results["teachers_checked"].append(enrollment_info)
+            else:
+                enrollment_info["teacher"] = None
+                results["teachers_checked"].append(enrollment_info)
+        
+        # Step 3: Try to return the data exactly like the original endpoint
+        results["steps"].append("Attempting to return data like original endpoint...")
+        
+        # This is exactly what your original endpoint does
+        try:
+            # Make a fresh query
+            final_enrollments = (
+                db.query(ClassEnrollment)
+                .options(
+                    joinedload(ClassEnrollment.enrolled_class)
+                    .joinedload(Classes.user_teacher)
+                )
+                .filter(ClassEnrollment.student_id == 1)
+                .filter(ClassEnrollment.status == "enrolled")
+                .filter(ClassEnrollment.is_archive == False)
+                .all()
+            )
+            
+            # Decrypt
+            for enrollment in final_enrollments:
+                if enrollment.enrolled_class and enrollment.enrolled_class.user_teacher:
+                    teacher = enrollment.enrolled_class.user_teacher
+                    if teacher.first_name:
+                        teacher.first_name = decrypt_data(teacher.first_name)
+                    if teacher.last_name:
+                        teacher.last_name = decrypt_data(teacher.last_name)
+            
+            # Convert to dict to avoid serialization issues
+            result_data = []
+            for enrollment in final_enrollments:
+                enrollment_dict = {
+                    "id": enrollment.id,
+                    "class_id": enrollment.class_id,
+                    "student_id": enrollment.student_id,
+                    "enrollment_date": str(enrollment.enrollment_date) if enrollment.enrollment_date else None,
+                    "status": enrollment.status,
+                    "is_archive": enrollment.is_archive,
+                }
+                
+                if enrollment.enrolled_class:
+                    enrollment_dict["class"] = {
+                        "id": enrollment.enrolled_class.id,
+                        "name": enrollment.enrolled_class.name,
+                    }
+                    
+                    if enrollment.enrolled_class.user_teacher:
+                        teacher = enrollment.enrolled_class.user_teacher
+                        enrollment_dict["class"]["teacher"] = {
+                            "id": teacher.id,
+                            "email": teacher.email,
+                            "first_name": teacher.first_name,
+                            "last_name": teacher.last_name,
+                        }
+                
+                result_data.append(enrollment_dict)
+            
+            results["original_endpoint_data"] = result_data
+            results["original_endpoint_success"] = True
+            
+        except Exception as e:
+            results["original_endpoint_success"] = False
+            results["original_endpoint_error"] = str(e)
+            results["original_endpoint_traceback"] = traceback.format_exc()
+        
+        return results
+        
+    except Exception as e:
+        results["error"] = str(e)
+        results["traceback"] = traceback.format_exc()
+        return results

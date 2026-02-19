@@ -43,9 +43,9 @@ class MaterialTitleOut(BaseModel):
     term_id: int
     created_at: datetime
     type: str
-    total_score: Optional[int] = None  # Renamed from 'score' to match database column
-    status: Optional[str] = None  # Add status field for completion tracking
-    due_date: Optional[datetime] = None  # Add due date field if you have it
+    total_score: Optional[int] = None  
+    status: Optional[str] = None  
+    due_date: Optional[datetime] = None  
     
     model_config = ConfigDict(
         from_attributes=True,

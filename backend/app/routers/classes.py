@@ -8,52 +8,43 @@ from app.models.class_enrollment import ClassEnrollment
 from app.models.users import Users
 from app.schemas.classes import ClassCreate, ClassUpdate, ClassOut, ClassWithTeacherOut, BulkUploadResponse, BulkClassUpload
 from app.database import get_db
+from app.utils.decryption import safe_decrypt_class_dict, safe_decrypt_teacher_dict 
 
 router = APIRouter(prefix="/classes", tags=["classes"])
 
 
-
-
-
 @router.get("/get", response_model=list[ClassOut])
-def get_classes(query: str | None = None, db: Session = Depends(get_db)):
-    
+def get_classes(
+    skip: int = 0, 
+    limit: int = 100, 
+    db: Session = Depends(get_db)
+):
+    """
+    Get all classes with safely decrypted teacher names.
+    """
     classes = (
         db.query(Classes)
-        .options(
-            joinedload(Classes.subject),
-            joinedload(Classes.user_teacher)
-        ).filter(Classes.is_archive == False)
+        .options(joinedload(Classes.user_teacher), joinedload(Classes.subject))
+        .filter(Classes.is_archive == False)
+        .offset(skip)
+        .limit(limit)
+        .all()
     )
     
-    if query:
-        classes = (
-            classes
-            .join(Classes.subject)
-            .join(Classes.user_teacher)
-            .filter(
-            or_(
-                Classes.name.ilike(f"%{query}%"),
-                Classes.academic_year.ilike(f"%{query}%"),
-                Classes.semester.ilike(f"%{query}%"),
-                Subject.name.ilike(f"%{query}%")
-            )
-        )
-            )
+    # Use the safe decryption function that returns dicts
+    return [safe_decrypt_class_dict(c) for c in classes]
 
-    classes = classes.order_by(Classes.id.asc()).all()
-
-   
-    return classes
 
 @router.get("/getById/{class_id}", response_model=ClassOut)
 def get_user_by_id(class_id: int , db: Session = Depends(get_db)):
-    new_class = db.query(Classes).filter(Classes.id == class_id).first()
+    class_item = db.query(Classes).filter(Classes.id == class_id).first()
     
-    if not new_class:
+    if not class_item:
         return HTTPException(status_code=404, detail="class not found")
-        
-    return new_class
+    
+    # Use safe_decrypt_class_dict instead of modifying in-place
+    return safe_decrypt_class_dict(class_item)
+
 
 @router.get("/getByUserId/{teacher_id}", response_model=list[ClassWithTeacherOut])
 def get_classes_by_user_id(teacher_id: int, db: Session = Depends(get_db)):
@@ -67,7 +58,31 @@ def get_classes_by_user_id(teacher_id: int, db: Session = Depends(get_db)):
     if not classes:
         raise HTTPException(status_code=404, detail="No classes found for this teacher")
 
-    return classes
+    # Use safe decryption for each class
+    result = []
+    for class_item in classes:
+        class_dict = {
+            "id": class_item.id,
+            "subject_id": class_item.subject_id,
+            "teacher_id": class_item.teacher_id,
+            "name": class_item.name,
+            "schedule": class_item.schedule,
+            "room": class_item.room,
+            "section": class_item.section,
+            "academic_year": class_item.academic_year,
+            "semester": class_item.semester,
+            "lecture_units": class_item.lecture_units,
+            "lab_units": class_item.lab_units,
+            "is_archive": class_item.is_archive,
+        }
+        
+        # Safely add teacher data
+        if class_item.user_teacher:
+            class_dict["user_teacher"] = safe_decrypt_teacher_dict(class_item.user_teacher)
+        
+        result.append(class_dict)
+    
+    return result
 
 
 @router.post("/create")
@@ -88,16 +103,16 @@ def create_class(class_data: ClassCreate, db: Session = Depends(get_db)):
         )
 
     new_class = Classes(
-        subject_id = class_data.subject_id,
-        teacher_id = class_data.teacher_id,
-        name = class_data.name,
-        schedule = class_data.schedule,
-        room = class_data.room,
-        section = class_data.section,
-        academic_year = class_data.academic_year,
-        semester = class_data.semester,
-        lecture_units = class_data.lecture_units,  
-        lab_units = class_data.lab_units          
+        subject_id=class_data.subject_id,
+        teacher_id=class_data.teacher_id,
+        name=class_data.name,
+        schedule=class_data.schedule,
+        room=class_data.room,
+        section=class_data.section,
+        academic_year=class_data.academic_year,
+        semester=class_data.semester,
+        lecture_units=class_data.lecture_units,  
+        lab_units=class_data.lab_units          
     )
     
     db.add(new_class)
@@ -150,7 +165,7 @@ def bulk_upload_classes(upload_data: BulkClassUpload, db: Session = Depends(get_
                 db.commit()
                 db.refresh(subject)
 
-            # 4. Check for duplicate class (strict check on all unique fields)
+            # 4. Check for duplicate class
             existing_class = db.query(Classes).filter(
                 Classes.name == class_row.course_code,
                 Classes.section == class_row.section,
@@ -165,11 +180,11 @@ def bulk_upload_classes(upload_data: BulkClassUpload, db: Session = Depends(get_
                 skipped += 1
                 continue
 
-            # 5. Create the class with ALL database columns
+            # 5. Create the class
             new_class = Classes(
                 subject_id=subject.id,
                 teacher_id=teacher.id,
-                name=class_row.course_code,           # Maps from CSV course_code
+                name=class_row.course_code,
                 schedule=class_row.schedule,
                 room=class_row.room,
                 section=class_row.section,
@@ -177,7 +192,7 @@ def bulk_upload_classes(upload_data: BulkClassUpload, db: Session = Depends(get_
                 semester=class_row.semester,
                 lecture_units=class_row.lecture_units,
                 lab_units=class_row.lab_units,
-                is_archive=False  # Default value for new classes
+                is_archive=False
             )
 
             db.add(new_class)
@@ -201,27 +216,12 @@ def bulk_upload_classes(upload_data: BulkClassUpload, db: Session = Depends(get_
     return BulkUploadResponse(
         created=created,
         skipped=skipped,
-        errors=errors[:20]  # Limit errors to prevent huge response
+        errors=errors[:20]
     )
-# @router.put("/update/{class_id}")
-# def update_class(class_id:int, class_data:ClassCreate, db: Session = Depends(get_db)):
-#     class_ = db.query(Classes).filter(Classes.id == class_id).first()
-
-#     if not class_:
-#         return {"message": "Class not found"}
-
-#     class_.name = class_data.name
-#     class_.subject_id = class_data.subject_id
-#     class_.teacher_id = class_data.teacher_id
-    
-#     db.commit()
-#     db.refresh(class_)
-    
-#     return {"message": "Class updated successfully"}
 
 
 @router.patch("/patch/{class_id}")
-def patch_class(class_id : int, class_update: ClassUpdate, db: Session = Depends(get_db)):
+def patch_class(class_id: int, class_update: ClassUpdate, db: Session = Depends(get_db)):
     class_to_update = db.query(Classes).filter(Classes.id == class_id).first()
     
     if not class_to_update:
@@ -233,10 +233,11 @@ def patch_class(class_id : int, class_update: ClassUpdate, db: Session = Depends
     db.commit()
     db.refresh(class_to_update)
     
-    return {"message" : f"Class with id ${class_id} has been updated successfully"}
+    return {"message": f"Class with id {class_id} has been updated successfully"}
+
 
 @router.patch("/archive/{class_id}")
-def archive(class_id : int, db: Session = Depends(get_db)):
+def archive(class_id: int, db: Session = Depends(get_db)):
     classes = db.query(Classes).filter(Classes.id == class_id).first() 
     
     if not classes:
@@ -249,15 +250,13 @@ def archive(class_id : int, db: Session = Depends(get_db)):
     
     if existing_enrollments:
         raise HTTPException(
-                status_code=400,
-                detail="Cannot archive class: existing enrollments bound to this class is found."
-            )
-        
+            status_code=400,
+            detail="Cannot archive class: existing enrollments bound to this class is found."
+        )
         
     classes.is_archive = True
     
     db.commit()
     db.refresh(classes)
     
-    return {"message" : f"class with {class_id} archived successfully"}
-
+    return {"message": f"class with {class_id} archived successfully"}

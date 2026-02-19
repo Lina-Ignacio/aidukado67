@@ -5,39 +5,42 @@ from sqlalchemy import or_, func
 from app.models import Users, ClassEnrollment
 from app.schemas.user import UserCreate, UserOut, UserUpdate, TeacherOut, PasswordChangeRequest, StudentSimpleResponse, AdminPasswordReset, UserStatistics
 from app.database import SessionLocal
-from app.utils.auth import hash_password, get_current_user, hash_email, encrypt_data, decrypt_data
+from app.utils.auth import hash_password, get_current_user, encrypt_data, decrypt_data
 from app.database import get_db
+from app.utils.decryption import decrypt_user_to_dict, decrypt_users_to_dict_list
 
 router = APIRouter(prefix="/user", tags=["User"])
 
 
 @router.get("/get", response_model=list[UserOut])
 def get_users(query: str | None = None, db: Session = Depends(get_db)):
+    users = db.query(Users).filter(Users.is_archive == False).order_by(Users.created_at.desc()).all()
     
-    users_query = db.query(Users).filter(Users.is_archive == False)
+    # This correctly decrypts ONLY names, email stays plain
+    decrypted_users = decrypt_users_to_dict_list(users)
     
     if query:
-        users_query = users_query.filter(
-            or_(
-                Users.first_name.ilike(f"%{query}%"),
-                Users.last_name.ilike(f"%{query}%"),
-                Users.email.ilike(f"%{query}%")
-            )
-        )
-        
-    users= users_query.order_by(Users.id.asc()).all()
-
-    return users
+        query_lower = query.lower()
+        decrypted_users = [
+            u for u in decrypted_users 
+            if (u["first_name"] and query_lower in u["first_name"].lower()) or
+               (u["last_name"] and query_lower in u["last_name"].lower()) or
+               (u["email"] and query_lower in u["email"].lower())
+        ]
+    
+    return decrypted_users
 
 
 @router.get("/getById/{user_id}", response_model=UserOut)
-def get_user_by_id(user_id: int , db: Session = Depends(get_db)):
+def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
     user = db.query(Users).filter(Users.id == user_id).first()
     
     if not user:
-        raise HTTPException(status_code=404, detail="user not found")
-        
-    return user
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # This correctly decrypts ONLY names
+    return decrypt_user_to_dict(user)
+
 
 @router.get("/get_teachers", response_model=list[TeacherOut])
 def get_all_teachers(db: Session = Depends(get_db)):
@@ -46,7 +49,22 @@ def get_all_teachers(db: Session = Depends(get_db)):
         Users.is_archive == False
     ).all()
     
-    return teachers
+    # Decrypt teacher data - ONLY names, email is plain text
+    decrypted_teachers = []
+    for teacher in teachers:
+        decrypted_teacher = {
+            "id": teacher.id,
+            "email": teacher.email,  # Email is now plain text - no decryption needed
+            "first_name": decrypt_data(teacher.first_name) if teacher.first_name else None,
+            "last_name": decrypt_data(teacher.last_name) if teacher.last_name else None,
+            "middle_name": decrypt_data(teacher.middle_name) if teacher.middle_name else None,
+            "role": teacher.role,
+            "is_archive": teacher.is_archive
+        }
+        decrypted_teachers.append(decrypted_teacher)
+    
+    return decrypted_teachers
+
 
 @router.get("/get_students", response_model=list[UserOut])
 def get_all_students(db: Session = Depends(get_db)):
@@ -55,37 +73,35 @@ def get_all_students(db: Session = Depends(get_db)):
         Users.is_archive == False
     ).all()
     
-    return students
+    # Decrypt students data using helper function
+    return decrypt_users_to_dict_list(students)
 
 
 @router.post("/batch_create")
 def create_multiple_users(users: list[UserCreate], db: Session = Depends(get_db)):
     try:
-        
+        # Check for existing emails using plain text
         incoming_emails = [u.email.lower() for u in users]
         
-        
-        existing_emails = db.query(Users.email).filter(Users.email.in_(incoming_emails)).all()
-        existing_emails_set = {e[0] for e in existing_emails}
-
-        if existing_emails_set:
+        # Check for existing emails
+        existing_users = db.query(Users.email).filter(Users.email.in_(incoming_emails)).all()
+        if existing_users:
             raise HTTPException(
                 status_code=400, 
-                detail=f"The following emails are already registered: {', '.join(existing_emails_set)}"
+                detail="One or more emails are already registered."
             )
 
         new_users_list = []
         for user in users:
             new_users_list.append(Users(
-                last_name=user.last_name,
-                first_name=user.first_name,
-                middle_name=user.middle_name,
-                email=user.email.lower(),
+                last_name=encrypt_data(user.last_name),
+                first_name=encrypt_data(user.first_name),
+                middle_name=encrypt_data(user.middle_name) if user.middle_name else None,
+                email=user.email.lower(),  # Store as plain text (lowercase)
                 password_hash=hash_password(user.password),
                 role=user.role,
                 must_change_password=True
             ))
-        
         
         db.add_all(new_users_list)
         db.commit()
@@ -98,12 +114,12 @@ def create_multiple_users(users: list[UserCreate], db: Session = Depends(get_db)
         db.rollback()
         raise HTTPException(status_code=500, detail="An unexpected error occurred during batch creation.")
 
+
 @router.post("/create")
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     
-    hashed_email = hash_email(user.email)
-
-    existing_user = db.query(Users).filter(Users.email == hashed_email).first()
+    # Check for existing email using plain text
+    existing_user = db.query(Users).filter(Users.email == user.email.lower()).first()
     if existing_user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -112,19 +128,17 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
     encrypted_last_name = encrypt_data(user.last_name)
     encrypted_first_name = encrypt_data(user.first_name)
-    encrypted_middle_name = encrypt_data(user.middle_name)
+    encrypted_middle_name = encrypt_data(user.middle_name) if user.middle_name else None
     hashed_pass = hash_password(user.password)
     
-    
-    
     new_user = Users(
-        last_name = encrypted_last_name,
-        first_name = encrypted_first_name,
-        middle_name = encrypted_middle_name,
-        email = hashed_email,  
-        password_hash = hashed_pass,
-        role = user.role,
-        must_change_password = True
+        last_name=encrypted_last_name,
+        first_name=encrypted_first_name,
+        middle_name=encrypted_middle_name,
+        email=user.email.lower(),  # Store as plain text (lowercase)
+        password_hash=hashed_pass,
+        role=user.role,
+        must_change_password=True
     )
     
     db.add(new_user)
@@ -133,6 +147,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     
     return {"message": "User Created Successfully", "user_id": new_user.id}
 
+
 @router.patch("/patch/{user_id}")
 def patch_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get_db)):
     user = db.query(Users).filter(Users.id == user_id).first()
@@ -140,13 +155,26 @@ def patch_user(user_id: int, user_update: UserUpdate, db: Session = Depends(get_
     if not user:
         raise HTTPException(status_code=404, detail="User not existing")
     
-    for key, value in user_update.dict(exclude_unset=True).items():
+    update_data = user_update.dict(exclude_unset=True)
+    
+    # Encrypt name fields if they're being updated
+    if 'first_name' in update_data:
+        update_data['first_name'] = encrypt_data(update_data['first_name'])
+    if 'last_name' in update_data:
+        update_data['last_name'] = encrypt_data(update_data['last_name'])
+    if 'middle_name' in update_data and update_data['middle_name']:
+        update_data['middle_name'] = encrypt_data(update_data['middle_name'])
+    # Email is now plain text - no hashing/encryption needed
+    # if 'email' in update_data:
+    #     update_data['email'] = update_data['email'].lower()  # Just lowercase, no hash
+    
+    for key, value in update_data.items():
         setattr(user, key, value)
         
     db.commit()
     db.refresh(user)
 
-    return {"message" : f"user with {user_id} updated successfully"}
+    return {"message": f"user with {user_id} updated successfully"}
 
 
 @router.patch("/reset-password/{user_id}")
@@ -161,10 +189,7 @@ def admin_reset_password(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    
     user.password_hash = hash_password(payload.new_password)
-    
-
     user.must_change_password = True
     
     try:
@@ -197,7 +222,6 @@ def change_password_first_login(
         )
 
     try:
-        
         current_user = db.merge(current_user)
         
         current_user.password_hash = hash_password(payload.new_password)
@@ -206,7 +230,6 @@ def change_password_first_login(
         db.commit()
         db.refresh(current_user)
 
-        
         response.delete_cookie(
             key="access_token",
             path="/",
@@ -232,7 +255,6 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-
     existing_enrollments = db.query(ClassEnrollment).filter_by(student_id=user_id).first()
     if existing_enrollments:
         raise HTTPException(
@@ -245,7 +267,6 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     db.refresh(user)
     return {"message": f"User with ID {user_id} archived successfully"}
 
-
 @router.get("/{class_id}/students", response_model=List[StudentSimpleResponse])
 async def get_students_by_class_id(
     class_id: int,
@@ -255,7 +276,7 @@ async def get_students_by_class_id(
     Simple endpoint to get all students in a class.
     Returns list of students sorted by last name.
     """
-    # Query students
+    # Query students (no ORDER BY here)
     students = (
         db.query(Users)
         .join(ClassEnrollment, Users.id == ClassEnrollment.student_id)
@@ -264,32 +285,45 @@ async def get_students_by_class_id(
             Users.role == "student",
             Users.is_archive == False
         )
-        .order_by(Users.last_name.asc())
-        .all()
+        .all()  # Remove .order_by()
     )
     
     if not students:
         return []
     
-    # Format response
+    # Format response with decrypted data
     result = []
     for student in students:
+        # Decrypt name fields
+        decrypted_first_name = decrypt_data(student.first_name) if student.first_name else ""
+        decrypted_last_name = decrypt_data(student.last_name) if student.last_name else ""
+        decrypted_middle_name = decrypt_data(student.middle_name) if student.middle_name else ""
+        
         # Format full name
         middle_initial = ""
-        if student.middle_name:
-            middle_initial = f" {student.middle_name[0]}." if student.middle_name.strip() else ""
+        if decrypted_middle_name:
+            middle_initial = f" {decrypted_middle_name[0]}." if decrypted_middle_name.strip() else ""
         
-        full_name = f"{student.last_name}, {student.first_name}{middle_initial}"
+        full_name = f"{decrypted_last_name}, {decrypted_first_name}{middle_initial}"
         
-        result.append(StudentSimpleResponse(
-            id=student.id,
-            full_name=full_name,
-            email=student.email,
-            first_name=student.first_name,
-            last_name=student.last_name
-        ))
+        result.append({
+            "id": student.id,
+            "full_name": full_name,
+            "email": student.email,
+            "first_name": decrypted_first_name,
+            "last_name": decrypted_last_name,
+            "_sort_key": decrypted_last_name.lower()  # Add sort key
+        })
+    
+    # Sort in memory after decryption
+    result.sort(key=lambda x: x["_sort_key"])
+    
+    # Remove sort key and return
+    for item in result:
+        del item["_sort_key"]
     
     return result
+
 
 @router.get("/statistics", response_model=UserStatistics)
 async def get_user_statistics(db: Session = Depends(get_db)):
