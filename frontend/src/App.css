@@ -1,0 +1,171 @@
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Hide scrollbar but keep scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE & Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+
+/* h1, h2, h3, h4, h5, h6 {
+  font-family: 'Oswald', sans-serif;
+  
+}
+
+/* Apply Oswald to all paragraphs */
+p {
+  font-family: 'Oswald', sans-serif;
+} 
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #f3f4f6 inset !important;
+    -webkit-text-fill-color: #102E50 !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Simple datetime-local styling that works */
+.datetime-local-styled {
+  /* Ensure there's enough padding for the icon */
+  padding-right: 40px !important;
+}
+
+/* Style the calendar icon */
+.datetime-local-styled::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  filter: invert(24%) sepia(15%) saturate(2476%) hue-rotate(183deg) brightness(90%) contrast(96%);
+  width: 18px;
+  height: 18px;
+}
+
+.datetime-local-styled::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.8;
+}
+
+/* For Firefox */
+.datetime-local-styled::-moz-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  filter: invert(24%) sepia(15%) saturate(2476%) hue-rotate(183deg) brightness(90%) contrast(96%);
+}
+
+.material-background {
+  --bg-image: url("https://wallpaperaccess.com/full/683409.jpg");
+  --bg-image-opacity: .1;
+  background-color: rgba(158, 198, 243, 0.2);
+  position: relative;
+  isolation: isolate;
+}
+
+.material-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: var(--bg-image);
+  opacity: var(--bg-image-opacity);
+}
+
+.exam-background {
+  --bg-image: url("https://wallpapercave.com/wp/wp6374897.jpg");
+  --bg-image-opacity: .1;
+  background: linear-gradient(135deg, rgba(242, 248, 252, 0.5), rgba(209, 231, 246, 0.5));
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.exam-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: var(--bg-image);
+  opacity: var(--bg-image-opacity);
+}
+
+.assessment-background {
+  --bg-image: url("https://i.pinimg.com/originals/45/77/b5/4577b5737674e460fbc7b8c577f18586.jpg");
+  --bg-image-opacity: .1;
+  background-color: rgba(231, 139, 72, 0.5);
+  position: relative;
+  isolation: isolate;
+}
+
+.assessment-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: var(--bg-image);
+  opacity: var(--bg-image-opacity);
+}
+
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.float {
+  animation: float 2s ease-in-out infinite;
+}
+
+
+/* Hide number input spinner */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Smooth scrolling */
+.scroll-container {
+  scroll-behavior: smooth;
+}
+
+/* Canvas transition */
+canvas {
+  transition: transform 0.2s ease-in-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  }
+  .animate-slideUp {
+    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+

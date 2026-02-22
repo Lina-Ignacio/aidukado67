@@ -1,0 +1,24 @@
+
+from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, func, Boolean, Index
+from sqlalchemy.orm import relationship
+from app.database import Base
+
+
+class Subject(Base):
+    __tablename__ = "subjects"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    is_archive = Column(Boolean, nullable=False, default=False)
+    
+    classes = relationship("Classes", back_populates="subject")
+
+    __table_args__ = (
+        Index(
+            "idx_subjects_active", 
+            "is_archive", 
+            postgresql_where=(is_archive == False)
+        ),
+    )

@@ -1,0 +1,145 @@
+from pydantic import BaseModel, EmailStr
+from typing import Optional, List
+from pydantic import ConfigDict  
+from app.utils.to_camel import to_camel
+
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    role: str
+    first_name: str 
+    last_name: str 
+    middle_name: str
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        extra="allow"
+    )
+
+class UserSignup(BaseModel):
+    email: EmailStr
+    password: str
+    first_name: str 
+    last_name: str 
+    middle_name: str
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
+        extra="allow"
+    )
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: EmailStr
+    role: str
+    first_name: str 
+    last_name: str 
+    
+    model_config = ConfigDict(
+        from_attributes=True,
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
+        
+
+class UserOut(BaseModel):
+    id: int
+    email: EmailStr
+    role: str
+    first_name: str
+    last_name: str
+    middle_name: Optional[str] = None
+    must_change_password: bool
+    
+    model_config = ConfigDict(
+        from_attributes=True,
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
+    
+class TeacherOut(BaseModel):
+    id: int
+    first_name: str
+    last_name: str
+    email: str
+    
+    model_config = ConfigDict(
+        from_attributes=True,
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
+
+        
+
+class UserUpdate(BaseModel):
+    email: str | None = None
+    role: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    middle_name: str | None = None
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
+        
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
+    
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
+
+class AdminPasswordReset(BaseModel):
+    new_password: str
+    
+    # Add this so the admin modal doesn't fail if you send 'newPassword'
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
+    
+class PasswordChangeRequest(BaseModel):
+    new_password: str
+
+    model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True
+    )
+    
+class StudentSimpleResponse(BaseModel):
+    id: int
+    full_name: str
+    email: str
+    first_name: str
+    last_name: str
+    
+    class Config:
+        from_attributes = True
+        
+
+class UserStatistics(BaseModel):
+    total_users: int
+    total_teachers: int
+    total_students: int
+    total_admins: int
+    
+    class Config:
+        from_attributes = True

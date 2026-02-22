@@ -1,0 +1,51 @@
+from sqlalchemy import Column, Integer, String, TIMESTAMP, func, Boolean, Index
+from sqlalchemy.orm import relationship
+from app.database import Base
+from app import models
+
+class Users(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    role = Column(String(20), nullable=False)
+    first_name = Column(String(100))
+    last_name = Column(String(100))
+    middle_name = Column(String(100))
+    created_at = Column(TIMESTAMP, server_default=func.now())
+    is_archive = Column(Boolean, default=False, nullable=False)
+    must_change_password = Column(Boolean, default=False, nullable=False)
+    
+    #relationships
+    classes_ = relationship("Classes", back_populates="user_teacher") 
+    class_enrollments = relationship("ClassEnrollment", back_populates="student")
+    
+    activity_progress = relationship("StudentActivityProgress", back_populates="student")
+    task_reopens = relationship("StudentTaskReopen", back_populates="student")
+    submissions = relationship("StudentSubmission", back_populates="student", cascade="all, delete")
+    
+    quiz_progress = relationship("StudentQuizProgress", back_populates="student")
+    quiz_reopens = relationship("StudentQuizReopen", back_populates="student")
+    
+    exam_progress = relationship(
+        "StudentExamProgress", 
+        back_populates="student",
+        cascade="all, delete-orphan"
+    )
+    exam_reopens = relationship(
+        "StudentExamReopen",  
+        back_populates="student",
+        cascade="all, delete-orphan"
+    )
+    
+    audit_logs = relationship("AuditLog", back_populates="user", foreign_keys="[AuditLog.changed_by]")
+    
+    
+    #index
+    __table_args__ = (
+        Index(
+            "idx_users_active", 
+            "is_archive", 
+            postgresql_where=(is_archive == False)
+        ),
+    )
