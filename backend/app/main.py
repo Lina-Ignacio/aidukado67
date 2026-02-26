@@ -74,7 +74,7 @@ app = FastAPI(lifespan=lifespan)
 
 origins = [
     "http://localhost:5173",          
-    "https://aidukado67.vercel.app",    
+    "https://ai-dukado.vercel.app",    
 ]
 
 app.add_middleware(
