@@ -20,6 +20,7 @@ export default function StudentTest() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [startTime, setStartTime] = useState(null);
   const [duration, setDuration] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false)
   
   const warningKey = `warnings_${quizId}_${student_id}`;
   const [warnings, setWarnings] = useState(() => 
@@ -83,7 +84,7 @@ export default function StudentTest() {
   useEffect(() => {
     if (!isHydrated) return;
     sessionStorage.setItem(warningKey, warnings);
-    if (warnings >= 2 && !submitted && startTime) {
+    if (warnings >= 3 && !submitted && startTime) {
       alert("Violation limit reached. Submitting.");
       handleSubmit();
     }
@@ -102,6 +103,7 @@ export default function StudentTest() {
         setQuiz(quizData);
         quizRef.current = quizData;
         setDuration(quizData.duration);
+        setShowAnswer(quizData.show_answer)
 
         const { data: progress } = await axios.post(`${import.meta.env.VITE_API_URL}/saveStartTime`, {
           quiz_id: parseInt(quizId),
@@ -230,7 +232,8 @@ export default function StudentTest() {
                   })}
                 </div>
 
-                {submitted && (
+                {/* showAnswer */}
+                {submitted && showAnswer && (
                   <div className={`mt-6 p-4 rounded-2xl flex items-center gap-3 font-bold text-base shadow-sm
                     ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                     {isCorrect ? <MdCheckCircle className="text-2xl" /> : <MdError className="text-2xl" />}

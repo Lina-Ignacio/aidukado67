@@ -11,13 +11,17 @@ export default function AuditLogs() {
     { id: 4, name: "Operation", key: "operation_type" },
     { id: 5, name: "Changed At", key: "changed_at" },
     { id: 6, name: "User ID", key: "changed_by_id" },
-    { id: 7, name: "User's Name", key: "user_name" },          // Changed from Email to Name
+    { id: 7, name: "User's Name", key: "user_name" },
     { id: 8, name: "Changed Fields", key: "changed_fields_summary" }
   ];
 
   const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchDataError, setFetchDataError] = useState("");
+
+  // Date filter state
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   // Fetch all audit logs
   const getAuditLogs = async () => {
@@ -49,59 +53,86 @@ export default function AuditLogs() {
     getAuditLogs();
   }, []);
 
-  // Transform data for table display
+  // Clear date filters
+  const handleClearFilters = () => {
+    setDateFrom("");
+    setDateTo("");
+  };
+
+  // Transform and filter data for table display
   const transformedData = useMemo(() => {
     if (!auditLogs || auditLogs.length === 0) return [];
     
-    return auditLogs.map((log) => {
-      // Format changed_at date
-      const changedAt = log.changed_at 
-        ? new Date(log.changed_at).toLocaleString() 
-        : "";
-      
-      // Get user info – the backend returns it as 'user' (from your console output)
-      const user = log.user || log.changed_by_user || {};
-      
-      // Construct full name from first_name and last_name
-      const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || "System";
-      
-      // User ID (fallback to changed_by if user object missing)
-      const userId = user.id || log.changed_by || "-";
-      
-      // Create summary of changed fields
-      let changedFieldsSummary = "";
-      if (log.changed_fields) {
-        const fields = Object.keys(log.changed_fields);
-        changedFieldsSummary = fields.length > 0 
-          ? fields.slice(0, 3).join(", ") + (fields.length > 3 ? "..." : "")
-          : "All fields";
-      } else if (log.operation_type === "INSERT") {
-        changedFieldsSummary = "New record";
-      } else if (log.operation_type === "DELETE") {
-        changedFieldsSummary = "Deleted record";
-      }
+    return auditLogs
+      .filter((log) => {
+        if (!log.changed_at) return true;
 
-      return {
-        id: log.id,
-        table_name: log.table_name,
-        record_id: log.record_id || "-",
-        operation_type: (
-          <span className={`px-2 py-1 rounded text-xs font-medium
-            ${log.operation_type === 'INSERT' ? 'bg-green-100 text-green-800' : ''}
-            ${log.operation_type === 'UPDATE' ? 'bg-yellow-100 text-yellow-800' : ''}
-            ${log.operation_type === 'DELETE' ? 'bg-red-100 text-red-800' : ''}
-          `}>
-            {log.operation_type}
-          </span>
-        ),
-        changed_at: changedAt,
-        changed_by_id: userId,
-        user_name: fullName,          // Now used in the "User Name" column
-        changed_fields_summary: changedFieldsSummary || "-"
-      };
-    });
-  }, [auditLogs]);
+        const logDate = new Date(log.changed_at);
 
+        if (dateFrom) {
+          const from = new Date(dateFrom);
+          from.setHours(0, 0, 0, 0);
+          if (logDate < from) return false;
+        }
+
+        if (dateTo) {
+          const to = new Date(dateTo);
+          to.setHours(23, 59, 59, 999);
+          if (logDate > to) return false;
+        }
+
+        return true;
+      })
+      .map((log) => {
+        // Format changed_at date
+        const changedAt = log.changed_at 
+          ? new Date(log.changed_at).toLocaleString() 
+          : "";
+        
+        // Get user info
+        const user = log.user || log.changed_by_user || {};
+        
+        // Construct full name from first_name and last_name
+        const fullName = [user.first_name, user.last_name].filter(Boolean).join(' ') || "System";
+        
+        // User ID (fallback to changed_by if user object missing)
+        const userId = user.id || log.changed_by || "-";
+        
+        // Create summary of changed fields
+        let changedFieldsSummary = "";
+        if (log.changed_fields) {
+          const fields = Object.keys(log.changed_fields);
+          changedFieldsSummary = fields.length > 0 
+            ? fields.slice(0, 3).join(", ") + (fields.length > 3 ? "..." : "")
+            : "All fields";
+        } else if (log.operation_type === "INSERT") {
+          changedFieldsSummary = "New record";
+        } else if (log.operation_type === "DELETE") {
+          changedFieldsSummary = "Deleted record";
+        }
+
+        return {
+          id: log.id,
+          table_name: log.table_name,
+          record_id: log.record_id || "-",
+          operation_type: (
+            <span className={`px-2 py-1 rounded text-xs font-medium
+              ${log.operation_type === 'INSERT' ? 'bg-green-100 text-green-800' : ''}
+              ${log.operation_type === 'UPDATE' ? 'bg-yellow-100 text-yellow-800' : ''}
+              ${log.operation_type === 'DELETE' ? 'bg-red-100 text-red-800' : ''}
+            `}>
+              {log.operation_type}
+            </span>
+          ),
+          changed_at: changedAt,
+          changed_by_id: userId,
+          user_name: fullName,
+          changed_fields_summary: changedFieldsSummary || "-"
+        };
+      });
+  }, [auditLogs, dateFrom, dateTo]);
+
+  const isFiltered = dateFrom || dateTo;
   const pagination = [9, 11];
 
   return (
@@ -122,9 +153,46 @@ export default function AuditLogs() {
       )}
 
       <div className="overflow-x-auto w-4/5 mt-[20px]">
+
+        {/* Date Filter Bar */}
+        <div className="flex flex-wrap items-end gap-4 mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">From</label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              max={dateTo || undefined}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#102E50] focus:border-transparent"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-gray-600">To</label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              min={dateFrom || undefined}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#102E50] focus:border-transparent"
+            />
+          </div>
+
+          {isFiltered && (
+            <button
+              onClick={handleClearFilters}
+              className="px-4 py-2 text-sm bg-white border border-gray-300 text-gray-600 rounded-md hover:bg-gray-100 transition-colors"
+            >
+              Clear Filters
+            </button>
+          )}
+        </div>
+
         <div className="mb-2">
           <div className="text-sm text-gray-400">
-            Showing all {transformedData.length} audit logs
+            {isFiltered
+              ? `Showing ${transformedData.length} of ${auditLogs.length} audit logs (filtered by date)`
+              : `Showing all ${transformedData.length} audit logs`}
           </div>
         </div>
         
@@ -137,7 +205,19 @@ export default function AuditLogs() {
           <>
             {transformedData.length === 0 && (
               <div className="text-center p-8 bg-gray-50 rounded-lg">
-                <p className="text-gray-400 text-lg">No audit logs found</p>
+                <p className="text-gray-400 text-lg">
+                  {isFiltered
+                    ? "No audit logs found for the selected date range."
+                    : "No audit logs found"}
+                </p>
+                {isFiltered && (
+                  <button
+                    onClick={handleClearFilters}
+                    className="mt-3 px-4 py-2 text-sm bg-[#102E50] text-white rounded-md hover:bg-[#1a3f6b] transition-colors"
+                  >
+                    Clear Filters
+                  </button>
+                )}
               </div>
             )}
 

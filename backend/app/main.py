@@ -21,7 +21,8 @@ from .routers import (
     export_scores,
     student_task_reopen,
     student_quiz_reopen,
-    audit_log
+    audit_log,
+    academic_semester_year
 )
 
 from dotenv import load_dotenv
@@ -112,6 +113,7 @@ app.include_router(export_scores.router)
 app.include_router(student_task_reopen.router)
 app.include_router(student_quiz_reopen.router)
 app.include_router(audit_log.router)
+app.include_router(academic_semester_year.router)
 
 # ✅ Health check - NO RATE LIMIT (for monitoring/pinger)
 @app.get("/")

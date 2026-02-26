@@ -545,6 +545,7 @@ export default function AIExam() {
                         text-white placeholder:text-white/70
                         shadow-inner"
                       disabled={generating}
+                      style={{ colorScheme: 'dark' }}
                       required
                     />
                   </div>
@@ -576,6 +577,7 @@ export default function AIExam() {
                         text-white placeholder:text-white/70
                         shadow-inner"
                       disabled={generating}
+                      style={{ colorScheme: 'dark' }}
                       required
                     />
                   </div>

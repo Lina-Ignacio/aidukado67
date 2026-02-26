@@ -222,6 +222,7 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
                 dueDate: newType !== "lesson" && !prev.dueDate ? getDefaultDueDate() : prev.dueDate
               }));
             }}
+            
             className="w-full border border-gray-300 bg-white text-[#102E50] p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E78B48] focus:border-transparent transition-all duration-200 appearance-none pr-10"
           >
             <option value="lesson">Lesson</option>
@@ -269,6 +270,7 @@ export default function UploadLesson({ setIsOpen, onSuccess, term, setSuccessMes
                 value={getDateTimeLocalValue()}
                 onChange={handleDueDateChange}
                 step="60"
+                style={{ colorScheme: 'dark' }}
               />
             </div>
           </div>

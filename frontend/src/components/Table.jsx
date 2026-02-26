@@ -168,7 +168,8 @@ export default function Table({
                                     : 'bg-white hover:bg-[#102E50] text-[#102E50] hover:text-white shadow-sm border border-gray-300'
                             }`}
                         >
-                            <MdChevronLeft className="text-base" />
+                            {/* <MdChevronLeft className="text-2xl" /> */}
+                            <p>{'<<'}</p>
                         </button>
 
                         {getPageNumbers().map((page, index) => (
@@ -198,7 +199,8 @@ export default function Table({
                                     : 'bg-white hover:bg-[#102E50] text-[#102E50] hover:text-white shadow-sm border border-gray-300'
                             }`}
                         >
-                            <MdChevronRight className="text-base" />
+                            {/* <MdChevronRight className="text-base text-2xl text-black" /> */}
+                            <p>{'>>'}</p>
                         </button>
                     </div>
                 </div>

@@ -8,7 +8,7 @@ import ArchiveEnrollment from "../Enrollment/ArchiveEnrollment";
 import Modal from "../../components/Modal";
 import Table from "../../components/Table";
 import ClassicButton from "../../components/classicButton";
-import { LuUserPlus, LuImport } from "react-icons/lu";
+import { LuUserPlus, LuImport, LuFilter } from "react-icons/lu";
 import ImportEnrollments from "../Enrollment/ImportEnrollments";
 
 export default function EnrollmentManagement() {
@@ -38,6 +38,11 @@ export default function EnrollmentManagement() {
     classesError: ""
   });
 
+  // Semester filter states
+  const [currentSemester, setCurrentSemester] = useState(null);
+  const [academicSemesters, setAcademicSemesters] = useState([]);
+  const [selectedSemesterId, setSelectedSemesterId] = useState("");
+
   const studentOptions = students.map((student) => ({
     value: student.id,
     label: `${student.lastName || student.last_name} ${student.firstName || student.first_name}`
@@ -47,6 +52,29 @@ export default function EnrollmentManagement() {
     value: classData.id,
     label: classData.name
   }));
+
+  const getCurrentSemester = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/academic-semesters/get-current`);
+      setCurrentSemester(response.data);
+      if (response.data) {
+        setSelectedSemesterId(response.data.id);
+      }
+    } catch (err) {
+      console.log("No current semester set or error fetching:", err);
+    }
+  };
+
+  const getAllSemesters = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/academic-semesters/get`, {
+        params: { include_archived: false }
+      });
+      setAcademicSemesters(response.data);
+    } catch (err) {
+      console.log("Error fetching academic semesters:", err);
+    }
+  };
 
   const getStudents = async () => {
     try {
@@ -86,26 +114,26 @@ export default function EnrollmentManagement() {
     }
   };
 
-  // Fetch enrollments with backend filtering when query exists
   const getEnrollment = async () => {
     try {
       setLoading(true);
       setFetchDataError("");
-      
-      // Choose endpoint based on whether there's a search query
-      const endpoint = query.trim() !== "" 
-        ? "/enrollment/get-filtered" 
+
+      const endpoint = query.trim() !== ""
+        ? "/enrollment/get-filtered"
         : "/enrollment/get";
-      
-      const params = query.trim() !== "" 
-        ? { query: query.trim() } 
-        : {};
-      
+
+
+      const params = {};
+      if (query.trim() !== "") params.query = query.trim();
+      if (selectedSemesterId) params.semester_id = selectedSemesterId;
+
+
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}${endpoint}`,
         { params }
       );
-      
+
       setEnrollmentData(response.data);
     } catch (err) {
       if (err.response?.data?.detail) {
@@ -122,24 +150,28 @@ export default function EnrollmentManagement() {
 
   // Initial data fetch
   useEffect(() => {
-    getEnrollment();
+    getCurrentSemester();
+    getAllSemesters();
     getStudents();
     getClasses();
   }, []);
 
-  // Debounced search - calls API when query changes
+  // Re-fetch when semester filter changes
+  useEffect(() => {
+    getEnrollment();
+  }, [selectedSemesterId]);
+
+  // Debounced search
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
       getEnrollment();
     }, 500);
-    
     return () => clearTimeout(delayDebounce);
   }, [query]);
 
-  // Transform data for table display (no frontend filtering needed)
   const transformedData = useMemo(() => {
     if (!enrollmentData || enrollmentData.length === 0) return [];
-    
+
     return enrollmentData.map((data) => {
       const className = data.className || "";
       const fullName = `${data.studentFirstName || ""} ${data.studentLastName || ""}`.trim();
@@ -148,7 +180,7 @@ export default function EnrollmentManagement() {
         id: data.id,
         className,
         fullName,
-        enrollmentDate: data.enrollmentDate, // ADD THIS LINE
+        enrollmentDate: data.enrollmentDate,
         status: data.status || "",
         originalData: data
       };
@@ -170,8 +202,31 @@ export default function EnrollmentManagement() {
       </div>
 
       <div className="hidden lg:flex flex-col w-full h-auto min-h-screen py-5 px-10 items-center text-white">
+
+        {/* Current Semester Display */}
+        {currentSemester && (
+          <div className="w-full mb-4 p-4 bg-gradient-to-r from-[#102E50] to-[#1a3f6a] rounded-lg shadow-md">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="text-[#E78B48] font-semibold text-lg">📅 Current Academic Period:</span>
+                <span className="text-white font-bold text-xl">
+                  {currentSemester.academic_year} - {currentSemester.semester}
+                </span>
+                {/* {currentSemester.current && (
+                  <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full font-semibold">
+                    ACTIVE
+                  </span>
+                )} */}
+              </div>
+              <div className="text-gray-300 text-sm">
+                {selectedSemesterId ? "Showing filtered enrollments" : "Showing all enrollments"}
+              </div>
+            </div>
+          </div>
+        )}
+
         {fetchDataError && (
-          <div className="w-4/5 mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+          <div className="w-full mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
             <p className="text-red-800 font-medium">Enrollment Error:</p>
             <p className="text-red-600 text-sm">{fetchDataError}</p>
             <button
@@ -184,19 +239,40 @@ export default function EnrollmentManagement() {
         )}
 
         {success && (
-          <div className="w-4/5 mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
+          <div className="w-full mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
             <p className="text-green-800">{success}</p>
           </div>
         )}
 
-        <div className="w-4/5 h-auto grid grid-cols-[3fr_1.5fr_1fr] gap-2 
+        {/* Filter and Search Row */}
+        <div className="w-full h-auto grid grid-cols-[1.6fr_3fr_2fr_1fr] gap-2
                         lg:h-11 xl:h-12 2xl:h-15 mt-3">
-          <SearchForm 
-            query={query} 
-            setQuery={setQuery} 
+
+          {/* Semester Filter Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedSemesterId}
+              onChange={(e) => setSelectedSemesterId(e.target.value)}
+              className="w-full h-full px-4 py-2 bg-white border border-gray-300 rounded-lg text-[#102E50] font-medium focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 appearance-none cursor-pointer"
+            >
+              <option value="">All Semesters</option>
+              {academicSemesters.map((sem) => (
+                <option key={sem.id} value={sem.id}>
+                  {sem.academic_year} - {sem.semester} {sem.current ? ' (Current)' : ''}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
+              <LuFilter className="text-gray-400" />
+            </div>
+          </div>
+
+          <SearchForm
+            query={query}
+            setQuery={setQuery}
             inputPlaceholder="Search by course code, status"
           />
-          <ClassicButton 
+          <ClassicButton
             buttonName="Import Enrollments"
             className="shadow-md w-full place-self-end hover:bg-[#0d243f]"
             onClick={() => setIsOpenImportModal(true)}
@@ -204,25 +280,25 @@ export default function EnrollmentManagement() {
             darkColor="#0d243f"
             icon={LuImport}
           />
-          <ClassicButton 
+          <ClassicButton
             buttonName="Enroll"
             className="shadow-md w-full place-self-end"
             onClick={() => setIsOpenAddModal(true)}
-            mainColor="#E78B48" 
+            mainColor="#E78B48"
             darkColor="#B9652B"
             icon={LuUserPlus}
           />
         </div>
 
         {(studentsLoading || classesLoading) && (
-          <div className="w-4/5 mt-2 text-sm text-gray-400">
+          <div className="w-full mt-2 text-sm text-gray-400">
             {studentsLoading && "Loading students... "}
             {classesLoading && "Loading classes... "}
           </div>
         )}
 
         {fetchingError.studentError && (
-          <div className="w-4/5 mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+          <div className="w-full mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
             <p className="text-red-800 text-sm">Student Error: {fetchingError.studentError}</p>
             <button
               onClick={getStudents}
@@ -234,7 +310,7 @@ export default function EnrollmentManagement() {
         )}
 
         {fetchingError.classesError && (
-          <div className="w-4/5 mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
+          <div className="w-full mt-2 p-2 bg-red-50 border border-red-200 rounded-md">
             <p className="text-red-800 text-sm">Class Error: {fetchingError.classesError}</p>
             <button
               onClick={getClasses}
@@ -245,7 +321,7 @@ export default function EnrollmentManagement() {
           </div>
         )}
 
-        <div className="overflow-x-auto w-4/5 mt-[20px]">
+        <div className="overflow-x-auto w-full mt-[20px]">
           <div className="mb-2">
             <div className="text-sm text-gray-400">
               {query ? (
@@ -255,7 +331,7 @@ export default function EnrollmentManagement() {
               )}
             </div>
           </div>
-          
+
           {loading ? (
             <div className="flex flex-col justify-center items-center h-64">
               <MoonLoader color="#102E50" loading={true} size={60} />

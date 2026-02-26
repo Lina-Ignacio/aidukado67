@@ -306,3 +306,14 @@ def getStudents(class_id: int, db: Session = Depends(get_db)):
         })
     
     return result
+
+@router.post('/updateShowAnswer/{quizId}')
+def update_show_answer(quizId: int, db: Session = Depends(get_db)):
+    quiz = db.query(Quiz).filter(Quiz.id == quizId).first()
+    if not quiz:
+        raise HTTPException(status_code=404, detail="Quiz not found")
+    
+    quiz.show_answer = True  
+    db.commit()
+    #db.refresh(Quiz)             
+    return {"message": "Answer will be available for students"}

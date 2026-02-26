@@ -1,6 +1,6 @@
 from app.models import Users
 from app.utils.auth import decrypt_data
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Any, Dict
 from fastapi import HTTPException, status
 from app.models.classes import Classes
 
@@ -196,10 +196,9 @@ def safe_decrypt_class_dict(class_item: Classes) -> dict:
         "schedule": class_item.schedule,
         "room": class_item.room,
         "section": class_item.section,
-        "academic_year": class_item.academic_year,
-        "semester": class_item.semester,
         "lecture_units": class_item.lecture_units,
         "lab_units": class_item.lab_units,
+        "academic_semester_id": class_item.academic_semester_id,  # ADD THIS LINE
     }
     
     # Safely add teacher data
@@ -217,3 +216,76 @@ def safe_decrypt_class_dict(class_item: Classes) -> dict:
         }
     
     return class_dict
+
+
+def batch_decrypt_enrollment_names(enrollments: List[Any]) -> List[Dict]:
+    """
+    Optimized batch decryption for enrollment student names.
+    
+    Args:
+        enrollments: List of SQLAlchemy row objects with student_first_name and student_last_name
+        
+    Returns:
+        List of dictionaries with decrypted names
+    """
+    if not enrollments:
+        return []
+    
+    # Collect all encrypted values
+    encrypted_first_names = []
+    encrypted_last_names = []
+    first_name_positions = []
+    last_name_positions = []
+    
+    for idx, enrollment in enumerate(enrollments):
+        # Check first name
+        first_name = getattr(enrollment, 'student_first_name', None)
+        if first_name and isinstance(first_name, str) and first_name.startswith('gAAAAA'):
+            encrypted_first_names.append(first_name)
+            first_name_positions.append(idx)
+        
+        # Check last name
+        last_name = getattr(enrollment, 'student_last_name', None)
+        if last_name and isinstance(last_name, str) and last_name.startswith('gAAAAA'):
+            encrypted_last_names.append(last_name)
+            last_name_positions.append(idx)
+    
+    # Batch decrypt
+    decrypted_first_names = [safe_decrypt_data(name) for name in encrypted_first_names]
+    decrypted_last_names = [safe_decrypt_data(name) for name in encrypted_last_names]
+    
+    # Build result
+    result = []
+    first_idx = 0
+    last_idx = 0
+    
+    for idx, enrollment in enumerate(enrollments):
+        # Convert to dict (handle both SQLAlchemy models and Row objects)
+        if hasattr(enrollment, '_asdict'):
+            enrollment_dict = enrollment._asdict()
+        else:
+            # For SQLAlchemy models
+            enrollment_dict = {
+                'id': enrollment.id,
+                'class_id': enrollment.class_id,
+                'student_id': enrollment.student_id,
+                'enrollment_date': enrollment.enrollment_date,
+                'status': enrollment.status,
+                'student_first_name': getattr(enrollment, 'student_first_name', None),
+                'student_last_name': getattr(enrollment, 'student_last_name', None),
+                'class_name': getattr(enrollment, 'class_name', None)
+            }
+        
+        # Apply decrypted first name
+        if first_idx < len(first_name_positions) and first_name_positions[first_idx] == idx:
+            enrollment_dict['student_first_name'] = decrypted_first_names[first_idx]
+            first_idx += 1
+        
+        # Apply decrypted last name
+        if last_idx < len(last_name_positions) and last_name_positions[last_idx] == idx:
+            enrollment_dict['student_last_name'] = decrypted_last_names[last_idx]
+            last_idx += 1
+        
+        result.append(enrollment_dict)
+    
+    return result

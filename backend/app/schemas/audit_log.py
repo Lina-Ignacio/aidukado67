@@ -25,4 +25,4 @@ class AuditLogResponse(BaseModel):
 
     class Config:
         from_attributes = True
-        populate_by_name = True  # Allows both alias and name to work
+        populate_by_name = True  

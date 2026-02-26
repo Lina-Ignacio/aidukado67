@@ -10,9 +10,7 @@ export default function QuizForm({ formData, onChange, onSubmit, loading }) {
   const labelClass = "text-[#102E50] font-bold mb-1 block";
 
   //const getDefaultTime = () => new Date().toISOString().slice(0, 16);
-  const now = new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-  .toISOString()
-  .slice(0, 16);
+  const now = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   // Set default datetime (tomorrow at 23:59)
   const setDefaultDateTime = () => {
     const tomorrow = new Date();

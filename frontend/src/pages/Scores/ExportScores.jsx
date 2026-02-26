@@ -6,6 +6,7 @@ import ClassicButton from "../../components/classicButton";
 import ScoresTable from "../../components/Scores/ScoresTable";
 import { PiExport } from "react-icons/pi";
 import { LuStepBack } from "react-icons/lu";
+import UserDropup from "../../components/DropUp/UserDropUp";
 
 export default function ExportScores() {
   const { classId, term } = useParams();
@@ -146,6 +147,7 @@ export default function ExportScores() {
 
   return (
     <div className="px-24 py-10 mx-auto w-full h-auto min-h-screen">
+      <UserDropup />
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div className="">
           <h1 className="text-2xl font-bold text-[#102E50] mb-2">

@@ -35,6 +35,8 @@ import AIExam from './pages/Exam/AIExam';
 import ExportScores from './pages/Scores/ExportScores';
 import StudentList from './pages/StudentList';
 import AdminDashboard from './pages/AdminPages/AdminDashboard'
+import AcademicSemesterManagement from './pages/AdminPages/AcademicSemesterManagement';
+import ForgotPassword from './pages/PasswordChanging/ForgotPassword'
 
 
 function AppContent() {
@@ -58,7 +60,8 @@ function AppContent() {
 
         <Route path="/force-change-password" element={<ForceChangePassword />} />
         
-        
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+
         <Route 
           path="/submissions/:materialId/:totalScore" 
           element={
@@ -228,6 +231,15 @@ function AppContent() {
             element={
               <RoleProtectedRoute allowed_roles={["admin"]}>
                   <AdminDashboard />
+              </RoleProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/academicSemester" 
+            element={
+              <RoleProtectedRoute allowed_roles={["admin"]}>
+                  <AcademicSemesterManagement />
               </RoleProtectedRoute>
             } 
           />

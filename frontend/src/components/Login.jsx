@@ -105,16 +105,28 @@ export default function Login() {
     return (
         <div className="grid grid-cols-1 lg:grid-cols-[4.5fr_5.5fr] h-screen w-screen bg-white">
 
-            <div className="hidden lg:grid relative rounded-r-[20%] bg-[#102E50] w-full h-full justify-items-center content-center gap-5 p-[30px]">
-                <div className="bg-white/90 w-[80px] h-[75px] flex rounded-full mb-4">
-                    <h1 className="text-[#102E50] m-auto font-bold lg:text-2xl xl:text-4xl 2xl:text-5xl">A</h1>
+            <div className="hidden lg:grid relative rounded-r-[20%] bg-[#102E50] w-full h-full justify-items-center content-center overflow-hidden">   
+        
+                <div className="bg-white/95 w-[85px] h-[85px] flex rounded-full mb-6 justify-center items-center shadow-xl relative group transition-transform duration-300 hover:scale-105">
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#E78B48]/20 to-transparent"></div>
+                    <h1 className="text-[#102E50] font-bold lg:text-3xl xl:text-5xl 2xl:text-6xl relative z-10">A</h1>
                 </div>
-                <h1 className="lg:text-[40px] xl:text-[55px] font-bold text-white text-center">
-                    WELCOME BACK !
+                
+                
+                <h1 className="lg:text-[40px] xl:text-[55px] 2xl:text-[65px] font-bold text-[#E78B48] text-center mb-4 relative">
+                    WELCOME BACK!
                 </h1>
-                <p className="text-white/90 lg:text-md xl:text-lg text-center max-w-md">
-                    Aidukado is an AI-assisted LMS that enhances learning through smart content generation and automation.
+                
+                {/* Subheading with improved typography */}
+                <p className="text-white/90 lg:text-md xl:text-xl 2xl:text-2xl text-center max-w-2xl mb-3 font-light tracking-wide">
+                    AIDUKADO: AI-Assisted Learning Management System
                 </p>
+                
+                
+                <p className="text-white/70 lg:text-md xl:text-lg 2xl:text-xl text-center max-w-xl italic">
+                    "Turning Automation and AI into Better Learning Experiences"
+                </p>
+                
             </div>
 
 
@@ -171,7 +183,13 @@ export default function Login() {
                         }
                     </div>
 
-                    <a className="text-[#102E50]/80 self-end">Forgot Password?</a>
+                    {/* <a className="text-[#102E50]/80 self-end">Forgot Password?</a> */}
+                    <NavLink 
+                        className="text-[#102E50]/80 self-end"
+                        to="/ForgotPasswordPage"
+                    >
+                        Forgot Password?
+                    </NavLink>
                     <button 
                         disabled={loading} 
                         className={`p-3 bg-[#102E50] ${loading && "opacity-50"} rounded-lg text-white 

@@ -1,7 +1,9 @@
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, validator
 from typing import List, Any, Optional, Dict
-from datetime import datetime
+from datetime import datetime, timezone
+import json
+
 
 class LessonHour(BaseModel):
     lesson_id: int
@@ -11,16 +13,7 @@ class LessonHour(BaseModel):
 class TOSRequest(BaseModel):
     lessons: List[LessonHour]
     total_items: int
-    
-    
-from datetime import datetime
-from pydantic import BaseModel, Field, validator
-from typing import List, Any, Optional
 
-from datetime import datetime, timezone
-from typing import List, Optional, Any, Dict
-from pydantic import BaseModel, validator, Field
-import json
 
 class CreateExam(BaseModel):
     title: str = Field(..., min_length=3, max_length=100)

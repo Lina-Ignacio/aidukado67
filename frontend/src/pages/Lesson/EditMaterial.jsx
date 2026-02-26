@@ -142,7 +142,7 @@ export default function EditMaterial({materialId, setEditMaterialOpen, setSucces
                 CANCEL
               </button>
               <button 
-                className="bg-[#102E50] w-1/2 xl:text-lg p-2" 
+                className="bg-[#102E50] w-1/2 xl:text-lg p-2 text-white" 
                 onClick={handleUpdate}
               >
                 UPDATE

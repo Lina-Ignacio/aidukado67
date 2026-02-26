@@ -16,7 +16,6 @@ export default function UploadClasses({ onClose, onSuccess }) {
         const selectedFile = e.target.files[0];
         if (!selectedFile) return;
 
-        // Validate file type
         const validExtensions = ['.csv', '.xlsx', '.xls'];
         const fileExtension = selectedFile.name.slice(selectedFile.name.lastIndexOf('.')).toLowerCase();
         
@@ -31,7 +30,6 @@ export default function UploadClasses({ onClose, onSuccess }) {
         setPreview([]);
         setValidationErrors([]);
 
-        // Parse file based on type
         try {
             if (fileExtension === '.csv') {
                 await parseCSVFile(selectedFile);
@@ -60,60 +58,49 @@ export default function UploadClasses({ onClose, onSuccess }) {
         });
     };
 
-    // Helper function to fix Excel date conversions for units
     const fixExcelUnits = (value) => {
         if (!value) return '';
         
         const strValue = String(value).trim();
         
-        // Check if it's an Excel serial date (5+ digits)
         if (/^\d{5,}$/.test(strValue)) {
             const num = parseInt(strValue);
             
-            // Common Excel date conversions for units like 3/1, 2/1
             const dateToUnitsMap = {
-                45957: '2/1',   // Feb 1, 2026
-                46082: '3/1',   // Mar 1, 2026
-                46113: '4/1',   // Apr 1, 2026
-                46143: '5/1',   // May 1, 2026
-                46174: '6/1',   // Jun 1, 2026
-                46204: '7/1',   // Jul 1, 2026
-                46235: '8/1',   // Aug 1, 2026
-                46266: '9/1',   // Sep 1, 2026
-                46296: '10/1',  // Oct 1, 2026
-                46327: '11/1',  // Nov 1, 2026
-                46357: '12/1',  // Dec 1, 2026
-                // Add more dates for 1/N patterns
-                43831: '1/1',   // Jan 1, 2020
-                44197: '1/2',   // Jan 2, 2021
-                44562: '1/3',   // Jan 3, 2022
-                44927: '1/4',   // Jan 4, 2023
-                45292: '1/5',   // Jan 5, 2024
-                45657: '1/6',   // Jan 6, 2025
-                46022: '1/7',   // Jan 7, 2026
+                45957: '2/1',
+                46082: '3/1',
+                46113: '4/1',
+                46143: '5/1',
+                46174: '6/1',
+                46204: '7/1',
+                46235: '8/1',
+                46266: '9/1',
+                46296: '10/1',
+                46327: '11/1',
+                46357: '12/1',
+                43831: '1/1',
+                44197: '1/2',
+                44562: '1/3',
+                44927: '1/4',
+                45292: '1/5',
+                45657: '1/6',
+                46022: '1/7',
             };
             
             if (dateToUnitsMap[num]) {
                 return dateToUnitsMap[num];
             }
             
-            // Calculate month and day from Excel serial date
-            // Excel epoch is December 30, 1899
             const excelEpoch = new Date(1899, 11, 30);
             const actualDate = new Date(excelEpoch.getTime() + num * 86400000);
             const month = actualDate.getMonth() + 1;
             const day = actualDate.getDate();
             
-            // Common pattern: N/1 units (3/1, 2/1, etc.)
             if (day === 1 && month >= 1 && month <= 12) {
                 return `${month}/1`;
-            }
-            // Pattern: 1/N units
-            else if (month === 1 && day >= 1 && day <= 31) {
+            } else if (month === 1 && day >= 1 && day <= 31) {
                 return `1/${day}`;
-            }
-            // Pattern: 3/2, etc.
-            else if (day <= 31 && month <= 12) {
+            } else if (day <= 31 && month <= 12) {
                 return `${month}/${day}`;
             }
         }
@@ -127,7 +114,6 @@ export default function UploadClasses({ onClose, onSuccess }) {
             reader.onload = (event) => {
                 try {
                     const data = new Uint8Array(event.target.result);
-                    // Read workbook with proper settings
                     const workbook = XLSX.read(data, { 
                         type: 'array',
                         cellDates: false,
@@ -135,11 +121,9 @@ export default function UploadClasses({ onClose, onSuccess }) {
                         cellNF: true
                     });
                     
-                    // Get first sheet
                     const sheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[sheetName];
                     
-                    // Convert to JSON with formatted values
                     const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
                         header: 1, 
                         raw: false,
@@ -151,25 +135,19 @@ export default function UploadClasses({ onClose, onSuccess }) {
                         return;
                     }
                     
-                    // Normalize headers
                     const headers = jsonData[0].map(header => 
                         String(header || '').trim().toLowerCase().replace(/\s+/g, '_')
                     );
                     
-                    // Map headers to expected column names
                     const headerMapping = {
-                        'course_code': ['course_code', 'course_code', 'code', 'course'],
-                        'course_name': ['course_name', 'course_name', 'course_name', 'name'],
-                        'teacher_email': ['teacher_email', 'teacher_email', 'teacher', 'email', 'instructor_email'],
-                        'section': ['section', 'section'],
-                        'room': ['room', 'room', 'location', 'classroom'],
-                        'units': ['units', 'units', 'credit', 'credits'],
-                        'schedule': ['schedule', 'schedule', 'time', 'class_time'],
-                        'academic_year': ['academic_year', 'academic_year', 'year', 'academic_year'],
-                        'semester': ['semester', 'semester', 'term']
+                        'course_code': ['course_code', 'code', 'course'],
+                        'teacher_email': ['teacher_email', 'teacher', 'email', 'instructor_email'],
+                        'section': ['section'],
+                        'room': ['room', 'location', 'classroom'],
+                        'units': ['units', 'credit', 'credits'],
+                        'schedule': ['schedule', 'time', 'class_time'],
                     };
                     
-                    // Find column indices
                     const columnIndices = {};
                     Object.keys(headerMapping).forEach(expectedHeader => {
                         const possibleNames = headerMapping[expectedHeader];
@@ -181,10 +159,8 @@ export default function UploadClasses({ onClose, onSuccess }) {
                         }
                     });
                     
-                    // Check required columns
                     const requiredColumns = [
-                        'course_code', 'course_name', 'teacher_email', 'section', 'room',
-                        'units', 'schedule', 'academic_year', 'semester'
+                        'course_code', 'teacher_email', 'section', 'room', 'units', 'schedule'
                     ];
                     
                     const missingColumns = requiredColumns.filter(col => columnIndices[col] === undefined);
@@ -193,11 +169,9 @@ export default function UploadClasses({ onClose, onSuccess }) {
                         return;
                     }
                     
-                    // Convert to CSV format for preview
                     const csvLines = [];
                     csvLines.push(requiredColumns.join(','));
                     
-                    // Process data rows for preview (first 5 rows)
                     for (let i = 1; i < Math.min(6, jsonData.length); i++) {
                         const row = jsonData[i];
                         if (row && row.length > 0) {
@@ -205,7 +179,6 @@ export default function UploadClasses({ onClose, onSuccess }) {
                                 let value = row[columnIndices[col]] || '';
                                 value = String(value).trim();
                                 
-                                // Fix units column if it's an Excel date
                                 if (col === 'units') {
                                     value = fixExcelUnits(value);
                                 }
@@ -237,25 +210,15 @@ export default function UploadClasses({ onClose, onSuccess }) {
 
         const headers = lines[0].split(',').map(h => h.trim());
         const requiredHeaders = [
-            'course_code',
-            'course_name',
-            'teacher_email',
-            'section',
-            'room',
-            'units',
-            'schedule',
-            'academic_year',
-            'semester'
+            'course_code', 'teacher_email', 'section', 'room', 'units', 'schedule'
         ];
 
-        // Validate headers match exactly
         const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
         if (missingHeaders.length > 0) {
             setError(`File must contain these exact columns: ${requiredHeaders.join(', ')}`);
             return;
         }
 
-        // Parse preview (first 5 rows)
         const previewData = [];
         for (let i = 1; i < Math.min(6, lines.length); i++) {
             const values = lines[i].split(',').map(v => v.trim());
@@ -274,10 +237,8 @@ export default function UploadClasses({ onClose, onSuccess }) {
     const validateRow = (row, rowNum) => {
         const errors = [];
 
-        // Required fields validation
         const requiredFields = [
-            'course_code', 'course_name', 'teacher_email', 'section', 'room',
-            'units', 'schedule', 'academic_year', 'semester'
+            'course_code', 'teacher_email', 'section', 'room', 'units', 'schedule'
         ];
 
         requiredFields.forEach(field => {
@@ -286,22 +247,18 @@ export default function UploadClasses({ onClose, onSuccess }) {
             }
         });
 
-        // Course code validation (maps to DB "name" field)
         if (row.course_code && row.course_code.trim().length > 15) {
             errors.push(`Row ${rowNum}: course_code cannot exceed 15 characters`);
         }
 
-        // Section validation
         if (row.section && row.section.trim().length > 10) {
             errors.push(`Row ${rowNum}: section cannot exceed 10 characters`);
         }
 
-        // Room validation
         if (row.room && row.room.trim().length > 50) {
             errors.push(`Row ${rowNum}: room cannot exceed 50 characters`);
         }
 
-        // Parse units from format "3" or "3/1"
         let lectureUnits = 0;
         let labUnits = 0;
         
@@ -315,7 +272,6 @@ export default function UploadClasses({ onClose, onSuccess }) {
             }
         }
 
-        // Units validation
         if (lectureUnits < 0 || lectureUnits > 10) {
             errors.push(`Row ${rowNum}: lecture units must be between 0-10`);
         }
@@ -324,28 +280,14 @@ export default function UploadClasses({ onClose, onSuccess }) {
             errors.push(`Row ${rowNum}: lab units must be between 0-10`);
         }
 
-        // At least one unit must be > 0
         if (lectureUnits === 0 && labUnits === 0) {
             errors.push(`Row ${rowNum}: at least one unit (lecture or lab) must be greater than 0`);
         }
 
-        // Academic year format validation (e.g., 2025-2026)
-        if (row.academic_year && !/^\d{4}-\d{4}$/.test(row.academic_year)) {
-            errors.push(`Row ${rowNum}: academic_year must be in format YYYY-YYYY`);
-        }
-
-        // Semester validation
-        const validSemesters = ['1st semester', '2nd semester'];
-        if (row.semester && !validSemesters.includes(row.semester.toLowerCase())) {
-            errors.push(`Row ${rowNum}: semester must be '1st semester' or '2nd semester'`);
-        }
-
-        // Email validation
         if (row.teacher_email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.teacher_email)) {
             errors.push(`Row ${rowNum}: Invalid teacher email format`);
         }
 
-        // Store parsed units
         row.lecture_units = lectureUnits;
         row.lab_units = labUnits;
 
@@ -371,7 +313,6 @@ export default function UploadClasses({ onClose, onSuccess }) {
                     reader.readAsText(file);
                 });
             } else {
-                // Convert Excel to CSV format
                 csvContent = await new Promise((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onload = (event) => {
@@ -392,21 +333,17 @@ export default function UploadClasses({ onClose, onSuccess }) {
                                 defval: '' 
                             });
                             
-                            // Normalize headers
                             const headers = jsonData[0].map(header => 
                                 String(header || '').trim().toLowerCase().replace(/\s+/g, '_')
                             );
                             
                             const headerMapping = {
-                                'course_code': ['course_code', 'course_code', 'code', 'course'],
-                                'course_name': ['course_name', 'course_name', 'course_name', 'name'],
-                                'teacher_email': ['teacher_email', 'teacher_email', 'teacher', 'email', 'instructor_email'],
-                                'section': ['section', 'section'],
-                                'room': ['room', 'room', 'location', 'classroom'],
-                                'units': ['units', 'units', 'credit', 'credits'],
-                                'schedule': ['schedule', 'schedule', 'time', 'class_time'],
-                                'academic_year': ['academic_year', 'academic_year', 'year', 'academic_year'],
-                                'semester': ['semester', 'semester', 'term']
+                                'course_code': ['course_code', 'code', 'course'],
+                                'teacher_email': ['teacher_email', 'teacher', 'email', 'instructor_email'],
+                                'section': ['section'],
+                                'room': ['room', 'location', 'classroom'],
+                                'units': ['units', 'credit', 'credits'],
+                                'schedule': ['schedule', 'time', 'class_time'],
                             };
                             
                             const columnIndices = {};
@@ -421,8 +358,7 @@ export default function UploadClasses({ onClose, onSuccess }) {
                             });
                             
                             const requiredColumns = [
-                                'course_code', 'course_name', 'teacher_email', 'section', 'room',
-                                'units', 'schedule', 'academic_year', 'semester'
+                                'course_code', 'teacher_email', 'section', 'room', 'units', 'schedule'
                             ];
                             
                             const csvLines = [];
@@ -465,11 +401,9 @@ export default function UploadClasses({ onClose, onSuccess }) {
 
             const headers = lines[0].split(',').map(h => h.trim());
             const requiredHeaders = [
-                'course_code', 'course_name', 'teacher_email', 'section', 'room',
-                'units', 'schedule', 'academic_year', 'semester'
+                'course_code', 'teacher_email', 'section', 'room', 'units', 'schedule'
             ];
 
-            // Validate all headers match exactly
             const missingHeaders = requiredHeaders.filter(h => !headers.includes(h));
             if (missingHeaders.length > 0) {
                 setError(`File must contain these exact columns: ${requiredHeaders.join(', ')}`);
@@ -477,7 +411,6 @@ export default function UploadClasses({ onClose, onSuccess }) {
                 return;
             }
 
-            // Validate all rows
             const allErrors = [];
             const validRows = [];
 
@@ -493,12 +426,9 @@ export default function UploadClasses({ onClose, onSuccess }) {
                     if (rowErrors.length === 0) {
                         const backendRow = {
                             course_code: row.course_code,
-                            course_name: row.course_name,
                             section: row.section,
                             room: row.room,
                             schedule: row.schedule,
-                            academic_year: row.academic_year,
-                            semester: row.semester,
                             lecture_units: row.lecture_units,
                             lab_units: row.lab_units,
                             teacher_email: row.teacher_email
@@ -525,7 +455,6 @@ export default function UploadClasses({ onClose, onSuccess }) {
                 return;
             }
 
-            // Send to backend
             const response = await axios.post(
                 `${import.meta.env.VITE_API_URL}/classes/bulk-upload`,
                 { classes: validRows },
@@ -535,11 +464,9 @@ export default function UploadClasses({ onClose, onSuccess }) {
             setSuccess(`${response.data.created} classes created successfully! ${response.data.skipped} duplicates skipped.`);
             setValidationErrors([]);
             
-            // Clear file after successful upload
             setFile(null);
             setPreview([]);
 
-            // Call success callback after delay
             setTimeout(() => {
                 if (onSuccess) onSuccess();
             }, 2000);
@@ -563,7 +490,8 @@ export default function UploadClasses({ onClose, onSuccess }) {
                 <h3 className="text-blue-800 font-semibold mb-2">File Format Requirements:</h3>
                 <ul className="text-blue-600 text-sm list-disc pl-5 space-y-1">
                     <li>Supported formats: CSV, Excel (.csv, .xlsx, .xls)</li>
-                    <li><strong>Required columns:</strong> <code>course_code, course_name, teacher_email, section, room, units, schedule, academic_year, semester</code></li>
+                    <li><strong>Required columns:</strong> <code>course_code, teacher_email, section, room, units, schedule</code></li>
+                    <li>Classes will be assigned to the current active semester automatically</li>
                     <li>Excel files will automatically detect columns with similar names</li>
                 </ul>
                 
@@ -571,18 +499,14 @@ export default function UploadClasses({ onClose, onSuccess }) {
                     <p className="text-blue-800 text-sm font-semibold mb-1">Column Formats:</p>
                     <ul className="text-gray-700 text-sm space-y-1">
                         <li><code>course_code</code>: Course code (max 15 chars)</li>
-                        <li><code>course_name</code>: Full course name</li>
                         <li><code>teacher_email</code>: Teacher's registered email address</li>
                         <li><code>section</code>: Class section (max 10 chars)</li>
                         <li><code>room</code>: Room location (max 50 chars)</li>
                         <li><code>units</code>: Format "3" (lecture only) or "3/1" (3 lecture + 1 lab)</li>
                         <li><code>schedule</code>: Class schedule (e.g., "MW: 9:00am-12:00pm")</li>
-                        <li><code>academic_year</code>: Format "YYYY-YYYY" (e.g., 2025-2026)</li>
-                        <li><code>semester</code>: "1st semester" or "2nd semester"</li>
                     </ul>
                 </div>
 
-                {/* Excel-specific instructions */}
                 <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
                     <p className="text-yellow-800 text-sm font-semibold mb-1">For Excel files:</p>
                     <ul className="text-yellow-700 text-sm list-disc pl-5 space-y-1">

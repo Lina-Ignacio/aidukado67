@@ -8,12 +8,9 @@ import re
 class ClassCreate(BaseModel):
     subject_id: int
     teacher_id: int
-    name: str
     schedule: str
     room: Optional[str] = None
     section: Optional[str] = None
-    academic_year: Optional[str] = None
-    semester: Optional[str] = None
     lecture_units: int = 0  
     lab_units: int = 0      
 
@@ -30,8 +27,8 @@ class ClassUpdate(BaseModel):
     schedule: Optional[str] = None
     room: Optional[str] = None
     section: Optional[str] = None
-    academic_year: Optional[str] = None
-    semester: Optional[str] = None
+    # academic_year: Optional[str] = None
+    # semester: Optional[str] = None
     lecture_units: Optional[int] = None  
     lab_units: Optional[int] = None      
 
@@ -49,8 +46,7 @@ class ClassOut(BaseModel):
     schedule: str
     room: Optional[str] = None
     section: Optional[str] = None
-    academic_year: Optional[str] = None
-    semester: Optional[str] = None
+    academic_semester_id: Optional[int] = None
     lecture_units: int = 0  
     lab_units: int = 0      
 
@@ -78,12 +74,9 @@ class ClassWithTeacherOut(BaseModel):
 
 class ClassCSVRow(BaseModel):
     course_code: str          # Maps to Classes.name
-    course_name: str          # Used to find/create Subject
     section: str
     room: str
     schedule: str
-    academic_year: str
-    semester: str
     lecture_units: int = 0
     lab_units: int = 0
     teacher_email: str        # Used to find Users
@@ -94,12 +87,6 @@ class ClassCSVRow(BaseModel):
             raise ValueError('Course code is required')
         if len(v.strip()) > 50:
             raise ValueError('Course code cannot exceed 50 characters')
-        return v.strip()
-
-    @field_validator('course_name')
-    def validate_course_name(cls, v):
-        if not v or v.strip() == "":
-            raise ValueError('Course name is required')
         return v.strip()
 
     @field_validator('section')
@@ -125,19 +112,6 @@ class ClassCSVRow(BaseModel):
         if ':' not in v:
             raise ValueError('Schedule must contain ":" (e.g., "MW: 9:00am-12:00pm")')
         return v.strip()
-
-    @field_validator('academic_year')
-    def validate_academic_year(cls, v):
-        if not v or not re.match(r'^\d{4}-\d{4}$', v):
-            raise ValueError('Academic year must be in format YYYY-YYYY')
-        return v
-
-    @field_validator('semester')
-    def validate_semester(cls, v):
-        valid_semesters = ['1st semester', '2nd semester']
-        if v.lower() not in valid_semesters:
-            raise ValueError('Semester must be "1st semester" or "2nd semester"')
-        return v.lower()
 
     @field_validator('lecture_units', 'lab_units')
     def validate_units(cls, v):

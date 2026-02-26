@@ -8,6 +8,8 @@ from pydantic import BaseModel
 from typing import Dict, Any, Optional
 from app.schemas.exam.student_exam_progress import ExamStartRequest, ExamProgressSave, ExamSubmission
 from app.database import get_db
+import json
+
 
 router = APIRouter()
 
@@ -57,15 +59,24 @@ def submit_exam(exam_data: ExamSubmission, db: Session = Depends(get_db)):
             status="assigned"
         )
         db.add(progress)
-
     
     progress.status = "submitted"
     progress.score = exam_data.score
-    progress.answers = exam_data.answers
-   
     
+    # Ensure answers are stored as JSON
+    
+    progress.answers = json.dumps(exam_data.answers) if isinstance(exam_data.answers, dict) else exam_data.answers
+   
     db.commit()
     db.refresh(progress)
+    
+    # Parse answers back if needed for response
+    if isinstance(progress.answers, str):
+        try:
+            progress.answers = json.loads(progress.answers)
+        except:
+            pass
+            
     return {"message": "Exam submitted successfully", "score": progress.score}
 
 @router.get("/exam/student/results/{examId}/{studentId}")

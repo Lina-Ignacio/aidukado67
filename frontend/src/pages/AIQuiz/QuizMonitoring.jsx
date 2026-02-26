@@ -6,7 +6,7 @@ import StudentSelectModal from '../../components/AssignQuiz/StudentSelectModal';
 import QuizReopenModal from '../../components/AIQuiz/QuizReopenModal';
 import useClassStore from '../../store/useClassStore';
 import ClassicButton from '../../components/classicButton';
-import { PiStudent, PiKeyReturn, PiClockCounterClockwise, PiCalendar, PiClock } from "react-icons/pi";
+import { PiStudent, PiKeyReturn, PiClockCounterClockwise, PiCalendar, PiClock, PiEye } from "react-icons/pi";
 import { FaUserClock } from "react-icons/fa";
 import { FiUsers } from "react-icons/fi";
 import UserDropup from '../../components/DropUp/UserDropUp';
@@ -303,6 +303,17 @@ export default function QuizMonitoring() {
         }
     };
 
+    const handleShowAnswer = async() =>{
+        try{
+            const res = await axios.post(`${import.meta.env.VITE_API_URL}/updateShowAnswer/${quizId}`);
+            alert(res.data.message)
+        }
+        catch(err){
+            console.log("error: ", err)
+        }
+
+        }
+
     return (
         <div className="w-11/12 lg:w-4/5 mx-auto mt-6 mb-10 bg-white rounded-2xl shadow-lg overflow-hidden font-sans border border-[#EBECF1]">
             
@@ -467,9 +478,18 @@ export default function QuizMonitoring() {
                         buttonName="Reopen Quiz"
                         icon={PiClockCounterClockwise}
                         onClick={openReopenModal}
-                        className={`${!isPastDue ? "opacity-50 cursor-not-allowed" : ""}`}
+                        className={`${!isPastDue ? "cursor-not-allowed" : ""}`}
                         mainColor={COLORS.secondary} 
                         darkColor="#D67C39"
+                        disabled={!isPastDue}
+                    />
+                    <ClassicButton 
+                        buttonName="Show Answer"
+                        icon={PiEye}
+                        onClick={handleShowAnswer}
+                        className={`${!isPastDue ? "cursor-not-allowed" : ""}`}
+                        mainColor={COLORS.tertiary} 
+                        darkColor="#0a0b46"
                         disabled={!isPastDue}
                     />
                 </div>

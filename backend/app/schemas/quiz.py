@@ -37,6 +37,7 @@ class QuizOut(BaseModel):
     term_id:int
     opening_time: Optional[datetime] = None  
     closing_time: Optional[datetime] = None  
+    show_answer: bool
        
 class QuizOutSimple(BaseModel):
     id: int

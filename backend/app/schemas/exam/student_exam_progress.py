@@ -1,8 +1,8 @@
 
-from pydantic import BaseModel
-from typing import Dict, Optional, Any
+from pydantic import BaseModel, validator
+from typing import Dict, Optional, Any, Union
 from datetime import datetime
-
+import json
 
 class StartExamRequest(BaseModel):
     exam_id: int
@@ -36,7 +36,7 @@ class StudentExamWithDetails(BaseModel):
     exam_id: int
     status: str
     score: Optional[float] = None
-    answers: Optional[Dict[str, Any]] = None
+    answers: Optional[Union[Dict[str, Any], str]] = None  # Allow both
     start_time: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
@@ -49,7 +49,16 @@ class StudentExamWithDetails(BaseModel):
     passing_score: Optional[int] = None
     closing_time: Optional[datetime] = None
     allow_reopen: bool
-       
+    
+    @validator('answers', pre=True)
+    def parse_answers(cls, v):
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except:
+                return {}
+        return v or {}
+    
     class Config:
         from_attributes = True
         

@@ -36,23 +36,26 @@ export default function ExamCard({
     closingTime: examData.closing_time
   } : null;
   
-  // Student data structure - based on API responses
+  // Student data structure - FIXED to match API response from /exam/student/exams/{classId}
   const studentData = !isTeacher ? {
-    id: examData.id || examData.exam?.id, 
+    // The exam progress record fields
+    id: examData.id, // This is the progress ID
     studentId: examData.student_id,
-    examId: examData.exam_id || examData.exam?.id,
+    examId: examData.exam_id, // This is the actual exam ID
     status: examData.status,
     score: examData.score,
     answers: examData.answers || {},
     startTime: examData.start_time,
     createdAt: examData.created_at,
     updatedAt: examData.updated_at,
-    examTitle: examData.title || examData.exam?.title || examData.exam_title,
-    examTotalPoints: examData.total_points || examData.exam?.total_points,
-    examDuration: examData.duration || examData.exam?.duration,
-    examInstructions: examData.instructions || examData.exam?.instructions,
-    examPassingScore: examData.passing_score || examData.exam?.passing_score,
-    closingTime: examData.closing_time || examData.exam?.closing_time
+    
+    // The exam details fields (these are flattened in the response)
+    examTitle: examData.title, // Direct from response
+    examTotalPoints: examData.total_points, // Direct from response
+    examDuration: examData.duration, // Direct from response
+    examInstructions: examData.instructions, // Direct from response
+    examPassingScore: examData.passing_score, // Direct from response
+    closingTime: examData.closing_time // Direct from response
   } : null;
 
   // Check exam availability based on student_exam_reopens table

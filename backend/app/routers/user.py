@@ -7,29 +7,114 @@ from app.schemas.user import UserCreate, UserOut, UserUpdate, TeacherOut, Passwo
 from app.database import SessionLocal
 from app.utils.auth import hash_password, get_current_user, encrypt_data, decrypt_data
 from app.database import get_db
-from app.utils.decryption import decrypt_user_to_dict, decrypt_users_to_dict_list
+from app.utils.decryption import decrypt_user_to_dict, decrypt_users_to_dict_list, safe_decrypt_data
 from app.dependencies import limiter
 
 router = APIRouter(prefix="/user", tags=["User"])
 
 
+# @router.get("/get", response_model=list[UserOut])
+# def get_users(query: str | None = None, db: Session = Depends(get_db)):
+#     users = db.query(Users).filter(Users.is_archive == False).order_by(Users.created_at.desc()).all()
+    
+#     # This correctly decrypts ONLY names, email stays plain
+#     decrypted_users = decrypt_users_to_dict_list(users)
+    
+#     if query:
+#         query_lower = query.lower()
+#         decrypted_users = [
+#             u for u in decrypted_users 
+#             if (u["first_name"] and query_lower in u["first_name"].lower()) or
+#                (u["last_name"] and query_lower in u["last_name"].lower()) or
+#                (u["email"] and query_lower in u["email"].lower())
+#         ]
+    
+#     return decrypted_users
+
 @router.get("/get", response_model=list[UserOut])
-def get_users(query: str | None = None, db: Session = Depends(get_db)):
-    users = db.query(Users).filter(Users.is_archive == False).order_by(Users.created_at.desc()).all()
+def get_users(
+    query: str | None = None,
+    skip: int = 0,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    """
+    Get users with batch decryption optimization.
+    """
+    # Build base query
+    db_query = db.query(Users).filter(Users.is_archive == False)
     
-    # This correctly decrypts ONLY names, email stays plain
-    decrypted_users = decrypt_users_to_dict_list(users)
+    # Email search in DB
+    if query and query.strip():
+        search = f"%{query.strip()}%"
+        db_query = db_query.filter(Users.email.ilike(search))
     
-    if query:
+    # Get total count
+    total = db_query.count()
+    
+    # Get paginated users (still encrypted)
+    users = db_query.order_by(Users.created_at.desc()) \
+                    .offset(skip) \
+                    .limit(limit) \
+                    .all()
+    
+    if not users:
+        return []
+    
+    # === BATCH DECRYPTION ===
+    # Collect all encrypted names
+    first_names = []
+    last_names = []
+    middle_names = []
+    user_indices = []  # Track which user each name belongs to
+    
+    for idx, user in enumerate(users):
+        if user.first_name and user.first_name.startswith('gAAAAA'):
+            first_names.append(user.first_name)
+            user_indices.append((idx, 'first_name'))
+        if user.last_name and user.last_name.startswith('gAAAAA'):
+            last_names.append(user.last_name)
+            user_indices.append((idx, 'last_name'))
+        if user.middle_name and user.middle_name.startswith('gAAAAA'):
+            middle_names.append(user.middle_name)
+            user_indices.append((idx, 'middle_name'))
+    
+    # Batch decrypt all at once
+    decrypted_first = [safe_decrypt_data(name) for name in first_names]
+    decrypted_last = [safe_decrypt_data(name) for name in last_names]
+    decrypted_middle = [safe_decrypt_data(name) for name in middle_names]
+    
+    # Create lookup maps
+    first_map = dict(zip(first_names, decrypted_first))
+    last_map = dict(zip(last_names, decrypted_last))
+    middle_map = dict(zip(middle_names, decrypted_middle))
+    
+    # Build result with decrypted names
+    result = []
+    for user in users:
+        user_dict = {
+            "id": user.id,
+            "email": user.email,  # Plain text
+            "first_name": first_map.get(user.first_name, user.first_name),
+            "last_name": last_map.get(user.last_name, user.last_name),
+            "middle_name": middle_map.get(user.middle_name, user.middle_name),
+            "role": user.role,
+            "is_archive": user.is_archive,
+            "must_change_password": user.must_change_password,
+            "created_at": user.created_at
+        }
+        result.append(user_dict)
+    
+    # Apply name filtering if needed
+    if query and query.strip():
         query_lower = query.lower()
-        decrypted_users = [
-            u for u in decrypted_users 
+        result = [
+            u for u in result 
             if (u["first_name"] and query_lower in u["first_name"].lower()) or
-               (u["last_name"] and query_lower in u["last_name"].lower()) or
-               (u["email"] and query_lower in u["email"].lower())
+               (u["last_name"] and query_lower in u["last_name"].lower())
         ]
     
-    return decrypted_users
+    return result
 
 
 @router.get("/getById/{user_id}", response_model=UserOut)

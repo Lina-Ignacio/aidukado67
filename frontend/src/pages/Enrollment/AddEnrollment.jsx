@@ -117,7 +117,7 @@ export default function AddEnrollment({ studentOptions, classOptions, setSuccess
           name="status"
           value={formData.status}
           onChange={handleChange}
-          className="w-full h-auto bg-[#102E50]/80 rounded-md p-2"
+          className="w-full h-auto bg-[#102E50]/80 rounded-md p-2 text-white"
         >
           <option value="" className={optionClass}>select a status</option>
           <option value="enrolled" className={optionClass}>Enrolled</option>

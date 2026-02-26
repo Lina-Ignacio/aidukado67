@@ -8,14 +8,14 @@ import {
 
 
 } from "react-icons/md";
-import { IoLogOut, IoHelpCircle, IoLibrary, IoSchool, IoPeople, IoClipboard } from "react-icons/io5";
+import { IoLogOut, IoHelpCircle, IoLibrary, IoSchool, IoPeople, IoClipboard, IoSettings, IoDocumentLock, IoHourglass } from "react-icons/io5";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import useUserStore from "../store/useUserStore";
 import useClassStore from "../store/useClassStore";
 import useTermStore from "../store/useTermStore";
 import useLessonStore from "../store/useLessonStore";
 import axios from "../services/axiosConfig";
-import UserDropup from "./DropUp/UserDropUp";
+
 
 
 export default function Sidebar({closeMobile}) {
@@ -78,7 +78,7 @@ export default function Sidebar({closeMobile}) {
         className=" h-full w-full bg-[#F1F2F7] pt-10 shadow-r-xl"
         onClick={handleClick}
     >
-      <UserDropup />
+      
       <div className="flex space-x-3 p-5 justify-center items-center">
         <div className="rounded-full h-[40px] w-[40px] bg-[#102E50] flex justify-center items-center font-extrabold text-white text-2xl md:text[3xl] xl:text[5xl]">
           A
@@ -138,6 +138,13 @@ export default function Sidebar({closeMobile}) {
           </NavLink>
         )}
 
+        {userRole == "admin" && (
+          <NavLink to="/academicSemester" className={linkClasses}>
+            <IoHourglass className={iconClasses}/>
+            <h2 className="font-extrabold text-2xl md:text[3xl] xl:text[4xl]">Academic Period</h2>
+          </NavLink>
+        )}
+
         
 
         
@@ -193,13 +200,13 @@ export default function Sidebar({closeMobile}) {
         </NavLink>
 
   
-        {/* 
-        <button onClick={() => {handleLogout(); handleClick(); }} className="flex justify-items items-center p-2 gap-2 bg-transparent">
-          <IoLogOut className="text-[#102E50] text-3xl md:text[4xl] xl:text[6xl]"/>
-          <h2 className="font-extrabold text-[#102E50] text-2xl md:text[3xl] xl:text[4xl]">Logout</h2>
-        </button>
-        */}
         
+        {userRole == "admin" && (
+          <button onClick={() => {handleLogout(); handleClick(); }} className="flex justify-items items-center p-2 gap-2 bg-transparent">
+            <IoLogOut className="text-[#102E50] text-3xl md:text[4xl] xl:text[6xl]"/>
+            <h2 className="font-extrabold text-[#102E50] text-2xl md:text[3xl] xl:text[4xl]">Logout</h2>
+          </button>
+        )}
       </div>
     </div>
     

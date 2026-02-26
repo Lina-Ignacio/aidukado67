@@ -198,6 +198,7 @@ export default function QuizReopenModal({ quizId, onClose, onSuccess }) {
                                     focus:outline-none focus:ring-2 focus:ring-[#E78B48] focus:border-transparent
                                     text-white placeholder:text-white/70
                                     shadow-inner"
+                                style={{ colorScheme: 'dark' }}
                                 required
                             />
                             {newClosingTime && (

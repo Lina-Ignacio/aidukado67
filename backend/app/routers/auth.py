@@ -83,7 +83,7 @@ def login(request: Request, user: UserLogin, response: Response, db: Session = D
         decrypted_middle_name = None
     
     # Generate tokens
-    access_token_expires = timedelta(minutes=30)
+    access_token_expires = timedelta(minutes=120)
     refresh_token_expires = timedelta(days=7)
     
     payload = {
@@ -102,7 +102,7 @@ def login(request: Request, user: UserLogin, response: Response, db: Session = D
         httponly=True,
         secure=IS_PRODUCTION,
         samesite="none" if IS_PRODUCTION else "lax",
-        max_age=3600,
+        max_age=10800,
         path="/"
     )
     

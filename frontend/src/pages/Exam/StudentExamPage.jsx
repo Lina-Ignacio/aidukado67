@@ -12,7 +12,9 @@ export default function StudentExam() {
   const [isHydrated, setIsHydrated] = useState(false);
 
   // States
-  const [exam, setExam] = useState({ exam_content: [] });
+  const [questions, setQuestions] = useState([]); // Array of questions from exam_content.questions
+  const [examInfo, setExamInfo] = useState({}); // Exam metadata
+  const [examContentMeta, setExamContentMeta] = useState({}); // Metadata from exam_content
   const [userAnswers, setUserAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
@@ -28,10 +30,9 @@ export default function StudentExam() {
   // Refs
   const fetchLock = useRef(false);
   const historyLocker = useRef(false); 
-  const examRef = useRef(null);
+  const questionsRef = useRef([]); // Ref for questions array
   const answersRef = useRef({});
-  const timerRef = useRef(null);
-  const lastWarningTime = useRef(0); // For debouncing
+  const lastWarningTime = useRef(0);
 
   const optionLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
@@ -48,21 +49,26 @@ export default function StudentExam() {
   }, []);
 
   const handleSubmit = useCallback(async () => {
-    if (submitted || !examRef.current) return;
+    if (submitted || !questionsRef.current || questionsRef.current.length === 0) {
+      console.log("Submit blocked:", { 
+        submitted, 
+        hasQuestions: questionsRef.current?.length > 0 
+      });
+      return;
+    }
 
-    const content = Array.isArray(examRef.current.exam_content)
-  ? examRef.current.exam_content.questions
-  : [];
+    const questions = questionsRef.current;
+    
     console.log("🎯 SUBMITTING EXAM - Debug Info:");
-    console.log("Exam content length:", content.length);
+    console.log("Questions:", questions);
     console.log("User answers:", answersRef.current);
     
     let calculatedScore = 0;
     let totalPoints = 0;
 
     // Calculate score with points per question 
-    content.forEach((q, idx) => {
-      const correctAnswer = q.answer || q.correct_answer || "";
+    questions.forEach((q, idx) => {
+      const correctAnswer = q.answer || "";
       const studentAnswer = answersRef.current[idx] || "";
       const points = q.points || 1;
       
@@ -70,11 +76,21 @@ export default function StudentExam() {
       const student = String(studentAnswer).trim().toUpperCase();
       
       totalPoints += points;
+      
+      console.log(`Question ${idx + 1}:`, {
+        correct,
+        student,
+        matches: student === correct,
+        points
+      });
+      
       if (student === correct) {
         calculatedScore += points;
       }
     });
 
+    console.log("Final score:", calculatedScore, "out of", totalPoints);
+    
     setScore(calculatedScore);
     setSubmitted(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -84,16 +100,23 @@ export default function StudentExam() {
     sessionStorage.removeItem(`active_exam_${warningKey}`);
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/exam/student/submit-exam`, {
+      const submissionData = {
         student_id: parseInt(student_id),
         exam_id: parseInt(examId),
         score: calculatedScore,
-        answers: answersRef.current
-      });
+        answers: { ...answersRef.current }
+      };
+      
+      console.log("📤 Submitting data:", submissionData);
+      
+      await axios.post(`${import.meta.env.VITE_API_URL}/exam/student/submit-exam`, submissionData);
+      
+      console.log("✅ Exam submitted successfully");
     } catch (err) {
-      console.error("Exam submission failed:", err);
+      console.error("❌ Exam submission failed:", err);
+      alert("Failed to submit exam. Please try again.");
     }
-  }, [examId, student_id, submitted, warningKey, navigate]);
+  }, [examId, student_id, submitted, warningKey]);
 
   // Violation Watcher 
   useEffect(() => {
@@ -106,7 +129,7 @@ export default function StudentExam() {
     }
   }, [warnings, warningKey, submitted, handleSubmit, startTime, isHydrated]);
 
-  // Initialization
+  // Initialization - FIXED for nested questions structure
   useEffect(() => {
     if (!isHydrated || !student_id) return;
 
@@ -117,37 +140,33 @@ export default function StudentExam() {
       try {
         console.log("📡 Fetching exam data from:", `${import.meta.env.VITE_API_URL}/exam/student/${examId}/${student_id}`);
         
-        const { data: examData } = await axios.get(
+        const response = await axios.get(
           `${import.meta.env.VITE_API_URL}/exam/student/${examId}/${student_id}`
         );
         
-        console.log("✅ Exam API response:", examData);
+        const data = response.data;
+        console.log("✅ Exam API response:", data);
         
-        const examInfo = examData.exam;
-        const progress = examData.progress;
-
-        //change
-        const normalizedExam = {
-          ...examInfo,
-          exam_content: Array.isArray(examInfo.exam_content?.questions)
-            ? examInfo.exam_content.questions
-            : []
-        };
-
-        setExam(normalizedExam)
+        // Extract exam and progress from the response
+        const exam = data.exam;
+        const progress = data.progress;
         
-        //setExam({
-          //...examInfo,
-          //exam_content: Array.isArray(examInfo.exam_content) ? examInfo.exam_content.questions : []
-        //});
-        examRef.current = examInfo;
+        // The questions are in exam.exam_content.questions
+        const examContent = exam.exam_content || {};
+        const questionsArray = examContent.questions || [];
         
-        // SET DURATION
-        const examDuration = examInfo.duration || 0;
+        console.log("Exam content:", examContent);
+        console.log("Questions array:", questionsArray);
+        
+        // Set questions and exam info
+        setQuestions(questionsArray);
+        setExamInfo(exam);
+        setExamContentMeta(examContent.metadata || {});
+        questionsRef.current = questionsArray;
+        
+        // Set duration from exam
+        const examDuration = exam.duration || 0;
         setDuration(examDuration);
-
-        let calculatedStartTime = null;
-        let initialTimeLeft = 0;
 
         // Function to start the exam
         const startExamProcess = async () => {
@@ -161,17 +180,16 @@ export default function StudentExam() {
             );
             
             if (startResponse.start_time) {
-              calculatedStartTime = new Date(startResponse.start_time);
-              setStartTime(calculatedStartTime);
+              const startTimeObj = new Date(startResponse.start_time);
+              setStartTime(startTimeObj);
               
-              initialTimeLeft = examDuration * 60;
+              const initialTimeLeft = examDuration * 60;
               setTimeLeft(initialTimeLeft);
             } else {
               // Fallback
-              calculatedStartTime = new Date();
-              setStartTime(calculatedStartTime);
-              initialTimeLeft = examDuration * 60;
-              setTimeLeft(initialTimeLeft);
+              const startTimeObj = new Date();
+              setStartTime(startTimeObj);
+              setTimeLeft(examDuration * 60);
             }
             
             // Set tracking for reload violations
@@ -185,9 +203,13 @@ export default function StudentExam() {
             
           } catch (err) {
             console.error("❌ Failed to start exam:", err);
+            // Fallback
+            setStartTime(new Date());
+            setTimeLeft(examDuration * 60);
           }
         };
 
+        // Handle based on progress status
         if (progress) {
           if (progress.status === "submitted") {
             setUserAnswers(progress.answers || {});
@@ -196,12 +218,12 @@ export default function StudentExam() {
           } else if (progress.status === "in_progress") {
             setUserAnswers(progress.answers || {});
             if (progress.start_time) {
-              calculatedStartTime = new Date(progress.start_time);
-              setStartTime(calculatedStartTime);
+              const startTimeObj = new Date(progress.start_time);
+              setStartTime(startTimeObj);
               
-              const elapsed = (new Date() - calculatedStartTime) / 1000;
-              initialTimeLeft = Math.max((examDuration * 60) - elapsed, 0);
-              setTimeLeft(initialTimeLeft);
+              const elapsed = (new Date() - startTimeObj) / 1000;
+              const remaining = Math.max((examDuration * 60) - elapsed, 0);
+              setTimeLeft(remaining);
               
               // Set tracking for reload violations
               const isReload = window.performance.getEntriesByType("navigation")[0]?.type === "reload";
@@ -257,24 +279,21 @@ export default function StudentExam() {
     return `${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
   };
 
-  // SIMPLE Lockdown Effect 
+  // Lockdown Effect
   useEffect(() => {
     if (!isHydrated || submitted) { 
       window.onbeforeunload = null; 
       return; 
     }
     
-    // Initial history push (ONLY ONCE) - CRITICAL!
     if (!historyLocker.current) {
       window.history.pushState(null, "", window.location.href);
       historyLocker.current = true;
     }
 
-    // Simple back navigation prevention
     const preventBack = () => { 
       window.history.pushState(null, "", window.location.href); 
       
-      // Simple debouncing
       const now = Date.now();
       if (now - lastWarningTime.current > 1000) {
         lastWarningTime.current = now;
@@ -286,7 +305,6 @@ export default function StudentExam() {
       }
     };
 
-    // Simple tab switch detection
     const detectTabSwitch = () => {
       if (document.hidden && startTime) {
         const now = Date.now();
@@ -301,7 +319,6 @@ export default function StudentExam() {
       }
     };
 
-    // Simple page leave prevention
     const confirmExit = (e) => {
       if (!submitted) { 
         e.preventDefault(); 
@@ -309,9 +326,7 @@ export default function StudentExam() {
       }
     };
 
-    // Simple keyboard blocking
     const blockKeyboard = (e) => {
-      // Block F5, F12, Ctrl+Shift+I/J/C
       if (e.key === 'F5' || e.keyCode === 116 || 
           e.key === 'F12' || 
           (e.ctrlKey && e.shiftKey && ['i', 'j', 'c'].includes(e.key.toLowerCase())) ||
@@ -329,7 +344,6 @@ export default function StudentExam() {
       }
     };
 
-    // Add all event listeners
     window.addEventListener("popstate", preventBack);
     window.addEventListener("beforeunload", confirmExit);
     document.addEventListener("visibilitychange", detectTabSwitch);
@@ -352,12 +366,12 @@ export default function StudentExam() {
         {/* Header */}
         <header className="bg-gray-100 p-6 border-b-4 border-[#E78B48] flex justify-between items-center shrink-0">
           <div>
-            <h1 className="text-2xl font-extrabold text-[#102E50] uppercase">{exam.title || "Exam"}</h1>
-            <p className="text-sm text-[#102E50] font-bold uppercase">Instructions: {exam.instructions}</p>
+            <h1 className="text-2xl font-extrabold text-[#102E50] uppercase">{examInfo.title || "Exam"}</h1>
+            <p className="text-sm text-[#102E50] font-bold uppercase">Instructions: {examInfo.instructions}</p>
             <p className="text-xs text-[#E78B48] font-bold mt-1 uppercase">
-              Duration: {exam.duration} minutes • 
-              Passing Score: {exam.passing_score || 0} • 
-              Total Points: {exam.total_points || 0}
+              Duration: {examInfo.duration} minutes • 
+              Passing Score: {examInfo.passing_score || 0} • 
+              Total Points: {examInfo.total_points || examContentMeta.total_points || questions.length}
             </p>
           </div>
           <div className={`flex items-center gap-3 px-6 py-3 rounded-2xl font-mono text-2xl font-bold shadow-inner 
@@ -376,75 +390,83 @@ export default function StudentExam() {
 
         {/* Main Content - Questions List */}
         <main className="flex-1 overflow-y-auto scrollbar-hide p-6 md:p-12 space-y-10 bg-[#F8FAFC]">
-          {exam.exam_content.map((q, index) => {
-            const studentSelection = userAnswers[index] || "";
-            const correctAnswer = q.answer || q.correct_answer || "";
-            const isCorrect = submitted && 
-              String(studentSelection).toUpperCase() === String(correctAnswer).toUpperCase();
-            const points = q.points || 1;
+          {questions.length > 0 ? (
+            questions.map((q, index) => {
+              const studentSelection = userAnswers[index] || "";
+              const correctAnswer = q.answer || "";
+              const isCorrect = submitted && 
+                String(studentSelection).toUpperCase() === String(correctAnswer).toUpperCase();
+              const points = q.points || 1;
 
-            return (
-              <section key={index} className={`bg-white p-8 rounded-[2rem] border-2 transition-all 
-                ${studentSelection ? 'border-[#E78B48]/30 shadow-md' : 'border-gray-100'}`}>
-                
-                <div className="flex gap-5 mb-8">
-                  <span className="w-12 h-12 rounded-2xl bg-[#102E50] text-white flex items-center justify-center text-xl font-black shrink-0">
-                    {index + 1}
-                  </span>
-                  <div className="flex-1">
-                    <h3 className="text-md lg:text-xl font-bold text-[#102E50] leading-snug pt-2">
-                      {q.question}
-                    </h3>
-                    {points > 1 && (
-                      <div className="mt-2 text-sm text-[#E78B48] font-bold">
-                        {points} point(s)
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="grid gap-4">
-                  {q.options?.map((opt, i) => {
-                    const labelText = opt.text || opt;
-                    const valueToSave = optionLetters[i];
-                    const isActive = studentSelection === valueToSave;
-
-                    return (
-                      <label key={i} className={`relative flex items-center p-6 rounded-2xl border-2 cursor-pointer transition-all
-                        ${isActive ? 'border-[#E78B48] bg-orange-50 ring-4 ring-orange-100' : 'border-gray-100 bg-white hover:border-gray-200'}`}>
-                        <input 
-                          type="radio" 
-                          className="hidden" 
-                          checked={isActive} 
-                          onChange={() => !submitted && setUserAnswers(prev => ({ ...prev, [index]: valueToSave }))} 
-                          disabled={submitted}
-                        />
-                        <div className={`w-8 h-8 flex items-center justify-center rounded-lg mr-4 text-xs font-black 
-                          ${isActive ? 'bg-[#E78B48] text-white' : 'bg-gray-100 text-gray-400'}`}>
-                          {optionLetters[i]}
-                        </div>
-                        <span className={`text-md lg:text-lg font-bold ${isActive ? 'text-[#E78B48]' : 'text-[#102E50]/80'}`}>
-                          {labelText}
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-
-                {submitted && (
-                  <div className={`mt-6 p-4 rounded-2xl flex items-center gap-3 font-bold text-base shadow-sm
-                    ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                    {isCorrect ? <MdCheckCircle className="text-2xl" /> : <MdError className="text-2xl" />}
-                    <span>
-                      {isCorrect 
-                        ? `Correct! (+${points} point${points > 1 ? 's' : ''})` 
-                        : `Incorrect. The correct answer is "${correctAnswer.toUpperCase()}"`}
+              return (
+                <section key={index} className={`bg-white p-8 rounded-[2rem] border-2 transition-all 
+                  ${studentSelection ? 'border-[#E78B48]/30 shadow-md' : 'border-gray-100'}`}>
+                  
+                  <div className="flex gap-5 mb-8">
+                    <span className="w-12 h-12 rounded-2xl bg-[#102E50] text-white flex items-center justify-center text-xl font-black shrink-0">
+                      {index + 1}
                     </span>
+                    <div className="flex-1">
+                      <h3 className="text-md lg:text-xl font-bold text-[#102E50] leading-snug pt-2">
+                        {q.question}
+                      </h3>
+                      {points > 1 && (
+                        <div className="mt-2 text-sm text-[#E78B48] font-bold">
+                          {points} point(s)
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
-              </section>
-            );
-          })}
+
+                  <div className="grid gap-4">
+                    {q.options?.map((opt, i) => {
+                      const labelText = opt.text || opt;
+                      const valueToSave = optionLetters[i];
+                      const isActive = studentSelection === valueToSave;
+
+                      return (
+                        <label key={i} className={`relative flex items-center p-6 rounded-2xl border-2 cursor-pointer transition-all
+                          ${isActive ? 'border-[#E78B48] bg-orange-50 ring-4 ring-orange-100' : 'border-gray-100 bg-white hover:border-gray-200'}`}>
+                          <input 
+                            type="radio" 
+                            className="hidden" 
+                            name={`question-${index}`}
+                            value={valueToSave}
+                            checked={isActive} 
+                            onChange={() => !submitted && setUserAnswers(prev => ({ ...prev, [index]: valueToSave }))} 
+                            disabled={submitted}
+                          />
+                          <div className={`w-8 h-8 flex items-center justify-center rounded-lg mr-4 text-xs font-black 
+                            ${isActive ? 'bg-[#E78B48] text-white' : 'bg-gray-100 text-gray-400'}`}>
+                            {optionLetters[i]}
+                          </div>
+                          <span className={`text-md lg:text-lg font-bold ${isActive ? 'text-[#E78B48]' : 'text-[#102E50]/80'}`}>
+                            {labelText}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  {submitted && (
+                    <div className={`mt-6 p-4 rounded-2xl flex items-center gap-3 font-bold text-base shadow-sm
+                      ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {isCorrect ? <MdCheckCircle className="text-2xl" /> : <MdError className="text-2xl" />}
+                      <span>
+                        {isCorrect 
+                          ? `Correct! (+${points} point${points > 1 ? 's' : ''})` 
+                          : `Incorrect. The correct answer is "${correctAnswer.toUpperCase()}"`}
+                      </span>
+                    </div>
+                  )}
+                </section>
+              );
+            })
+          ) : (
+            <div className="text-center py-20">
+              <p className="text-xl text-gray-500">Loading questions...</p>
+            </div>
+          )}
         </main>
 
         {/* Footer */}
@@ -452,18 +474,22 @@ export default function StudentExam() {
           {!submitted ? (
             <button 
               onClick={handleSubmit} 
-              className="bg-[#E78B48] text-white font-black py-5 px-28 rounded-2xl shadow-xl hover:bg-[#d67a3a] uppercase tracking-widest"
+              disabled={questions.length === 0}
+              className={`font-black py-5 px-28 rounded-2xl shadow-xl uppercase tracking-widest
+                ${questions.length === 0
+                  ? 'bg-gray-400 cursor-not-allowed' 
+                  : 'bg-[#E78B48] text-white hover:bg-[#d67a3a]'}`}
             >
               Submit Exam
             </button>
           ) : (
             <div className="text-center">
               <div className="text-4xl font-black text-[#102E50] mb-2">
-                Score: {score} / {exam.total_points || exam.exam_content.length}
+                Score: {score} / {examInfo.total_points || examContentMeta.total_points || questions.length}
               </div>
-              <div className={`text-xl font-bold mb-4 ${score >= (exam.passing_score || 0) ? 'text-green-600' : 'text-red-600'}`}>
-                {score >= (exam.passing_score || 0) ? '✅ PASS' : '❌ FAIL'}
-                {exam.passing_score && ` (Minimum: ${exam.passing_score} points)`}
+              <div className={`text-xl font-bold mb-4 ${score >= (examInfo.passing_score || 0) ? 'text-green-600' : 'text-red-600'}`}>
+                {score >= (examInfo.passing_score || 0) ? '✅ PASS' : '❌ FAIL'}
+                {examInfo.passing_score && ` (Minimum: ${examInfo.passing_score} points)`}
               </div>
               <button 
                 onClick={() => navigate(-1)} 

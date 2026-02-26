@@ -86,7 +86,7 @@ export default function AddSubject({ onSuccess, onClose}) {
                 className="flex flex-col w-full h-auto gap-2 text-left rounded-2xl"
             >
                 
-                <label className={labelClass}>Subject Name:</label>
+                <label className={labelClass}>Course Code:</label>
                 <input
                     type="text"
                     name="name"
@@ -96,7 +96,7 @@ export default function AddSubject({ onSuccess, onClose}) {
                         focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 transition duration-200"
                 />
 
-                <label className={labelClass}>Description:</label>
+                <label className={labelClass}>Course Title: </label>
                 <textarea
                     type="text"
                     name="description"

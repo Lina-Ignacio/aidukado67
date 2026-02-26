@@ -20,6 +20,7 @@ class Quiz(Base):
     term_id = Column(Integer, ForeignKey("terms.id", ondelete="CASCADE"))
     opening_time = Column(DateTime(timezone=True), nullable=True)
     closing_time = Column(DateTime(timezone=True), nullable=True)
+    show_answer = Column(Boolean, default=False)
 
     material = relationship("ClassMaterial", back_populates="quizzes")
     student_progress = relationship("StudentQuizProgress", back_populates="quiz")

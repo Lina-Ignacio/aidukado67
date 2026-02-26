@@ -26,6 +26,7 @@ export default function ImportEnrollments({ onSuccess, onClose }) {
           `${import.meta.env.VITE_API_URL}/classes/get`
         );
         setClasses(response.data);
+        console.log(response.data)
       } catch (err) {
         setError("Failed to load classes. Please try again.");
       } finally {

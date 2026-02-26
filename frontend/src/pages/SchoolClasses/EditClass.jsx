@@ -6,7 +6,6 @@ export default function EditClass({ classId, onClose, onSuccess }) {
     const [formData, setFormData] = useState({
         subjectId: "",
         teacherId: "",
-        name: "",
         schedule_days: [],      
         schedule_start: "",     
         schedule_end: "",       
@@ -21,17 +20,13 @@ export default function EditClass({ classId, onClose, onSuccess }) {
     const [teachers, setTeachers] = useState([]);
     const [subjects, setSubjects] = useState([]);
 
-    // For class data fetching error
     const [fetchError, setFetchError] = useState(""); 
-    // For input errors
     const [formError, setFormError] = useState({});
-    // For option errors
     const [errors, setErrors] = useState({});
     const [submitError, setSubmitError] = useState("");
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
 
-    // Day options with single-letter codes
     const dayOptions = [
         { value: 'M', label: 'Monday' },
         { value: 'T', label: 'Tuesday' },
@@ -42,19 +37,16 @@ export default function EditClass({ classId, onClose, onSuccess }) {
         { value: 'U', label: 'Sunday' }
     ]
 
-    // Semester options
     const semesterOptions = [
         { value: '1st semester', label: '1st Semester' },
         { value: '2nd semester', label: '2nd Semester' }
     ]
 
-    // Academic year options
     const academicYearOptions = [
         { value: '2025-2026', label: '2025-2026' },
         { value: '2026-2027', label: '2026-2027' }
     ]
 
-    // Getting List of Teachers
     const getTeachers = async () => {
         try {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/user/get_teachers`)
@@ -68,7 +60,6 @@ export default function EditClass({ classId, onClose, onSuccess }) {
         }
     }
 
-    // Getting List of Subjects
     const getSubjects = async () => {
         try {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/subject/get`)
@@ -82,7 +73,6 @@ export default function EditClass({ classId, onClose, onSuccess }) {
         }
     }
 
-    // Parse schedule string like "MW: 11:00am-12:30pm" to components
     const parseScheduleString = (scheduleString) => {
         if (!scheduleString) return { days: [], start: "", end: "" };
         
@@ -91,7 +81,6 @@ export default function EditClass({ classId, onClose, onSuccess }) {
             const [timeRange] = timePart ? [timePart] : [""];
             const [startTime12h, endTime12h] = timeRange ? timeRange.split("-") : ["", ""];
             
-            // Convert 12h to 24h format
             const to24h = (time12h) => {
                 if (!time12h) return "";
                 const match = time12h.match(/(\d+):(\d+)(am|pm)/i);
@@ -118,12 +107,10 @@ export default function EditClass({ classId, onClose, onSuccess }) {
         }
     }
 
-    // Getting data for the form
     const getClass = async () => {
         try {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/classes/getById/${classId}`)
             
-            // Parse schedule if it exists
             const scheduleData = response.data.schedule 
                 ? parseScheduleString(response.data.schedule)
                 : { days: [], start: "", end: "" };
@@ -131,7 +118,6 @@ export default function EditClass({ classId, onClose, onSuccess }) {
             setFormData({
                 subjectId: response.data.subject?.id || "",
                 teacherId: response.data.userTeacher?.id || "",
-                name: response.data.name || "",
                 schedule_days: scheduleData.days,
                 schedule_start: scheduleData.start,
                 schedule_end: scheduleData.end,
@@ -164,28 +150,23 @@ export default function EditClass({ classId, onClose, onSuccess }) {
         if (classId) fetchAll();
     }, [classId]);
 
-    // Handle text/select inputs
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({...prev, [name]: value}));
-        // Clear error for this field when user types
         if (formError[name]) {
             setFormError(prev => ({ ...prev, [name]: "" }));
         }
     }
 
-    // Handle day checkboxes
     const handleDayChange = (dayValue) => {
         setFormData(prev => {
             const currentDays = [...prev.schedule_days];
             if (currentDays.includes(dayValue)) {
-                // Remove if already selected
                 return {
                     ...prev,
                     schedule_days: currentDays.filter(day => day !== dayValue)
                 }
             } else {
-                // Add if not selected
                 return {
                     ...prev,
                     schedule_days: [...currentDays, dayValue]
@@ -194,7 +175,6 @@ export default function EditClass({ classId, onClose, onSuccess }) {
         })
     }
 
-    // Format schedule string for backend: "MW: 11:00am-12:30pm"
     const formatScheduleString = () => {
         const { schedule_days, schedule_start, schedule_end } = formData;
 
@@ -202,12 +182,10 @@ export default function EditClass({ classId, onClose, onSuccess }) {
             return "";
         }
 
-        // Sort days in standard order: M, T, W, R, F, S, U
         const dayOrder = { 'M': 1, 'T': 2, 'W': 3, 'R': 4, 'F': 5, 'S': 6, 'U': 7 };
         const sortedDays = [...schedule_days].sort((a, b) => dayOrder[a] - dayOrder[b]);
         const daysCode = sortedDays.join('');
 
-        // Convert 24h to 12h format
         const formatTime12h = (time24) => {
             if (!time24) return "";
             const [hours, minutes] = time24.split(':').map(Number);
@@ -227,14 +205,12 @@ export default function EditClass({ classId, onClose, onSuccess }) {
 
         if (!formData.subjectId) formErrors.subjectId = "Subject is required!";
         if (!formData.teacherId) formErrors.teacherId = "Teacher is required!";
-        if (!formData.name || formData.name.trim() === "") formErrors.name = "Class Name is required!";
         
         if (!formData.room || formData.room.trim() === "") formErrors.room = "Room is required!";
         if (!formData.section || formData.section.trim() === "") formErrors.section = "Section is required!";
         if (!formData.academic_year) formErrors.academic_year = "Academic year is required!";
         if (!formData.semester) formErrors.semester = "Semester is required!";
         
-        // Schedule validation
         if (formData.schedule_days.length === 0) {
             formErrors.schedule_days = "Select at least one day";
         }
@@ -244,7 +220,6 @@ export default function EditClass({ classId, onClose, onSuccess }) {
         if (!formData.schedule_end) {
             formErrors.schedule_end = "End time is required";
         }
-        // Time validation
         if (formData.schedule_start && formData.schedule_end) {
             const start = new Date(`2000-01-01T${formData.schedule_start}`);
             const end = new Date(`2000-01-01T${formData.schedule_end}`);
@@ -278,7 +253,6 @@ export default function EditClass({ classId, onClose, onSuccess }) {
         try {
             setLoading(true);
             
-            // Format schedule string
             const scheduleString = formatScheduleString();
             
             const response = await axios.patch(
@@ -286,7 +260,6 @@ export default function EditClass({ classId, onClose, onSuccess }) {
                 {
                     subject_id: formData.subjectId,
                     teacher_id: formData.teacherId,
-                    name: formData.name,
                     schedule: scheduleString,
                     room: formData.room,
                     section: formData.section,
@@ -316,12 +289,11 @@ export default function EditClass({ classId, onClose, onSuccess }) {
 
     const labelClass = "text-[#102E50] font-bold opacity-75 mb-1"
 
-    // Schedule preview
     const schedulePreview = formatScheduleString();
 
     return (
         <div className="w-full h-auto flex flex-col justify-center items-center 
-                bg-white px-4 py-6 shadow-xl rounded-xl max-w-md mx-auto"
+                bg-white px-4 py-6 shadow-xl rounded-xl mx-auto"
         >
             <h2 className="text-xl font-bold text-[#102E50] mb-4">Edit Class</h2>
 
@@ -333,24 +305,9 @@ export default function EditClass({ classId, onClose, onSuccess }) {
                 onSubmit={handleSubmit}
                 className="flex flex-col w-full h-auto gap-4 text-left"
             >
-                {/* Class Name */}
+                {/* Course Description */}
                 <div>
-                    <label htmlFor="name" className={labelClass}>Course Code:</label>
-                    <input
-                        id="name"
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        className="w-full p-3 rounded-lg border border-gray-300 bg-gray-50 text-[#102E50] 
-                            focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 focus:border-transparent"
-                    />
-                    {formError.name && <span className="text-red-600 text-sm">{formError.name}</span>}
-                </div>
-
-                {/* Course Name */}
-                <div>
-                    <label htmlFor="subjectId" className={labelClass}>Course Name:</label>
+                    <label htmlFor="subjectId" className={labelClass}>Course Description:</label>
                     <select 
                         id="subjectId" 
                         name="subjectId" 
@@ -463,7 +420,6 @@ export default function EditClass({ classId, onClose, onSuccess }) {
                     </div>
                 </div>
 
-
                 {/* Academic Year */}
                 <div>
                     <label htmlFor="academic_year" className={labelClass}>Academic Year:</label>
@@ -483,7 +439,7 @@ export default function EditClass({ classId, onClose, onSuccess }) {
                         ))}
                     </select>
                     {formError.academic_year && <span className="text-red-600 text-sm">{formError.academic_year}</span>}
-                </div>
+                </div> 
 
                 {/* Semester */}
                 <div>
@@ -505,6 +461,7 @@ export default function EditClass({ classId, onClose, onSuccess }) {
                     </select>
                     {formError.semester && <span className="text-red-600 text-sm">{formError.semester}</span>}
                 </div>
+
                 {/* Schedule Preview */}
                 {schedulePreview && (
                     <div className="p-3 bg-blue-50 border border-blue-200 rounded w-full">
@@ -558,6 +515,7 @@ export default function EditClass({ classId, onClose, onSuccess }) {
                                     [&::-webkit-calendar-picker-indicator]:opacity-80
                                     [&::-webkit-calendar-picker-indicator]:hover:opacity-100
                                     focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 focus:border-transparent"
+                                    style={{ colorScheme: 'dark' }}
                             />
                             {formError.schedule_start && (
                                 <span className="text-red-600 text-sm">{formError.schedule_start}</span>
@@ -577,8 +535,9 @@ export default function EditClass({ classId, onClose, onSuccess }) {
                                     [&::-webkit-calendar-picker-indicator]:p-1 
                                     [&::-webkit-calendar-picker-indicator]:rounded 
                                     [&::-webkit-calendar-picker-indicator]:opacity-80
-                                    [&::-webkit-calendar-picker-indicator]:hover:opacity-100
+                                    [&::-webkit-calendar-picker-indicator]:hover:opacity-100 
                                     focus:outline-none focus:ring-2 focus:ring-[#102E50]/40 focus:border-transparent"
+                                    style={{ colorScheme: 'dark' }}
                             />
                             {formError.schedule_end && (
                                 <span className="text-red-600 text-sm">{formError.schedule_end}</span>

@@ -15,5 +15,6 @@ from .exam.student_exam_reopens import StudentExamReopen
 from .submission.student_task_reopens import StudentTaskReopen
 from .student_quiz_reopens import StudentQuizReopen
 from .audit_log import AuditLog
+from .academic_semester_year import AcademicSemesterYear
 
 
