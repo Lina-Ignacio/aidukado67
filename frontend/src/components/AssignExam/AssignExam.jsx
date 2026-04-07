@@ -19,6 +19,8 @@ import {
 } from "react-icons/fi";
 import ClassicButton from "../classicButton";
 
+import lcbaLogo from "../../assets/headerImage.png";
+
 export default function AssignExam({ 
   questions = [], 
   title = "", 
@@ -42,6 +44,11 @@ export default function AssignExam({
   const [assigning, setAssigning] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false); 
+
+  const [subject, setSubject] = useState("");
+  const [subjectCode, setSubjectCode] = useState("");
+  const [semester, setSemester] = useState([]);
 
   const class_id = classId;
   const term_id = termId;
@@ -244,6 +251,47 @@ export default function AssignExam({
     
     return null;
   };
+
+  const getSemester = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/academic-semesters/get`,
+        { params: { include_archived: false } }
+      );
+      console.log("Semester data:", response.data);
+      setSemester(response.data);
+    } catch (err) {
+      setError(err.response?.data?.detail || err.message || "Failed to load semesters.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getSemester();
+  }, []);
+
+  const currentSemester = semester.find((s) => s.current);
+
+  const getSubject = async () => {
+    try {
+      setError("");
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/classes/getSubject/${classId}`,
+        { params: { include_archived: false } }
+      );
+      setSubject(response.data.description);
+      setSubjectCode(response.data.name)
+    } catch (err) {
+      setError(err.response?.data?.detail || err.message || "Failed to load subjects.");
+    } 
+  };
+
+  useEffect(() => {
+    if (classId) getSubject();
+  }, [classId]);
 
   const handleAssign = async () => {
     setError("");
@@ -468,7 +516,8 @@ export default function AssignExam({
               .no-print { display: none; }
               h1, .header-info, .instructions { page-break-after: avoid; }
               .question-container { page-break-inside: auto; }
-              img { max-width: 100% !important; height: auto !important; page-break-inside: avoid; }
+              img:not(.logo-img) { max-width: 100% !important; height: auto !important; page-break-inside: avoid; }
+              .logo-img { height: 50px !important; max-height: 50px !important; width: auto !important; }
               @page { margin: 0.2in; }
             }
             .instructions {
@@ -501,7 +550,15 @@ export default function AssignExam({
             </button>
           </div>
           
-          <h1>${title || "Exam"}</h1>
+          <h1>
+            <img src="${lcbaLogo}" alt="LCBA Logo" class="logo-img" style="height: 50px; width: auto; display: block; margin: 0 auto 4px auto;" />
+            LAGUNA COLLEGE OF BUSINESS AND ARTS <br/>
+            College Department <br/><br/>
+            
+            ${subjectCode} - ${subject} <br/>
+            ${title || "Exam"} <br/> 
+            A.Y ${currentSemester?.academic_year || ""}
+          </h1>
           
           <div class="header-info">
             <div class="stats">

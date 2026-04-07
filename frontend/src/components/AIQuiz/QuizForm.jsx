@@ -10,7 +10,7 @@ export default function QuizForm({ formData, onChange, onSubmit, loading }) {
   const labelClass = "text-[#102E50] font-bold mb-1 block";
 
   //const getDefaultTime = () => new Date().toISOString().slice(0, 16);
-  const now = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  //const now = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16);
   // Set default datetime (tomorrow at 23:59)
   const setDefaultDateTime = () => {
     const tomorrow = new Date();
@@ -25,6 +25,12 @@ export default function QuizForm({ formData, onChange, onSubmit, loading }) {
     const minutes = String(tomorrow.getMinutes()).padStart(2, '0');
     
     return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  const getNow = () => {
+    return new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16);
   };
 
   // Calculate minimum datetime (30 minutes from now)
@@ -66,7 +72,7 @@ export default function QuizForm({ formData, onChange, onSubmit, loading }) {
       onChange({
         ...formData,
         closing_time: setDefaultDateTime(),
-        opening_time: now,
+        opening_time: getNow(),
       });
     }
   }, []);
@@ -149,7 +155,7 @@ export default function QuizForm({ formData, onChange, onSubmit, loading }) {
         <div className="flex flex-col sm:flex-row gap-3">
           <input
             type="datetime-local"
-            value={formData.opening_time || now}
+            value={formData.opening_time || getNow()}
             onChange={(e) => handleChange('opening_time', e.target.value)}
             className="flex-1 px-4 py-3 border border-[#102E50] rounded-lg bg-[#102E50]
               focus:outline-none focus:ring-2 focus:ring-[#E78B48] focus:border-transparent

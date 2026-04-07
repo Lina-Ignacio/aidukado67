@@ -4,7 +4,7 @@ import * as XLSX from "xlsx";
 import FileUploader from "../../components/FileUploader";
 import ClassicButton from "../../components/classicButton";
 import { MoonLoader } from "react-spinners";
-import { LuUpload } from "react-icons/lu";
+import { LuUpload, LuDownload } from "react-icons/lu";
 import { MdClose } from "react-icons/md";
 
 export default function ImportEnrollments({ onSuccess, onClose }) {
@@ -26,7 +26,7 @@ export default function ImportEnrollments({ onSuccess, onClose }) {
           `${import.meta.env.VITE_API_URL}/classes/get`
         );
         setClasses(response.data);
-        console.log(response.data)
+        console.log(response.data);
       } catch (err) {
         setError("Failed to load classes. Please try again.");
       } finally {
@@ -39,10 +39,11 @@ export default function ImportEnrollments({ onSuccess, onClose }) {
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
-      // Validate file type - accept both CSV and Excel
-      const validExtensions = ['.csv', '.xlsx', '.xls'];
-      const fileExtension = selectedFile.name.slice(selectedFile.name.lastIndexOf('.')).toLowerCase();
-      
+      const validExtensions = [".csv", ".xlsx", ".xls"];
+      const fileExtension = selectedFile.name
+        .slice(selectedFile.name.lastIndexOf("."))
+        .toLowerCase();
+
       if (!validExtensions.includes(fileExtension)) {
         setError("Please upload a CSV or Excel file (.csv, .xlsx, .xls)");
         return;
@@ -54,109 +55,117 @@ export default function ImportEnrollments({ onSuccess, onClose }) {
     }
   };
 
+  const handleDownloadTemplate = () => {
+    // Create workbook with template columns in the correct order
+    const wb = XLSX.utils.book_new();
+    const templateData = [
+      ["name", "email"],           // headers row
+      ["Juan dela Cruz", "juan.delacruz@email.com"],  // example row
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(templateData);
+
+    // Set column widths for readability
+    ws["!cols"] = [{ wch: 30 }, { wch: 35 }];
+
+    XLSX.utils.book_append_sheet(wb, ws, "Enrollments Template");
+    XLSX.writeFile(wb, "enrollment_template.xlsx");
+  };
+
   const convertExcelToCSV = (excelFile) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      
+
       reader.onload = (e) => {
         try {
           const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          
-          // Get first sheet
+          const workbook = XLSX.read(data, { type: "array" });
+
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
-          
-          // Convert to JSON to inspect headers
+
           const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-          
+
           if (jsonData.length === 0) {
             reject(new Error("Excel file is empty"));
             return;
           }
-          
-          // Get headers from first row
+
           const headers = jsonData[0];
-          
-          // Find name and email columns (case-insensitive)
+
           let nameIndex = -1;
           let emailIndex = -1;
-          
+
           for (let i = 0; i < headers.length; i++) {
-            const header = String(headers[i] || '').trim().toLowerCase();
-            if (header.includes('name') && !header.includes('email')) {
+            const header = String(headers[i] || "")
+              .trim()
+              .toLowerCase();
+            if (header.includes("name") && !header.includes("email")) {
               nameIndex = i;
-            } else if (header.includes('email')) {
+            } else if (header.includes("email")) {
               emailIndex = i;
             }
           }
-          
-          // If we couldn't find standard headers, assume first two columns
+
           if (nameIndex === -1 || emailIndex === -1) {
             nameIndex = 0;
             emailIndex = 1;
-            
-            // Check if second column looks like an email
+
             if (jsonData.length > 1 && jsonData[1] && jsonData[1][emailIndex]) {
               const secondCol = String(jsonData[1][emailIndex]);
-              if (!secondCol.includes('@')) {
-                // Maybe columns are swapped
+              if (!secondCol.includes("@")) {
                 emailIndex = 0;
                 nameIndex = 1;
               }
             }
           }
-          
-          // Build CSV with correct lowercase headers
+
           const csvRows = [];
-          
-          // Add lowercase headers
-          csvRows.push(['name', 'email']);
-          
-          // Add data rows
+          csvRows.push(["name", "email"]);
+
           for (let i = 1; i < jsonData.length; i++) {
             const row = jsonData[i];
             if (row && row.length > Math.max(nameIndex, emailIndex)) {
-              const name = String(row[nameIndex] || '').trim();
-              const email = String(row[emailIndex] || '').trim();
-              
-              // Skip empty rows
+              const name = String(row[nameIndex] || "").trim();
+              const email = String(row[emailIndex] || "").trim();
+
               if (name || email) {
                 csvRows.push([name, email]);
               }
             }
           }
-          
-          // Convert to CSV string
-          const csvContent = csvRows.map(row => 
-            row.map(cell => {
-              // Escape quotes and wrap in quotes if contains comma or quotes
-              const escaped = cell.replace(/"/g, '""');
-              return cell.includes(',') || cell.includes('"') ? `"${escaped}"` : escaped;
-            }).join(',')
-          ).join('\n');
-          
+
+          const csvContent = csvRows
+            .map((row) =>
+              row
+                .map((cell) => {
+                  const escaped = cell.replace(/"/g, '""');
+                  return cell.includes(",") || cell.includes('"')
+                    ? `"${escaped}"`
+                    : escaped;
+                })
+                .join(",")
+            )
+            .join("\n");
+
           resolve(csvContent);
         } catch (err) {
           reject(new Error("Failed to parse Excel file: " + err.message));
         }
       };
-      
+
       reader.onerror = () => {
         reject(new Error("Failed to read Excel file"));
       };
-      
+
       reader.readAsArrayBuffer(excelFile);
     });
   };
 
   const handleImport = async () => {
-    // Reset messages
     setError("");
     setSuccess("");
     setValidationErrors([]);
 
-    // Validate inputs
     if (!selectedClass) {
       setError("Please select a class");
       return;
@@ -169,50 +178,50 @@ export default function ImportEnrollments({ onSuccess, onClose }) {
 
     try {
       setLoading(true);
-      
+
       let fileContent;
-      const fileExtension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
-      
-      // Handle different file types
-      if (fileExtension === '.csv') {
-        // Read CSV file as text
+      const fileExtension = file.name
+        .slice(file.name.lastIndexOf("."))
+        .toLowerCase();
+
+      if (fileExtension === ".csv") {
         fileContent = await new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = (e) => resolve(e.target.result);
           reader.onerror = () => reject(new Error("Failed to read CSV file"));
           reader.readAsText(file);
         });
-        
-        // For CSV files
-        const lines = fileContent.split('\n');
+
+        const lines = fileContent.split("\n");
         if (lines.length > 0) {
           const firstLine = lines[0].trim().toLowerCase();
-          // Check if first line has headers
-          if (firstLine.includes('name') || firstLine.includes('email')) {
-            
-            lines[0] = 'name,email';
-            fileContent = lines.join('\n');
+          if (firstLine.includes("name") || firstLine.includes("email")) {
+            lines[0] = "name,email";
+            fileContent = lines.join("\n");
           }
         }
       } else {
-        // Convert Excel to CSV with proper headers
         fileContent = await convertExcelToCSV(file);
       }
 
-      // Debug: log what we're sending
-      console.log("Sending CSV content (first 200 chars):", fileContent.substring(0, 200));
-      console.log("Full CSV content lines:", fileContent.split('\n').length);
-      
-      // Send to backend
+      console.log(
+        "Sending CSV content (first 200 chars):",
+        fileContent.substring(0, 200)
+      );
+      console.log("Full CSV content lines:", fileContent.split("\n").length);
+
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/enrollment/import`,
         {
           classId: parseInt(selectedClass),
-          fileContent: fileContent
+          fileContent: fileContent,
         }
       );
 
-      if (response.data.failedEmails && response.data.failedEmails.length > 0) {
+      if (
+        response.data.failedEmails &&
+        response.data.failedEmails.length > 0
+      ) {
         setValidationErrors(response.data.failedEmails);
         setError(response.data.message);
       } else {
@@ -220,7 +229,6 @@ export default function ImportEnrollments({ onSuccess, onClose }) {
         if (onSuccess) {
           onSuccess();
         }
-        // Reset form after successful import
         setTimeout(() => {
           setSelectedClass("");
           setFile(null);
@@ -271,7 +279,8 @@ export default function ImportEnrollments({ onSuccess, onClose }) {
             <option value="">Select a class...</option>
             {classes.map((classItem) => (
               <option key={classItem.id} value={classItem.id}>
-                {classItem.name} - {classItem.subject?.name} ({classItem.academicYear})
+                {classItem.name} - {classItem.subject?.name} (
+                {classItem.academicYear})
               </option>
             ))}
           </select>
@@ -284,15 +293,26 @@ export default function ImportEnrollments({ onSuccess, onClose }) {
           type=".csv, .xlsx, .xls"
           handleFileChange={handleFileChange}
         />
-        <p className="text-xs text-gray-500 mt-2">
-          Supported formats: CSV or Excel (.csv, .xlsx, .xls). 
-          <strong> First column must be Name, second column must be Email.</strong>
-          Column headers will be automatically normalized to lowercase.
-        </p>
-        {file && (
-          <p className="text-sm text-green-600 mt-1">
-            Selected: {file.name}
+
+        {/* Template download hint + button */}
+        <div className="flex items-center justify-between mt-2">
+          <p className="text-xs text-gray-500">
+            Supported formats: CSV or Excel (.csv, .xlsx, .xls).
           </p>
+          <button
+            type="button"
+            onClick={handleDownloadTemplate}
+            className="flex items-center gap-1.5 text-xs font-medium text-[#102E50] 
+                       border border-[#102E50] rounded-md px-2.5 py-1 
+                       hover:bg-[#102E50] hover:text-white transition-colors duration-150"
+          >
+            <LuDownload size={13} />
+            Download Template
+          </button>
+        </div>
+
+        {file && (
+          <p className="text-sm text-green-600 mt-1">Selected: {file.name}</p>
         )}
       </div>
 
@@ -318,7 +338,7 @@ export default function ImportEnrollments({ onSuccess, onClose }) {
           <p className="text-sm text-red-800">{error}</p>
         </div>
       )}
-      
+
       {success && (
         <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md">
           <p className="text-sm text-green-800">{success}</p>
@@ -327,16 +347,16 @@ export default function ImportEnrollments({ onSuccess, onClose }) {
 
       {/* Actions */}
       <div className="flex grid grid-cols-[1fr_1.5fr] space-x-3">
-        <ClassicButton 
+        <ClassicButton
           buttonName="Cancel"
           className="shadow-md hover:bg-gray-500"
           onClick={onClose}
           disabled={loading}
-          mainColor="#9CA3AF"  
-          darkColor="#6B7280"  
+          mainColor="#9CA3AF"
+          darkColor="#6B7280"
           icon={MdClose}
         />
-        
+
         <ClassicButton
           buttonName={loading ? "Importing..." : "Import Enrollments"}
           className="shadow-md hover:bg-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"

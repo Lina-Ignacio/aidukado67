@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "../../services/axiosConfig";
 import * as XLSX from "xlsx";
 import FileUploader from "../../components/FileUploader";
-import { LuUpload } from "react-icons/lu";
+import { LuUpload, LuDownload } from "react-icons/lu";
 
 export default function UploadClasses({ onClose, onSuccess }) {
     const [file, setFile] = useState(null);
@@ -294,6 +294,39 @@ export default function UploadClasses({ onClose, onSuccess }) {
         return errors;
     };
 
+    const handleDownloadTemplate = () => {
+        const wb = XLSX.utils.book_new();
+
+        // Template data: headers + one example row
+        const templateData = [
+            ['course_code', 'teacher_email', 'section', 'room', 'units', 'schedule'],
+            ['CS101', 'teacher@school.edu', 'A', 'Room 201', '3/1', 'MW: 9:00am-12:00pm'],
+        ];
+
+        const ws = XLSX.utils.aoa_to_sheet(templateData);
+
+        // Set column widths for readability
+        ws['!cols'] = [
+            { wch: 14 },  // course_code
+            { wch: 30 },  // teacher_email
+            { wch: 10 },  // section
+            { wch: 20 },  // room
+            { wch: 8 },   // units
+            { wch: 28 },  // schedule
+        ];
+
+        // Force the units cell in the example row to be text
+        // to avoid Excel converting "3/1" to a date
+        const unitsCell = ws['E2'];
+        if (unitsCell) {
+            unitsCell.t = 's'; // string type
+            unitsCell.z = '@'; // text format
+        }
+
+        XLSX.utils.book_append_sheet(wb, ws, 'Classes Template');
+        XLSX.writeFile(wb, 'classes_template.xlsx');
+    };
+
     const handleSubmit = async () => {
         if (!file) {
             setError("Please select a CSV or Excel file first");
@@ -523,9 +556,29 @@ export default function UploadClasses({ onClose, onSuccess }) {
                     type=".csv,.xlsx,.xls" 
                     handleFileChange={handleFileChange} 
                 />
+
+                {/* Template download row */}
+                <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-gray-500">
+                        {file
+                            ? `Selected: ${file.name} (${file.type || file.name.split('.').pop().toUpperCase()} format)`
+                            : "No file selected"}
+                    </p>
+                    <button
+                        type="button"
+                        onClick={handleDownloadTemplate}
+                        className="flex items-center gap-1.5 text-xs font-medium text-[#102E50]
+                                   border border-[#102E50] rounded-md px-2.5 py-1
+                                   hover:bg-[#102E50] hover:text-white transition-colors duration-150"
+                    >
+                        <LuDownload size={13} />
+                        Download Template
+                    </button>
+                </div>
+
                 {file && (
-                    <p className="text-sm text-green-600 mt-2">
-                        Selected: {file.name} ({file.type || file.name.split('.').pop().toUpperCase()} format)
+                    <p className="text-sm text-green-600 mt-1">
+                        ✓ File ready for upload
                     </p>
                 )}
             </div>

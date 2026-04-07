@@ -89,40 +89,46 @@ export default function SelectedClass() {
   };
 
   const getExams = async () => {
-    try {
-      let response;
-      let examData;
+  try {
+    let response;
+    let examData;
 
-      if (userRole === "teacher") {
-        response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/exam/getExams/${classId}`,
-          { 
-            params: { 
-              term_id: term,
-              class_id: classId 
-            } 
-          }
-        );
-        examData = response.data || [];
-      } else {
-        response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/exam/student/exams/${classId}`,
-          {
-            params: { 
-              term_id: term, 
-              student_id: userId 
-            },
-          }
-        );
-        examData = response.data || [];
-      }
-
-      setExams(examData);
-    } catch (error) {
-      console.log("Error fetching exams:", error);
-      setExams([]);
+    if (userRole === "teacher") {
+      response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/exam/getExams/${classId}`,
+        { 
+          params: { 
+            term_id: term,
+            class_id: classId 
+          } 
+        }
+      );
+      examData = response.data || [];
+    } else {
+      response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/exam/student/exams/${classId}`,
+        {
+          params: { 
+            term_id: term, 
+            student_id: userId 
+          },
+        }
+      );
+      examData = response.data || [];
     }
-  };
+
+    // ADD THIS CONSOLE LOG TO SEE THE ACTUAL DATA STRUCTURE
+    console.log("Raw exam data from API:", examData);
+    if (examData.length > 0) {
+      console.log("First exam item structure:", JSON.stringify(examData[0], null, 2));
+    }
+
+    setExams(examData);
+  } catch (error) {
+    console.log("Error fetching exams:", error);
+    setExams([]);
+  }
+};
 
   const location = useLocation();
   

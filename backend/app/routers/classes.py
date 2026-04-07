@@ -10,6 +10,8 @@ from app.models.users import Users
 from app.schemas.classes import ClassCreate, ClassUpdate, ClassOut, ClassWithTeacherOut, BulkUploadResponse, BulkClassUpload
 from app.database import get_db
 from app.utils.decryption import safe_decrypt_class_dict, safe_decrypt_teacher_dict 
+from app.models.subject import Subject
+from app.schemas.subject import SubjectOut
 
 router = APIRouter(prefix="/classes", tags=["classes"])
 
@@ -374,6 +376,22 @@ def archive(class_id: int, db: Session = Depends(get_db)):
     db.refresh(classes)
     
     return {"message": f"class with {class_id} archived successfully"}
+
+@router.get("/getSubject/{class_id}", response_model=SubjectOut)
+def get_subject_by_class(class_id: int, db: Session = Depends(get_db)):
+    # Join Classes with Subject directly using the relationship
+    class_ = db.query(Classes).filter(
+        Classes.id == class_id,
+        Classes.is_archive == False
+    ).first()
+
+    if not class_:
+        raise HTTPException(status_code=404, detail="Class not found")
+
+    if not class_.subject:
+        raise HTTPException(status_code=404, detail="Subject not found for this class")
+
+    return class_.subject
 
 # @router.get("/get-by-semester/{semester_id}", response_model=list[ClassOut])
 # def get_classes_by_semester(

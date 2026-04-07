@@ -16,9 +16,6 @@ export default function ExamCard({
   const [isExamClosed, setIsExamClosed] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
   
-  // Get API URL from environment variable
-  const API_URL = import.meta.env.VITE_API_URL;
-  
   // Check user role
   const isTeacher = userRole === "teacher";
   
@@ -36,12 +33,12 @@ export default function ExamCard({
     closingTime: examData.closing_time
   } : null;
   
-  // Student data structure - FIXED to match API response from /exam/student/exams/{classId}
+  // Student data structure - Handles both flat and nested exam data
   const studentData = !isTeacher ? {
     // The exam progress record fields
-    id: examData.id, // This is the progress ID
+    id: examData.id,
     studentId: examData.student_id,
-    examId: examData.exam_id, // This is the actual exam ID
+    examId: examData.exam_id,
     status: examData.status,
     score: examData.score,
     answers: examData.answers || {},
@@ -49,13 +46,14 @@ export default function ExamCard({
     createdAt: examData.created_at,
     updatedAt: examData.updated_at,
     
-    // The exam details fields (these are flattened in the response)
-    examTitle: examData.title, // Direct from response
-    examTotalPoints: examData.total_points, // Direct from response
-    examDuration: examData.duration, // Direct from response
-    examInstructions: examData.instructions, // Direct from response
-    examPassingScore: examData.passing_score, // Direct from response
-    closingTime: examData.closing_time // Direct from response
+    // The exam details fields - Check if exam object exists, otherwise use direct properties
+    examTitle: examData.exam?.title || examData.title,
+    examTotalPoints: examData.exam?.total_points || examData.total_points,
+    examDuration: examData.exam?.duration || examData.duration,
+    examInstructions: examData.exam?.instructions || examData.instructions,
+    examPassingScore: examData.exam?.passing_score || examData.passing_score,
+    closingTime: examData.exam?.closing_time || examData.closing_time,
+    allowReopen: examData.exam?.allow_reopen || examData.allow_reopen
   } : null;
 
   // Check exam availability based on student_exam_reopens table
@@ -321,7 +319,7 @@ export default function ExamCard({
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1 pr-12">
               <h3 className="text-lg font-bold text-slate-800 line-clamp-2 leading-tight">
-                {studentData.examTitle}
+                {studentData.examTitle || "Untitled Exam"}
               </h3>
               
               {/* Exam type badge */}
@@ -346,14 +344,14 @@ export default function ExamCard({
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="bg-white p-3 rounded-lg border border-slate-200">
               <p className="text-xs text-slate-500 mb-1">Total Points</p>
-              <p className="text-lg font-bold text-blue-600">{studentData.examTotalPoints}</p>
+              <p className="text-lg font-bold text-blue-600">{studentData.examTotalPoints || 0}</p>
             </div>
             
             <div className="bg-white p-3 rounded-lg border border-slate-200">
               <p className="text-xs text-slate-500 mb-1">Duration</p>
               <div className="flex items-center gap-1">
                 <FaClock className="text-slate-400 text-sm" />
-                <p className="text-lg font-bold text-slate-800">{studentData.examDuration} min</p>
+                <p className="text-lg font-bold text-slate-800">{studentData.examDuration || 0} min</p>
               </div>
             </div>
           </div>

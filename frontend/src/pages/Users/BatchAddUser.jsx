@@ -1,7 +1,7 @@
 import * as XLSX from "xlsx";
 import { useState } from "react";
 import axios from "../../services/axiosConfig";
-import { MdClose } from "react-icons/md";
+import { MdClose, MdDownload } from "react-icons/md";
 import FileUploader from "../../components/FileUploader";
 
 export default function BatchAddUser({ onClose, onSuccess }) {
@@ -136,6 +136,72 @@ export default function BatchAddUser({ onClose, onSuccess }) {
         }
     };
 
+    // Function to download template Excel file
+    const downloadTemplate = () => {
+        // Define the columns in the specified order
+        const templateData = [
+            {
+                first_name: "John",
+                last_name: "Doe",
+                email: "john.doe@example.com",
+                password: "temporary123",
+                role: "student",
+                middle_name: "Robert"
+            },
+            {
+                first_name: "Jane",
+                last_name: "Smith",
+                email: "jane.smith@example.com",
+                password: "temporary456",
+                role: "teacher",
+                middle_name: ""
+            }
+        ];
+
+        // Create worksheet
+        const worksheet = XLSX.utils.json_to_sheet(templateData);
+        
+        // Set column widths for better readability
+        worksheet['!cols'] = [
+            { wch: 15 }, // first_name
+            { wch: 15 }, // last_name
+            { wch: 25 }, // email
+            { wch: 15 }, // password
+            { wch: 12 }, // role
+            { wch: 15 }  // middle_name
+        ];
+
+        // Create workbook
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "User_Template");
+
+        // Add instructions sheet
+        const instructionsData = [
+            { Instruction: "Required Columns (all must be filled except middle_name):", Details: "" },
+            { Instruction: "first_name", Details: "User's first name (required)" },
+            { Instruction: "last_name", Details: "User's last name (required)" },
+            { Instruction: "email", Details: "User's email address - must be unique (required)" },
+            { Instruction: "password", Details: "Temporary password for initial login (required)" },
+            { Instruction: "role", Details: "User role: student, teacher, admin, etc. (required)" },
+            { Instruction: "middle_name", Details: "User's middle name (optional - can be left empty)" },
+            { Instruction: "", Details: "" },
+            { Instruction: "Notes:", Details: "" },
+            { Instruction: "•", Details: "All required columns must have values" },
+            { Instruction: "•", Details: "Email addresses must be unique in the system" },
+            { Instruction: "•", Details: "Passwords are temporary - users must change on first login" },
+            { Instruction: "•", Details: "Role values are case-insensitive" },
+            { Instruction: "•", Details: "Delete the example rows and add your actual data" },
+            { Instruction: "•", Details: "Do not modify the column headers" }
+        ];
+
+        const instructionsSheet = XLSX.utils.json_to_sheet(instructionsData);
+        instructionsSheet['!cols'] = [{ wch: 20 }, { wch: 50 }];
+        XLSX.utils.book_append_sheet(workbook, instructionsSheet, "Instructions");
+
+        // Export the file
+        XLSX.writeFile(workbook, "user_import_template.xlsx");
+    };
+
     return (
         <div className="w-full h-auto flex flex-col items-center justify-center bg-white p-6 rounded-2xl shadow-xl space-y-4 relative max-w-2xl mx-auto">
             
@@ -152,7 +218,17 @@ export default function BatchAddUser({ onClose, onSuccess }) {
 
             {/* Instructions */}
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg w-full">
-                <h3 className="text-blue-800 font-semibold mb-2">File Format Instructions:</h3>
+                <div className="flex justify-between items-start mb-4">
+                    <h3 className="text-blue-800 font-semibold">File Format Instructions:</h3>
+                    <button
+                        onClick={downloadTemplate}
+                        className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium
+                            hover:bg-blue-700 transition-colors"
+                    >
+                        <MdDownload className="text-lg" />
+                        Download Template
+                    </button>
+                </div>
                 
                 <div className="mb-4">
                     <p className="text-blue-700 text-sm mb-3">
